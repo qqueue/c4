@@ -4,6 +4,7 @@
 // @description html5... on my 4chan?
 // 
 // @include     http://boards.4chan.org/*
+// @exclude     http://boards.4chan.org/f/*
 // @include     http://sys.4chan.org/*
 //
 // ==/UserScript==
@@ -82,7 +83,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 		return new Date(Date.UTC(date[2]+2000,
 		                         date[0]-1, date[1],
 		                         (date[3]+(((new Date()).getTimezoneOffset() == (new Date((new Date()).setMonth(6))).getTimezoneOffset()) ? 4 : 5))%24, //DST detection
-		                         date[4])); }
+		                         date[4]));}
 	
 	//takes the comment's elements, and a flag for OP's slightly different format
 	function parseComment(comment,op) {
@@ -118,28 +119,29 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			omittedImageReplies: omittedImageReplies,
 			sticky: (thread.find('img[alt="sticky"]').length > 0),
 			op: parseComment(thread,true),
-			replies: replies
-		};
-	}
+			replies: replies };}
 	
 	//extract thread info
-	console.time("extract threads"); console.profile() 
-	var thread, threads, data;
-	//detect whether this is board view or post view based on the existence of the [Return] link
-	if( $('a[accesskey]').length > 0 ) { 
-		thread = parseThread( $('form[name="delform"]').children() );
-		data = {board: false, threads: [thread]};
-		console.dir(thread);
-	} else {
-		//reliable way to separate threads into separate collections of elements
-		threads = $('form[name="delform"] > br[clear="left"]').map(function () {
-			return parseThread( $($(this).prevUntil("hr").get().reverse()) );
-		}).get();
-		data = {board: true, threads: threads};
-		console.dir(threads);
-	}
-	console.profileEnd();console.timeEnd("extract threads"); 
+	function parse4chan() {
+		//detect whether this is board view or post view based on the existence of the [Return] link
+		if( $('a[accesskey]').length > 0 ) { 
+			thread = parseThread( $('form[name="delform"]').children() );
+			return {
+				board: false,
+				threads: [thread] };}
+		else { //viewing single thread
+			//reliable way to separate threads into separate collections of elements
+			threads = $('form[name="delform"] > br[clear="left"]').map(function () {
+				return parseThread( $($(this).prevUntil("hr").get().reverse()) ); //reversed to maintain post order
+			}).get();
+			return {
+				board: true, 
+				threads: threads };}}
 	
+	console.time("extract threads"); console.profile();
+	var data = parse4chan();
+	console.dir(data);
+	console.profileEnd();console.timeEnd("extract threads"); 
 	/////////////////////////////////////////////////////////
 	//Render
 	/////////////////////////////////////////////////////////
@@ -159,7 +161,8 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			);
 	});
 	Handlebars.registerPartial('post', '<header> <h1> <input type="checkbox" value="delete" name="{{id}}"> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> <a href="{{url}}" class="permalink">No.{{id}}</a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <p class="comment"> {{4chancomment comment}} </p>');
-	var template = Handlebars.compile('{{#each threads}} <article class="thread" id="{{op.id}}"> <div class="op post"> {{#with op}} {{> post}} {{/with}} </div> {{#if ../board}}{{#if replies}}<footer>{{numReplies}} replies and {{imageReplies}} image replies. Latest {{replies.length}} shown.</footer>{{/if}}{{/if}} <div class="replies"> {{#each replies}} <article class="post reply" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article> {{/each}}');
+	Handlebars.registerPartial('thread','<article class="thread" id="{{op.id}}"> <div class="op post"> {{#with op}} {{> post}} {{/with}} </div> {{#if omittedReplies}}{{#if replies}}<footer>{{numReplies}} replies and {{imageReplies}} image replies. Latest {{replies.length}} shown.</footer>{{/if}}{{/if}} <div class="replies"> {{#each replies}} <article class="post reply" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article>');
+	var template = Handlebars.compile('{{#each threads}}{{>thread}}{{/each}}');
 	$('<div>',{id: "threads"}).css({
 		"float": "right",
 		width: "50%"
