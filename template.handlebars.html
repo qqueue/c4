@@ -1,0 +1,11 @@
+{{#each threads}}
+<article class="thread" id="{{op.id}}">
+	<div class="op post"> {{#with op}} {{> post}} {{/with}} </div>
+	{{#if ../board}}{{#if replies}}<footer>{{numReplies}} replies and {{imageReplies}} image replies. Latest {{replies.length}} shown.</footer>{{/if}}{{/if}}
+	<div class="replies">
+		{{#each replies}}
+			<article class="post reply" id="{{id}}"> {{> post}} </article>
+		{{/each}}
+	</div>
+</article>
+{{/each}}

@@ -1,0 +1,24 @@
+<header>
+	<h1>
+		<input type="checkbox" value="delete" name="{{id}}">
+		<span class="title">{{title}}</span>
+		<a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a>
+		<span class="tripcode">{{tripcode}}</span>
+		<span class="capcode">{{capcode}}</span>
+		<time pubdate datetime="{{time}}">{{datetime time}}</time>
+		<a href="{{url}}" class="permalink">No.{{id}}</a>
+	</h1>
+	{{#if image}}<div class="fileinfo">
+		<span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span>
+	</div>{{/if}}
+</header>
+{{#if image}}
+
+{{#with image.thumb}}
+<a class="file" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a>
+{{/with}}
+
+{{/if}}
+<p class="comment">
+	{{4chancomment comment}}
+</p>
