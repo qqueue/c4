@@ -25,7 +25,7 @@
 	</div>
 	<div title="for file deletion">
 		<label for="password">Password: </label>
-		<input id="password" type="password" maxlength="8" name="pwd">
+		<input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}">
 	</div>
 	<div><button type="submit" value="Submit">Submit</button></div>
 	<ul id="rules">
@@ -38,7 +38,7 @@
 </form>
 <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php">
 	<input name="mode" value="usrdel" type="hidden">
-	<label>Password <input name="pwd" size="8" maxlength="8" value="" type="password"></label>
+	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label>
 	<button type="submit" value="Delete">Delete Post</button>
 	<label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label>
 </form>

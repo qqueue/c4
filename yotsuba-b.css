@@ -1,0 +1,104 @@
+/**
+ * 4chan
+ */
+html {
+	background: #EEF2FF;
+	min-height:100%;
+	font-family: sans-serif;
+	font-size: 10pt;
+}
+
+
+h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
+
+.thread {
+	padding-bottom: 5px;
+	border-bottom: 1px solid #B7C5D9;
+	width: 50em;
+	overflow: auto;
+}
+
+.post {
+	margin-top: 3px;
+}
+
+.replies {
+	
+}
+
+
+.reply {
+	background: #D6DAF0;
+	padding: 2px;
+	margin-left: 1.5em;
+	border-color: #B7C5D9;
+	border-style: solid;
+	border-width: 0 1px 1px 0;
+	clear: both;
+}
+
+
+.reply:before {
+	content: ">>";
+	display: block;
+	height: 0;
+	margin-left: -1.5em;
+	font-size: 10pt;
+	color: #B7C5D9;
+}
+
+.reply:after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.comment {
+	padding: 0 1em ;
+	margin: 1em 40px;
+}
+
+.poster {
+	color:#117743;
+	font-weight: 800;
+}
+
+.tripcode {
+	color: #228854;
+}
+.greentext {
+	font-weight: normal;
+	color: #789922;
+}
+
+.spoiler {
+	text-decoration: none;
+	background: black;
+}
+
+.spoiler:hover {
+	color: white;
+}
+
+.file {
+	display: block;
+	float: left;
+	margin: 3px 20px;
+	position: relative;
+	height: 100%;
+}
+
+.id {
+	text-decoration: none;
+	color: inherit;
+}
+
+.id:hover {
+	color: red;
+}
+.capcode {
+	color: red;
+	font-weight: 800;
+}
