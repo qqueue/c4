@@ -1,6 +1,7 @@
 <header>
 	<h1>
-		<input type="checkbox" value="delete" name="{{id}}">
+		<input type="checkbox" value="delete" name="{{id}}" form="delform">
+		<a href="http://sys.4chan.org/lit/imgboard.php?mode=report&amp;no={{id}}" class="reportlink">[!]</a>
 		<span class="title">{{title}}</span>
 		<a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>

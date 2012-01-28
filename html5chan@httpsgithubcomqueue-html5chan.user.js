@@ -1,16 +1,13 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        html5chan
 // @namespace   https://github.com/queue-/html5chan
 // @description html5... on my 4chan?
 // 
 // @include     http://boards.4chan.org/*
 // @exclude     http://boards.4chan.org/f/*
-// @include     http://sys.4chan.org/*
 //
 // ==/UserScript==
 
-console.log(window);
-console.log(document);
 //script injection @require replacement
 //inserts the scripts as arguments, in order, into the <head>
 //scripts can be either a string, interpreted as a src attribute
@@ -124,19 +121,21 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	//extract thread info
 	function parse4chan() {
 		//detect whether this is board view or post view based on the existence of the [Return] link
-		if( $('a[accesskey]').length > 0 ) { 
-			thread = parseThread( $('form[name="delform"]').children() );
-			return {
-				board: false,
-				threads: [thread] };}
-		else { //viewing single thread
-			//reliable way to separate threads into separate collections of elements
-			threads = $('form[name="delform"] > br[clear="left"]').map(function () {
+		var isThread = $('a[accesskey]').length > 0;
+		return {
+			nav: $('#navtop').html(),
+			banner: $('div.logo img').attr('src'),
+			board: {
+				name: document.title.match(/\/(\w+)\//)[1], //easiest way to get it 
+				title: $('div.logo b').text(),
+				subtitle: $('div.logo font[size="1"]').html()
+			},
+			thread: isThread ? parseThread( $('form[name="delform"]').children() ) : undefined,
+			threads: !isThread ? $('form[name="delform"] > br[clear="left"]').map(function () { //reliable way to separate threads into separate collections of elements
 				return parseThread( $($(this).prevUntil("hr").get().reverse()) ); //reversed to maintain post order
-			}).get();
-			return {
-				board: true, 
-				threads: threads };}}
+			}).get() : undefined,
+			pages: $('table.pages td').eq(1).html() || undefined
+		};}
 	
 	console.time("extract threads"); console.profile();
 	var data = parse4chan();
@@ -162,7 +161,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	});
 	Handlebars.registerPartial('post', '<header> <h1> <input type="checkbox" value="delete" name="{{id}}"> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> <a href="{{url}}" class="permalink">No.{{id}}</a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <p class="comment"> {{4chancomment comment}} </p>');
 	Handlebars.registerPartial('thread','<article class="thread" id="{{op.id}}"> <div class="op post"> {{#with op}} {{> post}} {{/with}} </div> {{#if omittedReplies}}{{#if replies}}<footer>{{numReplies}} replies and {{imageReplies}} image replies. Latest {{replies.length}} shown.</footer>{{/if}}{{/if}} <div class="replies"> {{#each replies}} <article class="post reply" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article>');
-	var template = Handlebars.compile('{{#each threads}}{{>thread}}{{/each}}');
+	var template = Handlebars.compile('<header> <nav>{{{nav}}}</nav> <img src="{{banner}}" alt="4chan::" id="banner"/> <hgroup> <h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1> <h2>{{{board.subtitle}}}</h2> </hgroup> </header> <div id="threads"> {{#each threads}}{{>thread}}{{/each}} {{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }} </div> <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank"> <input type="hidden" value="3145728" name="MAX_FILE_SIZE"> <input type="hidden" value="regist" name="mode"> {{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}} <div><label for="name">Name: </label><input type="text" name="name" id="name" /></div> <div><label for="email">Email: </label><input type="text" id="email" name="email" /></div> <div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div> <div><label for="comment">Comment: </label><textarea name="com" id="comment" cols="48" rows="4"></textarea></div> <div><label>Verification: </label><div id="verification"></div></div> <div> <label for="image">Image: </label><input type="file" id="image" name="upfile"/> <label><input type="checkbox" value="on" name="spoiler"/> Spoiler Image?</label> </div> <div title="for file deletion"> <label for="password">Password: </label> <input id="password" type="password" maxlength="8" name="pwd"> </div> <div><button type="submit" value="Submit">Submit</button></div> <ul id="rules"> <li>Supported file types are: GIF, JPG, PNG </li> <li>Maximum file size allowed is 3072 KB. </li> <li>Images greater than 250x250 pixels will be thumbnailed. </li> <li>Read the <a href="http://www.4chan.org/rules#lit">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li> <li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li> </ul> </form> <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php"> <input name="mode" value="usrdel" type="hidden"> <label>Password <input name="pwd" size="8" maxlength="8" value="" type="password"></label> <button type="submit" value="Delete">Delete Post</button> <label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label> </form> {{#if pages}} <nav id="pages"> {{{pages}}} </nav> {{/if}}');
 	$('<div>',{id: "threads"}).css({
 		"float": "right",
 		width: "50%"
