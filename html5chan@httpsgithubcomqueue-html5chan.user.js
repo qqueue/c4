@@ -142,8 +142,9 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	/////////////////////////////////////////////////////////
 	console.time('handlebars');
 	Handlebars.registerHelper('datetime', function( time, options ) {
+		function pad(number) { var str = number.toString(); return str.length < 2 ? "0"+str : str; } //pad to 2 digits
 		var date = new Date(time);
-		return date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getMinutes();
+		return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+" "+pad(date.getHours())+":"+pad(date.getMinutes());
 	});
 	
 	Handlebars.registerPartial('post', '<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <button type="submit" form="reportform" name="no" value="{{id}}">[!]</button> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> <a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}>No.{{id}}</a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <p class="comment"> {{{comment}}} </p>');
