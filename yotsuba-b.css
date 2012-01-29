@@ -7,7 +7,9 @@ html {
 
 
 .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
-
+.op h1 {
+	font-size: 130%;
+}
 .thread {
 	padding-bottom: 5px;
 	border-bottom: 1px solid #B7C5D9;
@@ -35,6 +37,10 @@ a.permalink {
 	float: right;
 }
 
+a.permalink:hover {
+	text-decoration: underline;
+}
+
 .post .title {
 	color: #0f0c5d;
 	font-weight: 800;
@@ -60,7 +66,7 @@ a.permalink {
 	color: #B7C5D9;
 }
 
-.reply:after {
+.post:after {
     content: "";
     display: block;
     height: 0;

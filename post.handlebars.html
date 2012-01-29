@@ -7,7 +7,7 @@
 		<span class="tripcode">{{tripcode}}</span>
 		<span class="capcode">{{capcode}}</span>
 		<time pubdate datetime="{{time}}">{{datetime time}}</time>
-		<a href="{{url}}" class="permalink">No.{{id}}</a>
+		<a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}>No.{{id}}</a>
 	</h1>
 	{{#if image}}<div class="fileinfo">
 		<span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a>
