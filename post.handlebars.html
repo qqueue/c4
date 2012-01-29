@@ -10,7 +10,7 @@
 		<a href="{{url}}" class="permalink">No.{{id}}</a>
 	</h1>
 	{{#if image}}<div class="fileinfo">
-		<span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span>
+		<span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a>
 	</div>{{/if}}
 </header>
 {{#if image}}
@@ -21,5 +21,5 @@
 
 {{/if}}
 <p class="comment">
-	{{4chancomment comment}}
+	{{{comment}}}
 </p>

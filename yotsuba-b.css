@@ -21,8 +21,18 @@ html {
 	margin-top: 3px;
 }
 
-.replies {
-	
+.post:target, .thread:target .op {
+	background-color: #D6BAD0;
+}
+
+a.quotelink {
+	color: #d00;
+}
+
+a.permalink {
+	text-decoration: none;
+	color: inherit;
+	float: right;
 }
 
 .post .title {

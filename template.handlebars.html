@@ -10,6 +10,11 @@
 	{{#each threads}}{{>thread}}{{/each}}
 	{{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }}
 </div>
+{{#if pages}}
+<nav id="pages">
+	{{{pages}}} 
+</nav>
+{{/if}}
 <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank">
 	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 	<input type="hidden" value="regist" name="mode">
@@ -46,8 +51,3 @@
 	<input type="hidden" name="mode" value="report"/>
 	<!-- all the report buttons are part of this form -->
 </form>
-{{#if pages}}
-<nav id="pages">
-	{{{pages}}} 
-</nav>
-{{/if}}
