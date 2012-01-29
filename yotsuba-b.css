@@ -1,6 +1,3 @@
-/**
- * 4chan
- */
 html {
 	background: #EEF2FF;
 	min-height:100%;
@@ -9,15 +6,17 @@ html {
 }
 
 
-h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
+.post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
 
 .thread {
 	padding-bottom: 5px;
 	border-bottom: 1px solid #B7C5D9;
-	width: 50em;
 	overflow: auto;
 }
-
+.thread > footer {
+	clear: left;
+	text-align: right;
+}
 .post {
 	margin-top: 3px;
 }
@@ -26,6 +25,10 @@ h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: norma
 	
 }
 
+.post .title {
+	color: #0f0c5d;
+	font-weight: 800;
+}
 
 .reply {
 	background: #D6DAF0;
@@ -75,7 +78,11 @@ h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: norma
 
 .spoiler {
 	text-decoration: none;
+	color: black;
 	background: black;
+}
+.spoiler .greentext, .spoiler a {
+	color: black;
 }
 
 .spoiler:hover {
@@ -87,7 +94,6 @@ h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: norma
 	float: left;
 	margin: 3px 20px;
 	position: relative;
-	height: 100%;
 }
 
 .id {
@@ -101,4 +107,13 @@ h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: norma
 .capcode {
 	color: red;
 	font-weight: 800;
+}
+
+.post button[form="reportform"] {
+	float: right;
+	border: none;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+	background: transparent;
 }

@@ -1,6 +1,7 @@
 <header>
 	<h1>
 		<input type="checkbox" value="delete" name="{{id}}" form="delform">
+		<button type="submit" form="reportform" name="no" value="{{id}}">[!]</button>
 		<span class="title">{{title}}</span>
 		<a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>
@@ -15,7 +16,7 @@
 {{#if image}}
 
 {{#with image.thumb}}
-<a class="file" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a>
+<a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a>
 {{/with}}
 
 {{/if}}

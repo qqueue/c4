@@ -17,7 +17,7 @@
 	<div><label for="name">Name: </label><input type="text" name="name" id="name" /></div>
 	<div><label for="email">Email: </label><input type="text" id="email" name="email" /></div>
 	<div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div>
-	<div><label for="comment">Comment: </label><textarea name="com" id="comment" cols="48" rows="4"></textarea></div>
+	<div><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4"></textarea></div>
 	<div><label>Verification: </label><div id="verification"></div></div>
 	<div>
 		<label for="image">Image: </label><input type="file" id="image" name="upfile"/>
@@ -36,11 +36,15 @@
 		<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
 	</ul>
 </form>
-<form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php">
+<form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank">
 	<input name="mode" value="usrdel" type="hidden">
 	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label>
 	<button type="submit" value="Delete">Delete Post</button>
 	<label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label>
+</form>
+<form action="http://sys.4chan.org/{{board.name}}/imgboard.php"" id="reportform" method="GET" target="_blank">
+	<input type="hidden" name="mode" value="report"/>
+	<!-- all the report buttons are part of this form -->
 </form>
 {{#if pages}}
 <nav id="pages">
