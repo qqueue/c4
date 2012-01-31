@@ -209,6 +209,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			if( post.length > 0 ) {
 				post
 					.clone()
+						.find('.preview').remove().end() //strip existing previews
 						.data({post: post.attr('id')})
 						.attr('id', 'postpreview')
 						.css({
@@ -230,9 +231,12 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 				oldpreview = $('#p'+this.href.split('#')[1]);
 			if( post.length > 0 && oldpreview.length == 0) {
 				var newpreview = post.clone()
+					.find('.preview').remove().end() //strip existing previews
 					.attr('id', 'p'+post.attr('id'))
+					.addClass('preview')
+					.removeAttr('style') //get rid of existing styles
 					.css({border: "2px dotted #aaa"});
-				if( $(this).parent().is('b') ) { newpreview.insertBefore($(this).parent()); }
+				if( $(this).parent().is('b') ) { newpreview.insertBefore($(this).parent()); } //avoid nesting inside <b>
 				else { newpreview.insertBefore(this); }
 				return false; }
 			else if( oldpreview.length > 0 ) {
