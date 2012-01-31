@@ -15,7 +15,7 @@
 	{{{pages}}} 
 </nav>
 {{/if}}
-{{#if locked}}
+{{#if thread.locked}}
 <p>Thread closed.<br>You may not reply at this time.</p>
 {{else}}
 <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank">

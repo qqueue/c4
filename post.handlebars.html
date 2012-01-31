@@ -1,13 +1,18 @@
 <header>
 	<h1>
 		<input type="checkbox" value="delete" name="{{id}}" form="delform">
+		<button type="submit" form="reportform" name="no" value="{{id}}">[!]</button>
 		<span class="title">{{title}}</span>
 		<a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>
 		<span class="capcode">{{capcode}}</span>
 		<time pubdate datetime="{{time}}">{{datetime time}}</time>
-		<a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}>No.{{id}}</a>
-		<button type="submit" form="reportform" name="no" value="{{id}}">[!]</button>
+		{{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}}
+		<a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}>
+			No.{{id}}
+			{{#if sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}}
+			{{#if locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}}
+		</a>
 	</h1>
 	{{#if image}}<div class="fileinfo">
 		<span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a>
