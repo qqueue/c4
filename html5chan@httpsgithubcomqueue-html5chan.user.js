@@ -66,7 +66,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			.replace(/<span class="abbr">[^<]+<\/span>/,"[comment truncated]") //abbr message
 			.replace(/<span class="spoiler"[^>]+>/g,'<s class="spoiler">').replace(/<\/span>/g,"</s>") //spoilers
 			.replace(/<font class="unkfunc">/g,'<b class="greentext">').replace(/<\/font>/g,'</b>') //greentext
-			.replace(/http:\/\/[\w\.\-\/=&;?]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify links
+			.replace(/h(?!"|')ttp:\/\/[\w\.\-\/=&;?#]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify links
 	
 	//instead of relying on js's Date.parse function, which doesn't parse 12 as 2012
 	//this function pulls out numbers with regex
@@ -201,4 +201,6 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			);
 			return false;
 		});
+		
+		//
 });
