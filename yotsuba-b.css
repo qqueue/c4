@@ -37,6 +37,11 @@ a.permalink {
 	float: right;
 }
 
+a.saucelink {
+	color: inherit;
+	text-decoration: none;
+}
+
 a.permalink:hover {
 	text-decoration: underline;
 }
@@ -103,6 +108,10 @@ a.permalink:hover {
 
 .spoiler:hover {
 	color: white;
+}
+
+.spoiler:hover .greentext, .spoiler:hover a {
+	color:white;
 }
 
 .file {
