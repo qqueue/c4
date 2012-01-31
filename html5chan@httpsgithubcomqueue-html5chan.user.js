@@ -173,19 +173,23 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	//////////////////////////////////
 	
 	//image hover previews
+	$('<img>',{id: 'preview'}).css({
+		position: "absolute",
+		maxWidth: "100%",
+		maxHeight: "100%",
+	}).hide().appendTo('body');
 	$('#threads')
 		.on('mouseenter.html5chan', 'a.file', function (e) {
-			console.log('image preview');
-			$('<img>', {src: this.href, id: 'preview'}).css({
-				position: "absolute",
+			$('#preview').attr('src',this.href).css({
 				left: e.pageX+10,
-				top: e.pageY+10,
-				maxWidth: "100%" })
-			.appendTo('body'); })
+				top: e.pageY+10
+			})
+			.load(function() { $(this).show(); });} )
 		.on('mousemove.html5chan', 'a.file', function(e) {
 			$('#preview').css({
 				left: e.pageX+10,
 				top: e.pageY+10 }); })
 		.on('mouseleave.html5chan', 'a.file', function(e) {
-			$('#preview').remove(); });;
+			$('#preview').hide(); })
+
 });
