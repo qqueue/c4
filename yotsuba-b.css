@@ -64,7 +64,7 @@ ul.backlinks {
 }
 .backlinks li {
 	display: inline;
-	margin: 0 1em;
+	margin-right: 1em;
 }
 
 .reply {

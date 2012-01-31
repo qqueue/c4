@@ -162,7 +162,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	var template = Handlebars.compile('<header> <nav>{{{nav}}}</nav> <img src="{{banner}}" alt="4chan::" id="banner"/> <hgroup> <h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1> <h2>{{{board.subtitle}}}</h2> </hgroup> </header> <div id="threads"> {{#each threads}}{{>thread}}{{/each}} {{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }} </div> {{#if pages}} <nav id="pages"> {{{pages}}} </nav> {{/if}} {{#if thread.locked}} <p>Thread closed.<br>You may not reply at this time.</p> {{else}} <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank"> <input type="hidden" value="3145728" name="MAX_FILE_SIZE"> <input type="hidden" value="regist" name="mode"> {{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}} <div><label for="name">Name: </label><input type="text" name="name" id="name" /></div> <div><label for="email">Email: </label><input type="text" id="email" name="email" /></div> <div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div> <div><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4"></textarea></div> <div><label>Verification: </label><div id="verification"></div></div> <div> <label for="image">Image: </label><input type="file" id="image" name="upfile"/> <label><input type="checkbox" value="on" name="spoiler"/> Spoiler Image?</label> </div> <div title="for file deletion"> <label for="password">Password: </label> <input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}"> </div> <div><button type="submit" value="Submit">Submit</button></div> <ul id="rules"> <li>Supported file types are: GIF, JPG, PNG </li> <li>Maximum file size allowed is 3072 KB. </li> <li>Images greater than 250x250 pixels will be thumbnailed. </li> <li>Read the <a href="http://www.4chan.org/rules#lit">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li> <li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li> </ul> </form> {{/if}} <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank"> <input name="mode" value="usrdel" type="hidden"> <label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label> <button type="submit" value="Delete">Delete Post</button> <label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label> </form> <form action="http://sys.4chan.org/{{board.name}}/imgboard.php"" id="reportform" method="GET" target="_blank"> <input type="hidden" name="mode" value="report"/> <!-- all the report buttons are part of this form --> </form>');
 	$('body').replaceWith($('<body>',{id: data.board.name}).html(template(data)));
 	console.timeEnd('handlebars');
-	$('<style>').html('html { background: #EEF2FF; min-height:100%; font-family: sans-serif; font-size: 10pt; }   .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;} .op h1 { font-size: 130%; } .thread { padding-bottom: 5px; border-bottom: 1px solid #B7C5D9; overflow: auto; } .thread > footer { clear: left; text-align: right; } .post { margin-top: 3px; }  .post:target, .thread:target .op { background-color: #D6BAD0; }  .op { background-color: #EEF2FF; }  a.quotelink { color: #d00; }  a.permalink { text-decoration: none; color: inherit; float: right; }  a.saucelink { color: inherit; text-decoration: none; }  a.permalink:hover { text-decoration: underline; }  .post .title { color: #0f0c5d; font-weight: 800; }  .post footer { clear:both; } ul.backlinks { margin: 0; padding: 0; } .backlinks li { display: inline; margin: 0 1em; }  .reply { background: #D6DAF0; padding: 2px; margin-left: 1.5em; border-color: #B7C5D9; border-style: solid; border-width: 0 1px 1px 0; clear: both; }   .reply:before { content: ">>"; display: block; height: 0; margin-left: -1.5em; font-size: 10pt; color: #B7C5D9; }  .post:after { content: ""; display: block; height: 0; clear: both; visibility: hidden; }  .comment { padding: 0 1em ; margin: 1em 40px; }  .poster { color:#117743; font-weight: 800; }  .tripcode { color: #228854; } .greentext { font-weight: normal; color: #789922; }  .spoiler { text-decoration: none; color: black; background: black; } .spoiler .greentext, .spoiler a { color: black; }  .spoiler:hover { color: white; }  .spoiler:hover .greentext, .spoiler:hover a { color:white; }  .file { display: block; float: left; margin: 3px 20px; position: relative; }  .id { text-decoration: none; color: inherit; }  .id:hover { color: red; } .capcode { color: red; font-weight: 800; }  .post button[form="reportform"] { float: right; border: none; padding: 0; margin: 0; cursor: pointer; background: transparent; }').appendTo('head');
+	$('<style>').html('html { background: #EEF2FF; min-height:100%; font-family: sans-serif; font-size: 10pt; }   .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;} .op h1 { font-size: 130%; } .thread { padding-bottom: 5px; border-bottom: 1px solid #B7C5D9; overflow: auto; } .thread > footer { clear: left; text-align: right; } .post { margin-top: 3px; }  .post:target, .thread:target .op { background-color: #D6BAD0; }  .op { background-color: #EEF2FF; }  a.quotelink { color: #d00; }  a.permalink { text-decoration: none; color: inherit; float: right; }  a.saucelink { color: inherit; text-decoration: none; }  a.permalink:hover { text-decoration: underline; }  .post .title { color: #0f0c5d; font-weight: 800; }  .post footer { clear:both; } ul.backlinks { margin: 0; padding: 0; } .backlinks li { display: inline; margin-right: 1em; }  .reply { background: #D6DAF0; padding: 2px; margin-left: 1.5em; border-color: #B7C5D9; border-style: solid; border-width: 0 1px 1px 0; clear: both; }   .reply:before { content: ">>"; display: block; height: 0; margin-left: -1.5em; font-size: 10pt; color: #B7C5D9; }  .post:after { content: ""; display: block; height: 0; clear: both; visibility: hidden; }  .comment { padding: 0 1em ; margin: 1em 40px; }  .poster { color:#117743; font-weight: 800; }  .tripcode { color: #228854; } .greentext { font-weight: normal; color: #789922; }  .spoiler { text-decoration: none; color: black; background: black; } .spoiler .greentext, .spoiler a { color: black; }  .spoiler:hover { color: white; }  .spoiler:hover .greentext, .spoiler:hover a { color:white; }  .file { display: block; float: left; margin: 3px 20px; position: relative; }  .id { text-decoration: none; color: inherit; }  .id:hover { color: red; } .capcode { color: red; font-weight: 800; }  .post button[form="reportform"] { float: right; border: none; padding: 0; margin: 0; cursor: pointer; background: transparent; }').appendTo('head');
 	//create recaptcha with script already included on page (using 4chan's public key)
 	if( !(data.thread && data.thread.locked) ) Recaptcha.create("6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc", "verification", {theme: "clean"});
 	//rescroll to target element
@@ -207,19 +207,24 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 		.on('mouseenter.html5chan.postpreview', 'a.quotelink', function (e) {
 			var post = $('#'+this.href.split('#')[1]);
 			if( post.length > 0 ) {
-				post.clone()
-					.attr('id', 'postpreview')
-					.css({
-						position: "absolute",
-						left: e.pageX+10,
-						top: e.pageY-post.height()
-					}).appendTo('body'); }})
+				post
+					.clone()
+						.data({post: post.attr('id')})
+						.attr('id', 'postpreview')
+						.css({
+							position: "absolute",
+							left: e.pageX+10,
+							top: e.pageY-post.height()
+						}).appendTo('body');
+				post.css({outline: '2px dotted blue'}); }})
 		.on('mousemove.html5chan.postpreview', 'a.quotelink', function(e) {
 			$('#postpreview').css({
 				left: e.pageX+10,
 				top: e.pageY+-$('#postpreview').height() }); })
 		.on('mouseleave.html5chan.postpreview', 'a.quotelink', function(e) {
-			$('#postpreview').remove(); })
+			var preview = $('#postpreview');
+			$('#'+preview.data('post')).removeAttr('style'); //remove border
+			preview.remove(); })
 		.on('click.html5.inlinepostpreview','a.quotelink', function() {
 			var post = $('#'+this.href.split('#')[1]),
 				oldpreview = $('#p'+this.href.split('#')[1]);
@@ -242,7 +247,6 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			var post = this;
 			$(post).find('a.quotelink').each(function() {
 				if( /^#\d+/.test(this.hash) ) { //relative postlink
-					
 					$(this.hash).find('.backlinks').append(
 						$('<li>').append($('<a>',{'class': 'quotelink', href: '#'+post.id}).html('&gt;&gt;'+post.id)));
 				}
