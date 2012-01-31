@@ -167,4 +167,25 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	if( !(data.thread && data.thread.locked) ) Recaptcha.create("6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc", "verification", {theme: "clean"});
 	//rescroll to target element
 	window.location.hash = window.location.hash;
+	
+	///////////////////////////////////
+	// Features
+	//////////////////////////////////
+	
+	//image hover previews
+	$('#threads')
+		.on('mouseenter.html5chan', 'a.file', function (e) {
+			console.log('image preview');
+			$('<img>', {src: this.href, id: 'preview'}).css({
+				position: "absolute",
+				left: e.pageX+10,
+				top: e.pageY+10,
+				maxWidth: "100%" })
+			.appendTo('body'); })
+		.on('mousemove.html5chan', 'a.file', function(e) {
+			$('#preview').css({
+				left: e.pageX+10,
+				top: e.pageY+10 }); })
+		.on('mouseleave.html5chan', 'a.file', function(e) {
+			$('#preview').remove(); });;
 });
