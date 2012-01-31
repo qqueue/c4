@@ -1,5 +1,5 @@
-<article class="thread" id="{{op.id}}" tabindex="1">
-	<div class="op post"> {{#with op}} {{> post}} {{/with}} </div>
+<article class="thread" id="thread{{op.id}}" tabindex="1">
+	<div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div>
 	{{#if omittedReplies}}{{#if replies}}<footer>{{numReplies}} replies and {{imageReplies}} image replies. Latest {{replies.length}} shown.</footer>{{/if}}{{/if}}
 	<div class="replies">
 		{{#each replies}}
