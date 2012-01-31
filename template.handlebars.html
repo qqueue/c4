@@ -15,6 +15,9 @@
 	{{{pages}}} 
 </nav>
 {{/if}}
+{{#if locked}}
+<p>Thread closed.<br>You may not reply at this time.</p>
+{{else}}
 <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank">
 	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 	<input type="hidden" value="regist" name="mode">
@@ -41,6 +44,7 @@
 		<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
 	</ul>
 </form>
+{{/if}}
 <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank">
 	<input name="mode" value="usrdel" type="hidden">
 	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label>
