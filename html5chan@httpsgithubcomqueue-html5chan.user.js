@@ -61,11 +61,12 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 				width: parseInt(thumb.attr('width')),
 				height: parseInt(thumb.attr('height')),}}};
 	
-	function cleanCommentText (html) {
+	function parseCommentText (html) {
 		return html
 			.replace(/<span class="abbr">[^<]+<\/span>/,"[comment truncated]") //abbr message
 			.replace(/<span class="spoiler"[^>]+>/g,'<s class="spoiler">').replace(/<\/span>/g,"</s>") //spoilers
-			.replace(/<font class="unkfunc">/g,'<b class="greentext">').replace(/<\/font>/g,'</b>'); } //greentext
+			.replace(/<font class="unkfunc">/g,'<b class="greentext">').replace(/<\/font>/g,'</b>') //greentext
+			.replace(/http:\/\/[\w\.\-\/=&;?]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify links
 	
 	//instead of relying on js's Date.parse function, which doesn't parse 12 as 2012
 	//this function pulls out numbers with regex
@@ -97,7 +98,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 			sage: sage,
 			tripcode: comment.filter('.postertrip').text() || comment.filter('.linkmail').find('.postertrip').text() ||undefined, //poster trips with emails are wrapped in the anchor for some reason
 			capcode: (op ? comment.filter('.commentpostername').text() : comment.filter('.commentpostername').eq(1).text()) || undefined, //replies have two commentpostername spans
-			comment: cleanCommentText(comment.filter('blockquote').html()) }}
+			comment: parseCommentText(comment.filter('blockquote').html()) }}
 	
 	//takes the comments elements
 	function parseThread(thread) {
