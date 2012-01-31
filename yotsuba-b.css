@@ -55,6 +55,18 @@ a.permalink:hover {
 	font-weight: 800;
 }
 
+.post footer {
+	clear:both;
+}
+ul.backlinks {
+	margin: 0;
+	padding: 0;
+}
+.backlinks li {
+	display: inline;
+	margin: 0 1em;
+}
+
 .reply {
 	background: #D6DAF0;
 	padding: 2px;
