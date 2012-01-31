@@ -191,5 +191,14 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 				top: e.pageY+10 }); })
 		.on('mouseleave.html5chan', 'a.file', function(e) {
 			$('#preview').hide(); })
-
+		//click for image replacement
+		.on('click.html5chan', 'a.file', function() {
+			$(this).find('img').hide().after( 
+				$('<img>',{src: this.href} ).click(function () {
+					$(this).siblings().show().end().remove();
+					return false;
+				})
+			);
+			return false;
+		});
 });
