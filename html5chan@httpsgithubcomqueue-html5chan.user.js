@@ -63,10 +63,10 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 	
 	function parseCommentText (html) {
 		return html
-			.replace(/<span class="abbr">[^<]+<\/span>/,"[comment truncated]") //abbr message
 			.replace(/<span class="spoiler"[^>]+>/g,'<s class="spoiler">').replace(/<\/span>/g,"</s>") //spoilers
 			.replace(/<font class="unkfunc">/g,'<b class="greentext">').replace(/<\/font>/g,'</b>') //greentext
-			.replace(/http:\/\/[\w\.\-\/=&;?#]+(?=$|[ <])/g,'<a href="$&" target="_blank">$&</a>'); } //linkify links (without linkifying cross-board links (difficult, with lookahead at the end of the regex)
+			.replace(/http:\/\/boards.4chan.org/g, "") //strips the url from cross-board links so they don't get linkified
+			.replace(/http:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify other links
 	
 	//instead of relying on js's Date.parse function, which doesn't parse 12 as 2012
 	//this function pulls out numbers with regex
