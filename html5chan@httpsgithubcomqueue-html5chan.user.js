@@ -81,7 +81,7 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 				.replace(/http:\/\/boards.4chan.org/g, "") //strips the url from cross-board links so they don't get linkified
 				.replace(/http:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify other links
 	
-	//instead of relying on js's Date.parse function, which doesn't parse 12 as 2012
+	//instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 	//this function pulls out numbers with regex
 	function parse4ChanDate(dateString) {	
 		//perfect place for destructuring assignment
@@ -92,33 +92,50 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 		                         (date[3]+(((new Date()).getTimezoneOffset() == (new Date((new Date()).setMonth(6))).getTimezoneOffset()) ? 4 : 5))%24, //DST detection
 		                         date[4]));}
 	
-	//takes the post's elements, and a flag for OP's slightly different format
-	function parsePost(post,op) {
-		//cached jquery
-		var poster = post.filter(op ? '.postername' : '.commentpostername' ),
-		    email = poster.find('a.linkmail').attr('href'),
-		    sage = email ? /^mailto:sage$/i.test(email) : false;
-		return {
-			op: op, //useful flag for rendering
-			id: post.filter('input').attr('name'),
-			url: post.find('a.quotejs').eq(0).attr('href'),
-			time: parse4ChanDate(op ? post.filter('.posttime').text() : post.parent().clone().children().remove().end().text()), //op has wrapper, but replies don't, so we need just the text
-			title: post.filter(op ? '.filetitle' : '.replytitle' ).text() || undefined,
-			image: extractImageInfo(post.filter('a[target="_blank"]'),post.filter('.filesize')),
-			deletedImage: post.filter('img[alt="File deleted."]').length > 0,
-			poster: poster.eq(0).text(),
-			email: typeof email == "undefined" ? email : email.substring(7), //if email is defined, strip mailto:
-			sage: sage,
-			tripcode: post.filter('.postertrip').text() || post.filter('.linkmail').find('.postertrip').text() ||undefined, //poster trips with emails are wrapped in the anchor for some reason
-			capcode: (op ? post.filter('.commentpostername').text() : post.filter('.commentpostername').eq(1).text()) || undefined, //replies have two commentpostername spans
-			comment: parseComment(post.filter('blockquote')) }}
+	$.fn.immediateText = function () { return this.parent().clone().children().remove().end().text(); }
+	$.fn.exists = function (selector) { return this.filter(selector).length > 0; }
+	//constructor for post, from element and 'op?' flag
+	function Post($,op) {
+		var poster = $.filter(op ? '.postername' : '.commentpostername' ),
+		    email = poster.find('a.linkmail').attr('href');
+	
+		this.op = 
+			op;
+		this.sage = 
+			email ? /^mailto:sage$/i.test(email) : false;
+		this.email =
+			email && email.substring(7); //if email is defined, strip mailto:
+		this.id =
+			$.filter('input').attr('name');
+		this.url = //op has wrapper, but replies don't, so we need just the text
+			$.find('a.quotejs').eq(0).attr('href');
+		this.time = 
+			parse4ChanDate(op ? $.filter('.posttime').text() : $.immediateText());
+		this.title = 
+			$.filter(op ? '.filetitle' : '.replytitle' ).text()
+			|| undefined;
+		this.image =  
+			extractImageInfo($.filter('a[target="_blank"]'),$.filter('.filesize'));
+		this.imageDeleted = 
+			$.exists('img[alt="File deleted."]');
+		this.poster = 
+			poster.eq(0).text();
+		this.tripcode = //poster trips with emails are wrapped in the anchor
+			$.filter('.postertrip').text()
+			|| $.filter('.linkmail').find('.postertrip').text()
+			|| undefined;
+		this.capcode = //replies have two commentpostername spans
+			($.filter('.commentpostername').eq(op ? 0 : 1).text())
+			|| undefined;
+		this.comment = parseComment( $.filter('blockquote') );
+	}
 	
 	//takes the comments elements
 	function parseThread(thread) {
 		var omittedReplies = parseInt(thread.filter('.omittedposts').text().match(/\d+(?= posts)/), 10) || 0,
 		    omittedImageReplies = parseInt(thread.filter('.omittedposts').text().match(/\d+(?= image replies)/), 10) || 0,
-		    replies = thread.find('td.reply').map(function() { return parsePost($(this).children(),false);}).get(),
-			op = parsePost(thread,true);
+		    replies = thread.find('td.reply').map(function() { return new Post($(this).children(),false);}).get(),
+			op = new Post(thread,true);
 			//add some additional properties to op (for proper rendering)
 			op.locked = (thread.find('img[alt="closed"]').length > 0); //detect based on lock image
 			op.sticky = (thread.find('img[alt="sticky"]').length > 0); //detect based on sticky image
