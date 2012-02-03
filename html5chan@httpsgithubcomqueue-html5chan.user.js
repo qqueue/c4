@@ -61,12 +61,25 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 				width: parseInt(thumb.attr('width')),
 				height: parseInt(thumb.attr('height')),}}};
 	
-	function parseCommentText (html) {
-		return html
-			.replace(/<span class="spoiler"[^>]+>/g,'<s class="spoiler">').replace(/<\/span>/g,"</s>") //spoilers
-			.replace(/<font class="unkfunc">/g,'<b class="greentext">').replace(/<\/font>/g,'</b>') //greentext
-			.replace(/http:\/\/boards.4chan.org/g, "") //strips the url from cross-board links so they don't get linkified
-			.replace(/http:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify other links
+	function parseComment (comment) {
+		return comment.clone() //don't operate on actual dom elements for speed
+			.find('font > .quotelink')
+				.removeAttr('onclick')
+				.unwrap()
+			.end()
+			.find('font.unkfunc')
+				.replaceWith(function () {
+					return $('<b>', {"class": "greentext"}).html($(this).html());
+				})
+			.end()
+			.find('span.spoiler')
+				.replaceWith(function () {
+					return $('<s>',{"class":"spoiler"}).html($(this).html());
+				})
+			.end()
+			.html()
+				.replace(/http:\/\/boards.4chan.org/g, "") //strips the url from cross-board links so they don't get linkified
+				.replace(/http:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify other links
 	
 	//instead of relying on js's Date.parse function, which doesn't parse 12 as 2012
 	//this function pulls out numbers with regex
@@ -79,33 +92,33 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 		                         (date[3]+(((new Date()).getTimezoneOffset() == (new Date((new Date()).setMonth(6))).getTimezoneOffset()) ? 4 : 5))%24, //DST detection
 		                         date[4]));}
 	
-	//takes the comment's elements, and a flag for OP's slightly different format
-	function parseComment(comment,op) {
+	//takes the post's elements, and a flag for OP's slightly different format
+	function parsePost(post,op) {
 		//cached jquery
-		var poster = comment.filter(op ? '.postername' : '.commentpostername' ),
+		var poster = post.filter(op ? '.postername' : '.commentpostername' ),
 		    email = poster.find('a.linkmail').attr('href'),
 		    sage = email ? /^mailto:sage$/i.test(email) : false;
 		return {
 			op: op, //useful flag for rendering
-			id: comment.filter('input').attr('name'),
-			url: comment.find('a.quotejs').eq(0).attr('href'),
-			time: parse4ChanDate(op ? comment.filter('.posttime').text() : comment.parent().clone().children().remove().end().text()), //op has wrapper, but replies don't, so we need just the text
-			title: comment.filter(op ? '.filetitle' : '.replytitle' ).text() || undefined,
-			image: extractImageInfo(comment.filter('a[target="_blank"]'),comment.filter('.filesize')),
-			deletedImage: comment.filter('img[alt="File deleted."]').length > 0,
+			id: post.filter('input').attr('name'),
+			url: post.find('a.quotejs').eq(0).attr('href'),
+			time: parse4ChanDate(op ? post.filter('.posttime').text() : post.parent().clone().children().remove().end().text()), //op has wrapper, but replies don't, so we need just the text
+			title: post.filter(op ? '.filetitle' : '.replytitle' ).text() || undefined,
+			image: extractImageInfo(post.filter('a[target="_blank"]'),post.filter('.filesize')),
+			deletedImage: post.filter('img[alt="File deleted."]').length > 0,
 			poster: poster.eq(0).text(),
 			email: typeof email == "undefined" ? email : email.substring(7), //if email is defined, strip mailto:
 			sage: sage,
-			tripcode: comment.filter('.postertrip').text() || comment.filter('.linkmail').find('.postertrip').text() ||undefined, //poster trips with emails are wrapped in the anchor for some reason
-			capcode: (op ? comment.filter('.commentpostername').text() : comment.filter('.commentpostername').eq(1).text()) || undefined, //replies have two commentpostername spans
-			comment: parseCommentText(comment.filter('blockquote').html()) }}
+			tripcode: post.filter('.postertrip').text() || post.filter('.linkmail').find('.postertrip').text() ||undefined, //poster trips with emails are wrapped in the anchor for some reason
+			capcode: (op ? post.filter('.commentpostername').text() : post.filter('.commentpostername').eq(1).text()) || undefined, //replies have two commentpostername spans
+			comment: parseComment(post.filter('blockquote')) }}
 	
 	//takes the comments elements
 	function parseThread(thread) {
 		var omittedReplies = parseInt(thread.filter('.omittedposts').text().match(/\d+(?= posts)/), 10) || 0,
 		    omittedImageReplies = parseInt(thread.filter('.omittedposts').text().match(/\d+(?= image replies)/), 10) || 0,
-		    replies = thread.find('td.reply').map(function() { return parseComment($(this).children(),false);}).get(),
-			op = parseComment(thread,true);
+		    replies = thread.find('td.reply').map(function() { return parsePost($(this).children(),false);}).get(),
+			op = parsePost(thread,true);
 			//add some additional properties to op (for proper rendering)
 			op.locked = (thread.find('img[alt="closed"]').length > 0); //detect based on lock image
 			op.sticky = (thread.find('img[alt="sticky"]').length > 0); //detect based on sticky image
