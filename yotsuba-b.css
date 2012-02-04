@@ -19,7 +19,7 @@ html {
 	margin-top: 3px;
 }
 
-.post:target, {
+.post:target {
 	background-color: #D6BAD0;
 }
 
