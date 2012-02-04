@@ -37,20 +37,9 @@ a.quotelink, a.backlink {
 	color: #d00;
 }
 
-a.inlinedlink {
+a.inlinedlink, strong.recursivelink {
 	font-weight: bold;
 	color: black;
-	border: 1px solid #aaa;
-	border-left-width: 0;
-}
-
-a.inlinedlink.quotelink {
-	border-bottom-width: 1px;
-}
-
-a.inlinedlink.backlink {
-	border-bottom-width: 0;
-	border-top-width: 1px;
 }
 
 a.permalink {
@@ -76,12 +65,9 @@ a.permalink:hover, a.saucelink:hover {
 .post footer {
 	clear:both;
 }
-ul.backlinks {
-	margin: 0;
-	padding: 0;
-}
-.backlinks li {
-	display: inline;
+
+.backlink {
+	display: inline-block;
 	margin-right: 1em;
 }
 
@@ -170,7 +156,8 @@ ul.backlinks {
 }
 
 #postpreview  {
-	border: 3px dashed #aaa;
+	outline: 3px dashed #aaa;
+	margin: 0;
 }
 #postpreview:before, .reply.inline:before {
 	display: none;
@@ -194,7 +181,7 @@ ul.backlinks {
 	padding: 0 1em;
 }
 
-.inline .backlinks >li>.recursivelink {
+.inline .backlinks >recursivelink {
 	opacity: 0;
 }
 

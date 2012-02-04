@@ -110,7 +110,7 @@ function parseComment (comment) {
 			})
 		.end()
 		.find('a.quotelink').each(function () {
-			if( /(\d+)#\1/.test(this.href) ) { //if the path and hash match exactly
+			if( /^(\d+)#\1/.test($(this).attr('href')) ) { //if the path and hash match exactly
 				$(this).addClass('oplink');
 			}
 		})
@@ -239,12 +239,12 @@ Handlebars.registerHelper('datetime', function( time, options ) {
 	return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+" "+pad(date.getHours())+":"+pad(date.getMinutes());
 });
 
-Handlebars.registerPartial('post', '<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <button type="submit" form="reportform" name="no" value="{{id}}">[!]</button> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> {{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}} <a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}> No.{{id}} {{#if sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}} {{#if locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}} </a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <div class="comment"> {{{comment}}} </div>  <footer> <ul class="backlinks"></ul> </footer>');
+Handlebars.registerPartial('post', '<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <button type="submit" form="reportform" name="no" value="{{id}}">[!]</button> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> {{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}} <a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}> No.{{id}} {{#if sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}} {{#if locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}} </a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <div class="comment"> {{{comment}}} </div>  <footer class="backlinks"> </footer>');
 Handlebars.registerPartial('thread','<article class="thread" id="thread{{op.id}}" tabindex="1"> <div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div> {{#if omittedReplies}}<div class="omitted-replies">{{omittedReplies}} replies {{#if omittedImageReplies}}and {{omittedImageReplies}} image replies{{/if}} omitted. Latest {{replies.length}} shown.</div>{{/if}} <div class="replies"> {{#each replies}} <article class="post reply" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article>');
-var template = Handlebars.compile('<header> <nav>{{{nav}}}</nav> <img src="{{banner}}" alt="4chan::" id="banner"/> <hgroup> <h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1> <h2>{{{board.subtitle}}}</h2> </hgroup> </header> <div id="threads"> {{#each threads}}{{>thread}}{{/each}} {{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }} </div> {{#if pages}} <nav id="pages"> {{{pages}}} </nav> {{/if}} {{#if thread.locked}} <p>Thread closed.<br>You may not reply at this time.</p> {{else}} <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank"> <input type="hidden" value="3145728" name="MAX_FILE_SIZE"> <input type="hidden" value="regist" name="mode"> {{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}} <div><label for="name">Name: </label><input type="text" name="name" id="name" /></div> <div><label for="email">Email: </label><input type="text" id="email" name="email" /></div> <div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div> <div><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4"></textarea></div> <div><label>Verification: </label><div id="verification"></div></div> <div> <label for="image">Image: </label><input type="file" id="image" name="upfile"/> <label><input type="checkbox" value="on" name="spoiler"/> Spoiler Image?</label> </div> <div title="for file deletion"> <label for="password">Password: </label> <input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}"> </div> <div><button type="submit" value="Submit">Submit</button></div> <ul id="rules"> <li>Supported file types are: GIF, JPG, PNG </li> <li>Maximum file size allowed is 3072 KB. </li> <li>Images greater than 250x250 pixels will be thumbnailed. </li> <li>Read the <a href="http://www.4chan.org/rules#lit">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li> <li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li> </ul> </form> {{/if}} <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank"> <input name="mode" value="usrdel" type="hidden"> <label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label> <button type="submit" value="Delete">Delete Post</button> <label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label> </form> <form action="http://sys.4chan.org/{{board.name}}/imgboard.php"" id="reportform" method="GET" target="_blank"> <input type="hidden" name="mode" value="report"/> <!-- all the report buttons are part of this form --> </form>');
+var template = Handlebars.compile('<header> <nav>{{{nav}}}</nav> <img src="{{banner}}" alt="4chan::" id="banner"/> <hgroup> <h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1> <h2>{{{board.subtitle}}}</h2> </hgroup> </header> <div id="threads"> {{#each threads}}{{>thread}}{{/each}} {{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }} </div> {{#if pages}} <nav id="pages"> {{{pages}}} </nav> {{/if}} {{#if thread.locked}} <p>Thread closed.<br>You may not reply at this time.</p> {{else}} <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank"> <input type="hidden" value="3145728" name="MAX_FILE_SIZE"> <input type="hidden" value="regist" name="mode"> {{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}} <div><label for="name">Name: </label><input type="text" name="name" id="name" /></div> <div><label for="email">Email: </label><input type="text" id="email" name="email" /></div> <div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div> <div><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4"></textarea></div> <div><label>Verification: </label><div id="verification"></div></div> <div> <label for="image">Image: </label><input type="file" id="image" name="upfile"/> <label><input type="checkbox" value="on" name="spoiler"/> Spoiler Image?</label> </div> <div title="for file deletion"> <label for="password">Password: </label> <input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}"> </div> <div><button type="submit" value="Submit">Submit</button></div> <ul id="rules"> <li>Supported file types are: GIF, JPG, PNG </li> <li>Maximum file size allowed is 3072 KB. </li> <li>Images greater than 250x250 pixels will be thumbnailed. </li> <li>Read the <a href="http://www.4chan.org/rules#lit">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li> <li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li> </ul> </form> {{/if}} <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank"> <input name="mode" value="usrdel" type="hidden"> <label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label> <button type="submit" value="Delete">Delete Post</button> <label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label> </form> <form action="http://sys.4chan.org/{{board.name}}/imgboard.php" id="reportform" method="GET" target="_blank"> <input type="hidden" name="mode" value="report"/> <!-- all the report buttons are part of this form --> </form>');
 $('body').replaceWith($('<body>',{id: data.board.name}).html(template(data)));
 console.timeEnd('handlebars');
-$('<style>').html('html { background: #EEF2FF; min-height:100%; font-family: sans-serif; font-size: 10pt; }  .hovered { outline: 3px dashed blue; }  .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;} .op>header>h1 { font-size: 130%; } .thread { padding-bottom: 5px; border-bottom: 1px solid #B7C5D9; } .omitted-replies { clear: left; text-align: right; } .post { margin-top: 3px; }  .post:target, .thread:target .op { background-color: #D6BAD0; }  .op { background-color: #EEF2FF; }  a.quotelink, a.backlink { color: #d00; }  a.inlinedlink { font-weight: bold; color: black; border: 1px solid #aaa; border-left-width: 0; }  a.inlinedlink.quotelink { border-bottom-width: 1px; }  a.inlinedlink.backlink { border-bottom-width: 0; border-top-width: 1px; }  a.permalink { text-decoration: none; color: inherit; float: right; }  a.saucelink { color: inherit; text-decoration: none; }  a.permalink:hover, a.saucelink:hover { text-decoration: underline; }  .post .title { color: #0f0c5d; font-weight: 800; }  .post footer { clear:both; } ul.backlinks { margin: 0; padding: 0; } .backlinks li { display: inline; margin-right: 1em; }  .reply { background: #D6DAF0; padding: 2px; margin-left: 1.5em; border-color: #B7C5D9; border-style: solid; border-width: 0 1px 1px 0; clear: both; }   .reply:before { content: ">>"; display: block; height: 0; margin-left: -1.5em; font-size: 10pt; color: #B7C5D9; }  .comment { padding: 0 1em ; margin: 1em 40px; }  .poster { color:#117743; font-weight: 800; }  .tripcode { color: #228854; } .greentext { font-weight: normal; color: #789922; }  .spoiler { text-decoration: none; color: black; background: black; } .spoiler .greentext, .spoiler a { color: black; }  .spoiler:hover { color: white; }  .spoiler:hover .greentext, .spoiler:hover a { color:white; }  .file { display: block; float: left; margin: 3px 20px; position: relative; }  .id { text-decoration: none; color: inherit; }  .id:hover { color: red; } .capcode { color: red; font-weight: 800; }  .post button[form="reportform"] { float: right; border: none; padding: 0; margin: 0; cursor: pointer; background: transparent; }  #postpreview  { border: 3px dashed #aaa; } #postpreview:before, .reply.inline:before { display: none; }  .post.inline { margin-left: -1px; background-color: rgba(255,255,255,.1); border: 1px solid #aaa; border-left-width: 0; padding-left: 0; }  .post.inline .comment { padding-left: 0; margin-left: 0; }  .backlink+.post.inline>.comment { margin: 1em 40px; padding: 0 1em; }  .inline .backlinks > li >.recursivelink { opacity: 0; }  .oplink:after { content: " (OP)"; }').appendTo('head');
+$('<style>').html('html { background: #EEF2FF; min-height:100%; font-family: sans-serif; font-size: 10pt; }  .hovered { outline: 3px dashed blue; }  .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;} .op>header>h1 { font-size: 130%; } .thread { padding-bottom: 5px; border-bottom: 1px solid #B7C5D9; } .omitted-replies { clear: left; text-align: right; } .post { margin-top: 3px; }  .post:target, .thread:target .op { background-color: #D6BAD0; }  .op { background-color: #EEF2FF; }  a.quotelink, a.backlink { color: #d00; }  a.inlinedlink, strong.recursivelink { font-weight: bold; color: black; }  a.permalink { text-decoration: none; color: inherit; float: right; }  a.saucelink { color: inherit; text-decoration: none; }  a.permalink:hover, a.saucelink:hover { text-decoration: underline; }  .post .title { color: #0f0c5d; font-weight: 800; }  .post footer { clear:both; }  .backlink { display: inline-block; margin-right: 1em; }  .reply { background: #D6DAF0; padding: 2px; margin-left: 1.5em; border-color: #B7C5D9; border-style: solid; border-width: 0 1px 1px 0; clear: both; }   .reply:before { content: ">>"; display: block; height: 0; margin-left: -1.5em; font-size: 10pt; color: #B7C5D9; }  .comment { padding: 0 1em ; margin: 1em 40px; }  .poster { color:#117743; font-weight: 800; }  .tripcode { color: #228854; } .greentext { font-weight: normal; color: #789922; }  .spoiler { text-decoration: none; color: black; background: black; } .spoiler .greentext, .spoiler a { color: black; }  .spoiler:hover { color: white; }  .spoiler:hover .greentext, .spoiler:hover a { color:white; }  .file { display: block; float: left; margin: 3px 20px; position: relative; }  .id { text-decoration: none; color: inherit; }  .id:hover { color: red; } .capcode { color: red; font-weight: 800; }  .post button[form="reportform"] { float: right; border: none; padding: 0; margin: 0; cursor: pointer; background: transparent; }  #postpreview  { outline: 3px dashed #aaa; margin: 0; } #postpreview:before, .reply.inline:before { display: none; }  .post.inline { margin-left: -1px; background-color: rgba(255,255,255,.1); border: 1px solid #aaa; border-left-width: 0; padding-left: 0; }  .post.inline .comment { padding-left: 0; margin-left: 0; }  .backlink+.post.inline > .comment { margin: 1em 40px; padding: 0 1em; }  .inline .backlinks >recursivelink { opacity: 0; }  .oplink:after { content: " (OP)"; }').appendTo('head');
 //create recaptcha with script already included on page (using 4chan's public key)
 if( !(data.thread && data.thread.locked) ) Recaptcha.create("6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc", "verification", {theme: "clean"});
 //rescroll to target element if this page hasn't been loaded before
@@ -268,7 +268,10 @@ $('#threads')
 			src: this.href,
 			alt: this.href+" (Failed to load)"}
 		)
-		.css({
+		.constrainY({
+			left: e.pageX+10,
+			top: e.pageY+10
+		}, 10).css({
 			maxHeight: $(window).height() - 20,
 			maxWidth: $(window).width() - e.pageX - 20
 		})
@@ -298,7 +301,7 @@ $('.post').each(function() {
 			if( !backlinks[quoter.id] ) {
 				backlinks[quoter.id] = true;
 				quoted.find('.backlinks').append(
-					$('<li>').append($('<a>',{'class': 'backlink quotelink', href: '#'+quoter.id}).html('&gt;&gt;'+quoter.id)));
+					$('<a>',{'class': 'backlink quotelink', href: '#'+quoter.id}).html('&gt;&gt;'+quoter.id));
 			}
 		}
 	});
@@ -319,21 +322,29 @@ $('#threads')
 					.removeClass('hovered') //if it exists
 					.find('a.quotelink[href$=#'+hostid+']') //replace matching reply link
 						.replaceWith(function() {
-							return $('<strong>',{'class': 'recursivelink'}).html($(this).html());
+							return $('<strong>',{'class': 'recursivelink'})
+								.html($(this).html())
+								.addClass(this.className);
 						}).end()
 					.attr('id', 'postpreview')
-					.css({maxWidth: $(window).width - e.pageX - 10})
 					.appendTo('body');
 			post.addClass('hovered');
+			$this.trigger('mousemove.html5chan.postpreview');
 		}
 	})
 	.on('mousemove.html5chan.postpreview', 'a.quotelink', function(e) {
-		$('#postpreview')
+		var preview = $('#postpreview'),
+			height = preview.height(),
+			width = preview.width(),
+			left = e.pageX + 10;
+		if( (left + width ) > $(window).width() ) {
+			left = Math.max( 10, e.pageX - 10 - width );
+		}
+		preview
 			.constrainY({
-				left: e.pageX+10,
-				top: e.pageY-($(this).is('.backlink') ? 0 : $('#postpreview').height()) 
-			}, 10)
-			.css({maxWidth: $(window).width - e.pageX - 10});
+				left: left,
+				top: e.pageY+($(this).is('.backlink') ? 10 : -20 - height) 
+			}, 10);
 	})
 	.on('mouseleave.html5chan.postpreview', 'a.quotelink', function(e) {
 		$('#postpreview').remove();
@@ -358,7 +369,9 @@ $('#threads')
 					.find('.inlinedlink').removeClass('inlinedlink').end() //these don't apply anymore, as inline replies are gone
 					.find('a.quotelink[href$=#'+hostid+']') //replace matching reply link
 						.replaceWith(function() {
-							return $('<strong>',{'class': 'recursivelink'}).html($(this).html());
+							return $('<strong>',{'class': 'recursivelink'})
+								.html($(this).html())
+								.addClass(this.className);
 						}).end()
 					.attr('id',inlined_id)
 					.addClass('inline')
