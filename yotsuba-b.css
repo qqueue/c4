@@ -5,70 +5,22 @@ html {
 	font-size: 10pt;
 }
 
-.hovered {
-	outline: 3px dashed blue;
-}
-
-.post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
-.op>header>h1 {
-	font-size: 130%;
-}
 .thread {
 	padding-bottom: 5px;
 	border-bottom: 1px solid #B7C5D9;
 }
+
 .omitted-replies {
 	clear: left;
 	text-align: right;
 }
+
 .post {
 	margin-top: 3px;
 }
 
-.post:target, .thread:target .op {
+.post:target, {
 	background-color: #D6BAD0;
-}
-
-.op {
-	background-color: #EEF2FF;
-}
-
-a.quotelink, a.backlink {
-	color: #d00;
-}
-
-a.inlinedlink, strong.recursivelink {
-	font-weight: bold;
-	color: black;
-}
-
-a.permalink {
-	text-decoration: none;
-	color: inherit;
-	float: right;
-}
-
-a.saucelink {
-	color: inherit;
-	text-decoration: none;
-}
-
-a.permalink:hover, a.saucelink:hover {
-	text-decoration: underline;
-}
-
-.post .title {
-	color: #0f0c5d;
-	font-weight: 800;
-}
-
-.post footer {
-	clear:both;
-}
-
-.backlink {
-	display: inline-block;
-	margin-right: 1em;
 }
 
 .reply {
@@ -81,7 +33,6 @@ a.permalink:hover, a.saucelink:hover {
 	clear: both;
 }
 
-
 .reply:before {
 	content: ">>";
 	display: block;
@@ -91,9 +42,19 @@ a.permalink:hover, a.saucelink:hover {
 	color: #B7C5D9;
 }
 
-.comment {
-	padding: 0 1em ;
-	margin: 1em 40px;
+.op {
+	background-color: #EEF2FF;
+}
+
+.post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
+
+.op>header>h1 {
+	font-size: 130%;
+}
+
+.post .title {
+	color: #0f0c5d;
+	font-weight: 800;
 }
 
 .poster {
@@ -103,27 +64,6 @@ a.permalink:hover, a.saucelink:hover {
 
 .tripcode {
 	color: #228854;
-}
-.greentext {
-	font-weight: normal;
-	color: #789922;
-}
-
-.spoiler {
-	text-decoration: none;
-	color: black;
-	background: black;
-}
-.spoiler .greentext, .spoiler a {
-	color: black;
-}
-
-.spoiler:hover {
-	color: white;
-}
-
-.spoiler:hover .greentext, .spoiler:hover a {
-	color:white;
 }
 
 .file {
@@ -155,8 +95,73 @@ a.permalink:hover, a.saucelink:hover {
 	background: transparent;
 }
 
+
+.oplink:after {
+	content: " (OP)";
+}
+
+a.quotelink, a.backlink {
+	color: #d00;
+}
+
+a.inlinedlink, strong.recursivelink {
+	font-weight: bold;
+	color: black;
+}
+
+a.permalink {
+	text-decoration: none;
+	color: inherit;
+	float: right;
+}
+
+a.saucelink {
+	color: inherit;
+	text-decoration: none;
+}
+
+a.permalink:hover, a.saucelink:hover {
+	text-decoration: underline;
+}
+
+.comment {
+	padding: 0 1em ;
+	margin: 1em 40px;
+}
+
+
+.greentext {
+	font-weight: normal;
+	color: #789922;
+}
+
+.spoiler {
+	text-decoration: none;
+	color: black;
+	background: black;
+}
+.spoiler .greentext, .spoiler a {
+	color: black;
+}
+
+.spoiler:hover {
+	color: white;
+}
+
+.spoiler:hover .greentext, .spoiler:hover a {
+	color:white;
+}
+
+.post footer {
+	clear:both;
+}
+
+.backlink {
+	margin-right: 1em;
+}
+
 #postpreview  {
-	outline: 3px dashed #aaa;
+	outline: 3px dashed blue;
 	margin: 0;
 }
 #postpreview:before, .reply.inline:before {
@@ -185,6 +190,8 @@ a.permalink:hover, a.saucelink:hover {
 	opacity: 0;
 }
 
-.oplink:after {
-	content: " (OP)";
+.hovered {
+	outline: 3px dashed blue;
 }
+
+
