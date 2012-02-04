@@ -46,13 +46,25 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 //extend jQuery with some nice functions
 $.fn.extend({
 	immediateText: function () { return this.parent().clone().children().remove().end().text(); },
-	exists: function (selector) { return (selector ? this.filter(selector) : this ).length > 0;}
+	exists: function (selector) { return (selector ? this.filter(selector) : this ).length > 0;},
+	constrainY: function(offset, margin) {
+		var height = this.height(),
+			screentop = $(window).scrollTop(),
+			screenbottom = screentop + $(window).height();
+		if( (offset.top + height) > screenbottom ) {
+			offset.top = screenbottom - height - margin;
+		}
+		if( top < screentop ) {
+			offset.top = screentop + margin;
+		}
+		return this.offset(offset);
+	}
 });
 
 ///////////////////////////////////////////
 // parse 4chan's shitty markup into data
 ///////////////////////////////////////////
-
+{
 function Image(imageLink, filesize) {
 	var thumb = imageLink.children('img'),
 		dimensions = filesize.text().match(/(\d+)x(\d+)/);
@@ -202,7 +214,7 @@ console.time("extract threads");
 var data = parse4chan();
 console.dir(data);
 console.timeEnd("extract threads"); 
-
+}
 /////////////////////////////////////////////////////////
 //Render data back to html
 /////////////////////////////////////////////////////////
@@ -245,35 +257,25 @@ if ( !sessionStorage.getItem("html5chan-"+window.location.pathname) ) {
 //////////////////////////////////
 
 //image hover previews
-$('<img>',{id: 'preview'}).css({
-	position: "absolute",
-	maxWidth: "100%",
-	maxHeight: "100%",
-}).hide().appendTo('body');
 $('#threads')
-	.on('mouseenter.html5chan.imagepreview', 'a.file', function (e) {
-		$('#preview').attr('src',this.href).css({
+	.on('mouseenter.html5chan.imgpreview', 'a.file', function (e) {
+		$('<img>',{
+			id: 'imgpreview',
+			src: this.href,
+			alt: this.href+" (Failed to load)"}
+		)
+		.appendTo('body');
+	})
+	.on('mousemove.html5chan.imgpreview', 'a.file', function(e) {
+		$('#imgpreview').constrainY({
 			left: e.pageX+10,
 			top: e.pageY+10
-		})
-		.load(function() { $(this).show(); });} )
-	.on('mousemove.html5chan.imagepreview', 'a.file', function(e) {
-		$('#preview').css({
-			left: e.pageX+10,
-			top: e.pageY+10 }); })
-	.on('mouseleave.html5chan.imagepreview', 'a.file', function(e) {
-		$('#preview').hide(); })
-	//click for image replacement
-	.on('click.html5chan', 'a.file', function() {
-		$(this).find('img').hide().after( 
-			$('<img>',{src: this.href} ).click(function () {
-				$(this).siblings().show().end().remove();
-				return false;
-			})
-		);
-		return false;
-	});
-	
+		}, 10).css({
+			maxWidth: $(document).width() - e.pageX - 20
+		}); })
+	.on('mouseleave.html5chan.imgpreview', 'a.file', function(e) {
+		$('#imgpreview').remove(); });
+
 //backlinks
 $('.post').each(function() {
 	var quoter = this;
@@ -312,16 +314,14 @@ $('#threads')
 							return $('<strong>',{'class': 'recursivelink'}).html($(this).html());
 						}).end()
 					.attr('id', 'postpreview')
-					.css({position: "absolute"})
 					.appendTo('body');
 			post.addClass('hovered');
 		}
 	})
 	.on('mousemove.html5chan.postpreview', 'a.quotelink', function(e) {
-		if( !$('#postpreview').exists() ) $(this).trigger('mouseenter.html5chan.postpreview');
-		$('#postpreview').css({
+		$('#postpreview').constrainY({
 			left: e.pageX+10,
-			top: e.pageY-($(this).is('.backlink') ? 0 : $('#postpreview').height()) }); })
+			top: e.pageY-($(this).is('.backlink') ? 0 : $('#postpreview').height()) }, 10); })
 	.on('mouseleave.html5chan.postpreview', 'a.quotelink', function(e) {
 		$('#postpreview').remove();
 		$(this.hash).removeClass('hovered');});
