@@ -181,7 +181,7 @@ a.permalink:hover, a.saucelink:hover {
 	padding: 0 1em;
 }
 
-.inline .backlinks >recursivelink {
+.inline .backlinks > .recursivelink {
 	opacity: 0;
 }
 
