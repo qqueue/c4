@@ -197,3 +197,7 @@ ul.backlinks {
 .inline .backlinks .recursivelink {
 	opacity: 0;
 }
+
+.oplink:after {
+	content: " (OP)";
+}
