@@ -57,7 +57,11 @@ $.fn.extend({
 		if( top < screentop ) {
 			offset.top = screentop + margin;
 		}
-		return this.offset(offset);
+		return this.css({
+			left: offset.left,
+			top: offset.top,
+			position: "absolute"
+		});
 	}
 });
 
@@ -264,6 +268,10 @@ $('#threads')
 			src: this.href,
 			alt: this.href+" (Failed to load)"}
 		)
+		.css({
+			maxHeight: $(window).height() - 20,
+			maxWidth: $(window).width() - e.pageX - 20
+		})
 		.appendTo('body');
 	})
 	.on('mousemove.html5chan.imgpreview', 'a.file', function(e) {
@@ -314,14 +322,19 @@ $('#threads')
 							return $('<strong>',{'class': 'recursivelink'}).html($(this).html());
 						}).end()
 					.attr('id', 'postpreview')
+					.css({maxWidth: $(window).width - e.pageX - 10})
 					.appendTo('body');
 			post.addClass('hovered');
 		}
 	})
 	.on('mousemove.html5chan.postpreview', 'a.quotelink', function(e) {
-		$('#postpreview').constrainY({
-			left: e.pageX+10,
-			top: e.pageY-($(this).is('.backlink') ? 0 : $('#postpreview').height()) }, 10); })
+		$('#postpreview')
+			.constrainY({
+				left: e.pageX+10,
+				top: e.pageY-($(this).is('.backlink') ? 0 : $('#postpreview').height()) 
+			}, 10)
+			.css({maxWidth: $(window).width - e.pageX - 10});
+	})
 	.on('mouseleave.html5chan.postpreview', 'a.quotelink', function(e) {
 		$('#postpreview').remove();
 		$(this.hash).removeClass('hovered');});
