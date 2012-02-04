@@ -385,7 +385,10 @@ $('#threads')
 //highlight hovered reply
 $('#threads')
 	.on('mouseenter.html5chan.posthighlight mouseleave.html5chan.posthighlight', 'a.quotelink', function (e) {
-		$(this.hash).toggleClass('hovered');
+		var $this = $(this);
+		$( $this.is('.inlinedlink') ? //outline what is inlined
+			'#'+$this.closest('.post').attr('id')+'-'+this.hash.slice(1) : undefined
+		).add(this.hash).toggleClass('hovered');
 	});
 	
 
@@ -416,8 +419,7 @@ $('#threads')
 								.addClass(this.className);
 						}).end()
 					.attr('id',inlined_id)
-					.addClass('inline')
-					.removeClass('hovered');
+					.addClass('inline');
 				if( $this.is('.backlink')) {
 					$this.after(inlined);
 				} 
