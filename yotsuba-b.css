@@ -5,6 +5,9 @@ html {
 	font-size: 10pt;
 }
 
+.hovered {
+	outline: 3px dashed blue;
+}
 
 .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
 .op h1 {
@@ -13,7 +16,6 @@ html {
 .thread {
 	padding-bottom: 5px;
 	border-bottom: 1px solid #B7C5D9;
-	overflow: auto;
 }
 .omitted-replies {
 	clear: left;
@@ -33,6 +35,22 @@ html {
 
 a.quotelink, a.backlink {
 	color: #d00;
+}
+
+a.inlinedlink {
+	font-weight: bold;
+	color: black;
+	border: 1px solid #aaa;
+	border-left-width: 0;
+}
+
+a.inlinedlink.quotelink {
+	border-bottom-width: 1px;
+}
+
+a.inlinedlink.backlink {
+	border-bottom-width: 0;
+	border-top-width: 1px;
 }
 
 a.permalink {
@@ -85,14 +103,6 @@ ul.backlinks {
 	margin-left: -1.5em;
 	font-size: 10pt;
 	color: #B7C5D9;
-}
-
-.post:after {
-    content: "";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
 }
 
 .comment {
@@ -157,4 +167,33 @@ ul.backlinks {
 	margin: 0;
 	cursor: pointer;
 	background: transparent;
+}
+
+#postpreview  {
+	border: 3px dashed #aaa;
+}
+#postpreview:before, .reply.inline:before {
+	display: none;
+}
+
+.post.inline {
+	margin-left: -1px;
+	background-color: rgba(255,255,255,.1);
+	border: 1px solid #aaa;
+	border-left-width: 0;
+	padding-left: 0;
+}
+
+.post.inline .comment {
+	padding-left: 0;
+	margin-left: 0;
+}
+
+.backlink+.post.inline .comment {
+	margin: 1em 40px;
+	padding: 0 1em;
+}
+
+.inline .backlinks .recursivelink {
+	opacity: 0;
 }
