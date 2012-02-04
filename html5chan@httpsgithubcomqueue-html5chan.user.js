@@ -114,7 +114,7 @@ function parseComment (comment) {
 		.end()
 		.html()
 			.replace(/http:\/\/boards.4chan.org/g, "") //strips the url from cross-board links so they don't get linkified
-			.replace(/http:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify other links
+			.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>'); } //linkify other links
 
 //instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 //this function pulls out numbers with regex
