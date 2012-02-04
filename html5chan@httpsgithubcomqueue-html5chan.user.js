@@ -118,9 +118,11 @@ function parseComment (comment) {
 
 //instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 //this function pulls out numbers with regex
-function parse4ChanDate(dateString) {	
+function parse4ChanDate(dateString) {
 	//perfect place for destructuring assignment 
-	var date = dateString.match(/(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/).slice(1).map(function(val) { return parseInt(val,10); });
+	var matches = dateString.match(/(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/);
+	if( !matches ) return undefined;
+	var date = matches.slice(1).map(function(val) { return parseInt(val,10); });
 	//and corrects for >year 2000 and 4chan's time zone (EST)
 	return new Date(Date.UTC(
 		date[2]+2000,
@@ -236,8 +238,11 @@ Handlebars.registerHelper('datetime', function( time, options ) {
 	return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+" "+pad(date.getHours())+":"+pad(date.getMinutes());
 });
 
-Handlebars.registerPartial('post', '<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <button type="submit" form="reportform" name="no" value="{{id}}">[!]</button> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> {{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}} <a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}> No.{{id}} {{#if sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}} {{#if locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}} </a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <div class="comment"> {{{comment}}} </div>  <footer class="backlinks"> </footer>');
-Handlebars.registerPartial('thread','<article class="thread" id="thread{{op.id}}" tabindex="1"> <div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div> {{#if omittedReplies}}<div class="omitted-replies">{{omittedReplies}} replies {{#if omittedImageReplies}}and {{omittedImageReplies}} image replies{{/if}} omitted. Latest {{replies.length}} shown.</div>{{/if}} <div class="replies"> {{#each replies}} <article class="post reply" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article>');
+var render_post = Handlebars.compile('<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <button type="submit" form="reportform" name="no" value="{{id}}">[!]</button> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{time}}">{{datetime time}}</time> {{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}} <a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}> No.{{id}} {{#if sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}} {{#if locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}} </a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <div class="comment"> {{{comment}}} </div>  <footer class="backlinks"> </footer>');
+Handlebars.registerPartial('post',render_post);
+var render_thread = Handlebars.compile('<article class="thread" id="thread{{op.id}}" tabindex="1"> <div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div> {{#if omittedReplies}}<div class="omitted-replies">{{omittedReplies}} replies {{#if omittedImageReplies}}and {{omittedImageReplies}} image replies{{/if}} omitted. Latest {{replies.length}} shown.</div>{{/if}} <div class="replies"> {{#each replies}} <article class="post reply" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article>');
+Handlebars.registerPartial('thread',render_thread);
+
 var template = Handlebars.compile('<header> <nav>{{{nav}}}</nav> <img src="{{banner}}" alt="4chan::" id="banner"/> <hgroup> <h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1> <h2>{{{board.subtitle}}}</h2> </hgroup> </header> <div id="threads"> {{#each threads}}{{>thread}}{{/each}} {{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }} </div> {{#if pages}} <nav id="pages"> {{{pages}}} </nav> {{/if}} {{#if thread.locked}} <p>Thread closed.<br>You may not reply at this time.</p> {{else}} <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank"> <input type="hidden" value="3145728" name="MAX_FILE_SIZE"> <input type="hidden" value="regist" name="mode"> {{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}} <div><label for="name">Name: </label><input type="text" name="name" id="name" /></div> <div><label for="email">Email: </label><input type="text" id="email" name="email" /></div> <div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div> <div><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4"></textarea></div> <div><label>Verification: </label><div id="verification"></div></div> <div> <label for="image">Image: </label><input type="file" id="image" name="upfile"/> <label><input type="checkbox" value="on" name="spoiler"/> Spoiler Image?</label> </div> <div title="for file deletion"> <label for="password">Password: </label> <input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}"> </div> <div><button type="submit" value="Submit">Submit</button></div> <ul id="rules"> <li>Supported file types are: GIF, JPG, PNG </li> <li>Maximum file size allowed is 3072 KB. </li> <li>Images greater than 250x250 pixels will be thumbnailed. </li> <li>Read the <a href="http://www.4chan.org/rules#lit">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li> <li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li> </ul> </form> {{/if}} <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank"> <input name="mode" value="usrdel" type="hidden"> <label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label> <button type="submit" value="Delete">Delete Post</button> <label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label> </form> <form action="http://sys.4chan.org/{{board.name}}/imgboard.php" id="reportform" method="GET" target="_blank"> <input type="hidden" name="mode" value="report"/> <!-- all the report buttons are part of this form --> </form>');
 $('body').replaceWith($('<body>',{id: data.board.name}).html(template(data)));
 console.timeEnd('handlebars');
@@ -285,24 +290,27 @@ $('#threads')
 		$('#imgpreview').remove(); });
 
 //backlinks
-$('.post').each(function() {
-	var quoter = this;
-	$(quoter).find('a.quotelink').each(function() {
-		if( /^#\d+/.test(this.hash) ) { //relative postlink
-			var quoted = $(this.hash);
-			var backlinks = quoted.data('backlinks');
-			if( !backlinks ) {
-				backlinks = {};
-				quoted.data('backlinks', backlinks);
+function backlink() {
+	$('.post').each(function() {
+		var quoter = this;
+		$(quoter).find('a.quotelink').each(function() {
+			if( /^#\d+/.test(this.hash) ) { //relative postlink
+				var quoted = $(this.hash);
+				var backlinks = quoted.data('backlinks');
+				if( !backlinks ) {
+					backlinks = {};
+					quoted.data('backlinks', backlinks);
+				}
+				if( !backlinks[quoter.id] ) {
+					backlinks[quoter.id] = true;
+					quoted.find('.backlinks').append(
+						$('<a>',{'class': 'backlink quotelink', href: '#'+quoter.id}).html('&gt;&gt;'+quoter.id));
+				}
 			}
-			if( !backlinks[quoter.id] ) {
-				backlinks[quoter.id] = true;
-				quoted.find('.backlinks').append(
-					$('<a>',{'class': 'backlink quotelink', href: '#'+quoter.id}).html('&gt;&gt;'+quoter.id));
-			}
-		}
+		});
 	});
-});
+}
+backlink();
 
 //post hover previews
 $('#threads')
@@ -381,4 +389,34 @@ $('#threads')
 		}
 	});
 	
+if( data.thread ) {
+	//let's try some ajax
+	setTimeout(function refresh() {
+		$.get(document.URL)
+			.success( function (html,status) {
+				console.log(status);
+				//parse posts newer than last post
+				var last_post = data.thread.replies[data.thread.replies.length-1];
+				var posts = $('a[name='+last_post.id+'] ~ a[name]',html).eq(0).nextAll().find('td.reply').map( function() {
+					return new Post($(this).children(),false);
+				}).get();
+				console.dir(posts);
+				
+				if( posts && posts.length > 0 ) {
+					data.thread.replies = data.thread.replies.concat(posts);
+					$('.thread').append(
+						posts.map(function(post) {
+							return '<article class="post reply" id="'+post.id+'">' + render_post(post) + '</article>';
+						}).join(""));
+					backlink();
+				}
+				
+				setTimeout(refresh, 30000);
+			})
+			.error( function (data,status) {
+				alert(status);
+			});
+	}, 30000);
+}
+
 });
