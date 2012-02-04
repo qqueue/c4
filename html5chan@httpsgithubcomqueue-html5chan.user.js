@@ -299,6 +299,7 @@ $('#threads')
 			post
 				.clone()
 					.find('.inline').remove().end() //strip inline replies
+					.find('.inlinedlink').removeClass('inlinedlink').end() //these don't apply anymore, as inline replies are gone
 					.removeClass('hovered') //if it exists
 					.find('a.quotelink[href$=#'+hostid+']') //replace matching reply link
 						.replaceWith(function() {
@@ -335,6 +336,7 @@ $('#threads')
 			} else {
 				inlined = target.clone()
 					.find('.inline').remove().end() //remove any previews the inlined post already has
+					.find('.inlinedlink').removeClass('inlinedlink').end() //these don't apply anymore, as inline replies are gone
 					.find('a.quotelink[href$=#'+hostid+']') //replace matching reply link
 						.replaceWith(function() {
 							return $('<strong>',{'class': 'recursivelink'}).html($(this).html());
