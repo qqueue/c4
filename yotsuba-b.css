@@ -31,7 +31,7 @@ html {
 	background-color: #EEF2FF;
 }
 
-a.quotelink {
+a.quotelink, a.backlink {
 	color: #d00;
 }
 
@@ -46,7 +46,7 @@ a.saucelink {
 	text-decoration: none;
 }
 
-a.permalink:hover {
+a.permalink:hover, a.saucelink:hover {
 	text-decoration: underline;
 }
 
