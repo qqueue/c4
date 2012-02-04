@@ -76,6 +76,23 @@ $.fn.extend({
 			screentop = $(window).scrollTop(),
 			screenbottom = screentop + $(window).height();
 		return top > screentop && bottom < screenbottom;
+	},
+	beforeAndScroll: function (content) {
+		var before = this.offset();
+		this.before(content);
+		var after = this.offset();
+		window.scrollBy(after.left-before.left, after.top-before.top);
+		return this;
+	},
+	removeAndScroll: function (relativeTo) {
+		var before = relativeTo.offset();
+		this.remove();
+		var after = relativeTo.offset();
+		//unless the scrollbar is already at the bottom (which autocorrects position)
+		if( ($(document).height() - ($(window).scrollTop() + $(window).height())) > 10 ) { 
+			window.scrollBy(after.left-before.left, after.top-before.top);
+		}
+		return this;
 	}
 });
 
@@ -386,11 +403,7 @@ $('#threads')
 				inlined_id = host+'-'+this.hash.slice(1),//id is unique to hosting post and inlined post
 				inlined = $('#'+inlined_id);
 			if( inlined.exists() ) {
-				//attempt to keep scroll 
-				var before = $this.offset();
-				inlined.remove();
-				var after = $this.offset();
-				if( !onBottom() ) window.scrollBy(after.left-before.left, after.top-before.top);
+				inlined.removeAndScroll($this);
 				$this.removeClass('inlinedlink');
 			} else {
 				inlined = post.clone()
@@ -409,10 +422,7 @@ $('#threads')
 					$this.after(inlined);
 				} 
 				else {
-					var before = $this.offset();
-					$this.before(inlined);
-					var after = $this.offset();
-					window.scrollBy(after.left-before.left, after.top-before.top);
+					$this.beforeAndScroll(inlined);
 				}
 				$this.addClass('inlinedlink');
 				$this.trigger('mouseleave.html5chan.postpreview'); //since we're previewing it now
