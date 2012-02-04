@@ -187,9 +187,9 @@ function Thread($,preview) {
 	if( preview ) {
 		var omittedposts = $.filter('.omittedposts').text();
 		this.omittedReplies =
-			parseInt(omittedposts.match(/\d+(?= posts)/), 10) || 0;
+			parseInt(omittedposts.match(/\d+(?= posts?)/), 10) || 0;
 		this.omittedImageReplies =
-			parseInt(omittedposts.match(/\d+(?= image replies)/), 10) || 0;
+			parseInt(omittedposts.match(/\d+(?= image (?:replies|reply))/), 10) || 0;
 	}
 }
 
