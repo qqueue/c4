@@ -47,6 +47,11 @@ inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
 $.fn.extend({
 	immediateText: function () { return this.parent().clone().children().remove().end().text(); },
 	exists: function (selector) { return (selector ? this.filter(selector) : this ).length > 0;},
+	changeTo: function (replacement, options) {
+		return this.replaceWith(function () {
+			return $(replacement,options).html($(this).html());
+		});
+	},
 	constrainY: function(offset, margin) {
 		var height = this.height(),
 			screentop = $(window).scrollTop(),
@@ -99,16 +104,8 @@ function parseComment (comment) {
 			.removeAttr('onclick')
 			.unwrap()
 		.end()
-		.find('font.unkfunc')
-			.replaceWith(function () {
-				return $('<b>', {"class": "greentext"}).html($(this).html());
-			})
-		.end()
-		.find('span.spoiler')
-			.replaceWith(function () {
-				return $('<s>',{"class":"spoiler"}).html($(this).html());
-			})
-		.end()
+		.find('font.unkfunc').changeTo('<b>', {"class": "greentext"}).end()
+		.find('span.spoiler').changeTo('<s>',{"class":"spoiler"}).end()
 		.find('a.quotelink').each(function () {
 			if( /^(\d+)#\1/.test($(this).attr('href')) ) { //if the path and hash match exactly
 				$(this).addClass('oplink');
