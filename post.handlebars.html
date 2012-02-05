@@ -1,17 +1,17 @@
 <header>
 	<h1>
 		<input type="checkbox" value="delete" name="{{id}}" form="delform">
-		<button type="submit" form="reportform" name="no" value="{{id}}">[!]</button>
+		<a class="reportlink" target="_blank" href="http://sys.4chan.org/{{thread.board.name}}/imgboard.php?mode=report&amp;no={{id}}">[!]</a>
 		<span class="title">{{title}}</span>
 		<a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>
 		<span class="capcode">{{capcode}}</span>
 		<time pubdate datetime="{{ISOString time}}">{{datetime time}}</time>
-		{{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}}
-		<a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}>
+		{{#if op}}{{#if thread.preview}}<a href="{{thread.url}}" class="replylink">[Reply]</a>{{/if}}{{/if}}
+		<a href="{{url}}" class="permalink" {{#if thread.preview}}target="_blank"{{/if}}>
 			No.{{id}}
-			{{#if sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}}
-			{{#if locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}}
+			{{#if thread.sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}}
+			{{#if thread.locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}}
 		</a>
 	</h1>
 	{{#if image}}<div class="fileinfo">

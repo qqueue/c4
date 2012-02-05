@@ -1,4 +1,4 @@
-<article class="thread" id="thread{{op.id}}" tabindex="1">
+<article class="thread" id="thread-{{id}}" tabindex="1">
 	<div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div>
 	{{#if omittedReplies}}<div class="omitted-replies">{{omittedReplies}} replies {{#if omittedImageReplies}}and {{omittedImageReplies}} image replies{{/if}} omitted. Latest {{replies.length}} shown.</div>{{/if}}
 	<div class="replies">
