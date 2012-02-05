@@ -7,13 +7,13 @@
 		<span class="tripcode">{{tripcode}}</span>
 		<span class="capcode">{{capcode}}</span>
 		<time pubdate datetime="{{ISOString time}}">{{datetime time}}</time>
-		{{#if op}}{{#if thread.preview}}<a href="{{thread.url}}" class="replylink">[Reply]</a>{{/if}}{{/if}}
-		<a href="{{url}}" class="permalink" {{#if thread.preview}}target="_blank"{{/if}}>
-			No.{{id}}
-			{{#if op}}
+		{{#if op}}
 			{{#if thread.sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}}
 			{{#if thread.locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}}
-			{{/if}}
+		{{/if}}
+		{{#if op}}{{#if thread.preview}}<a href="{{thread.url}}" class="replylink">[Reply]</a>{{/if}}{{/if}}
+		<a href="{{url}}" class="permalink" {{#if thread.preview}}target="_blank"{{/if}}>
+			No.<span class="id">{{id}}</span>
 		</a>
 	</h1>
 	{{#if image}}<div class="fileinfo">

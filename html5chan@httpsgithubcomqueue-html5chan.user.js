@@ -295,7 +295,7 @@ Handlebars.registerHelper('ISOString', function(time) {
 	return new Date(time).toISOString();
 });
 
-Post.render = Handlebars.compile('<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <a class="reportlink" target="_blank" href="http://sys.4chan.org/{{thread.board.name}}/imgboard.php?mode=report&amp;no={{id}}">[!]</a> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{ISOString time}}">{{datetime time}}</time> {{#if op}}{{#if thread.preview}}<a href="{{thread.url}}" class="replylink">[Reply]</a>{{/if}}{{/if}} <a href="{{url}}" class="permalink" {{#if thread.preview}}target="_blank"{{/if}}> No.{{id}} {{#if op}} {{#if thread.sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}} {{#if thread.locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}} {{/if}} </a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <div class="comment"> {{{comment}}} </div>  <footer class="backlinks"> </footer>');
+Post.render = Handlebars.compile('<header> <h1> <input type="checkbox" value="delete" name="{{id}}" form="delform"> <a class="reportlink" target="_blank" href="http://sys.4chan.org/{{thread.board.name}}/imgboard.php?mode=report&amp;no={{id}}">[!]</a> <span class="title">{{title}}</span> <a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a> <span class="tripcode">{{tripcode}}</span> <span class="capcode">{{capcode}}</span> <time pubdate datetime="{{ISOString time}}">{{datetime time}}</time> {{#if op}} {{#if thread.sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/if}} {{#if thread.locked}}<img alt="closed" src="http://static.4chan.org/image/closed.gif">{{/if}} {{/if}} {{#if op}}{{#if thread.preview}}<a href="{{thread.url}}" class="replylink">[Reply]</a>{{/if}}{{/if}} <a href="{{url}}" class="permalink" {{#if thread.preview}}target="_blank"{{/if}}> No.<span class="id">{{id}}</span> </a> </h1> {{#if image}}<div class="fileinfo"> <span class="dimensions">{{image.width}}x{{image.height}}</span> <span class="size">{{image.size}}</span> <span class="filename">{{image.filename}}</span> <a class="saucelink" href="http://iqdb.org/?url={{image.url}}" target="_blank">iqdb</a> <a class="saucelink" href="http://google.com/searchbyimage?image_url={{image.url}}" target="_blank">google</a> </div>{{/if}} </header> {{#if image}}  {{#with image.thumb}} <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a> {{/with}}  {{/if}} <div class="comment"> {{{comment}}} </div>  <footer class="backlinks"> </footer>');
 Post.prototype.render = function () { return Post.render(this); }
 Handlebars.registerPartial('post',Post.render);
 Thread.render = Handlebars.compile('<article class="thread{{#if sticky}} sticky {{/if}}{{#if locked}} locked {{/if}}{{#if preview}} preview {{/if}}" id="thread-{{id}}" tabindex="1"> <div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div> {{#if omittedReplies}}<div class="omitted-replies">{{omittedReplies}} replies {{#if omittedImageReplies}}and {{omittedImageReplies}} image replies{{/if}} omitted. Latest {{replies.length}} shown.</div>{{/if}} <div class="replies"> {{#each replies}} <article class="post reply{{#if sage}} sage {{/if}}{{#if image}} imagepost {{/if}}" id="{{id}}"> {{> post}} </article> {{/each}} </div> </article>');
@@ -330,6 +330,16 @@ if ( !sessionStorage.getItem("html5chan-"+document.URL) ) {
 ///////////////////////////////////
 // Features
 //////////////////////////////////
+
+//recreate 4chan's quoting js
+$('#threads')
+	.on('click.html5chan.quote', '.permalink .id', function() {
+		var selection = window.getSelection().toString().trim();
+		if(selection) selection = '>'+selection+'\n';
+		$('#comment')[0].value += '>>'+$(this).html()+'\n'+selection;
+		return false;
+	});
+
 
 //image hover previews
 $('#threads')
