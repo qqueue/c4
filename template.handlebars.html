@@ -22,32 +22,43 @@
 	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 	<input type="hidden" value="regist" name="mode">
 	{{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}}
-	<div><label for="name">Name: </label><input type="text" name="name" id="name" /></div>
-	<div><label for="email">Email: </label><input type="text" id="email" name="email" /></div>
-	<div><label for="subject">Subject: </label><input type="text" id="subject" name="sub" /></div>
-	<div><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4"></textarea></div>
-	<div><label>Verification: </label><div id="verification"></div></div>
-	<div>
-		<label for="image">Image: </label><input type="file" id="image" name="upfile"/>
-		<label><input type="checkbox" value="on" name="spoiler"/> Spoiler Image?</label>
+	<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
+	<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
+	<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
+	<div  id="comment-field"><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4" tabindex="10" ></textarea></div>
+	<div id="captcha-field"><label>Verification: </label><div id="captcha"></div></div>
+	<div id="file-field">
+		<label for="file">Image: </label>
+		<div>
+			<input type="file" id="file" name="upfile" tabindex="10" />
+			<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler Image?</label>
+		</div>
 	</div>
-	<div title="for file deletion">
+	<div title="for file deletion" id="password-field">
 		<label for="password">Password: </label>
-		<input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}">
+		<input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}" tabindex="10" >
 	</div>
-	<div><button type="submit" value="Submit">Submit</button></div>
+	<div id="buttons-wrapper">
+		<label>Submit: </label>
+		<div id="buttons">
+			<button type="submit" tabindex="10" id="post">Post</button>
+			<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
+			<button type="submit" name="email" value="noko" tabindex="10" id="sage">Noko</button>
+		</div>
+	</div>
 	<ul id="rules">
 		<li>Supported file types are: GIF, JPG, PNG </li>
 		<li>Maximum file size allowed is 3072 KB. </li>
 		<li>Images greater than 250x250 pixels will be thumbnailed. </li>
-		<li>Read the <a href="http://www.4chan.org/rules#lit">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
+		<li>Read the <a href="http://www.4chan.org/rules#{{board.name}}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
 		<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
 	</ul>
 </form>
+
 {{/if}}
 <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank">
 	<input name="mode" value="usrdel" type="hidden">
-	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password"></label>
-	<button type="submit" value="Delete">Delete Post</button>
-	<label><input name="onlyimgdel" value="on" type="checkbox">[File Only]</label>
+	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password" tabindex="20"></label>
+	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
+	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete Image</button>
 </form>
