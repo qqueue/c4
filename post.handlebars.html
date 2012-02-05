@@ -6,7 +6,7 @@
 		<a class="poster" {{#if email}}href="mailto:{{email}}"{{/if}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>
 		<span class="capcode">{{capcode}}</span>
-		<time pubdate datetime="{{time}}">{{datetime time}}</time>
+		<time pubdate datetime="{{ISOString time}}">{{datetime time}}</time>
 		{{#if op}}{{#if preview}}[<a href="{{replyurl}}" class="replylink">Reply</a>]{{/if}}{{/if}}
 		<a href="{{url}}" class="permalink" {{#if op}}target="_blank"{{/if}}>
 			No.{{id}}
