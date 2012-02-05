@@ -139,17 +139,26 @@ body > header h2 { font-size: 10px; font-weight: normal; }
 	position: relative;
 }
 
-.id {
-	text-decoration: none;
-	color: inherit;
-}
-
-.id:hover {
-	color: red;
-}
 .capcode {
 	color: red;
 	font-weight: 800;
+}
+
+button.hide {
+	cursor: pointer;
+	float: right;
+	margin: 0 0 0 2px;
+	padding: 0 1px;
+	line-height: 1em;
+}
+
+.post.hidden { opacity: .6; }
+.post.hidden .fileinfo, .post.hidden .file, .post.hidden .comment, .post.hidden footer {
+	display: none;
+}
+
+a.quotelink.hiddenlink {
+	text-decoration: line-through;
 }
 
 .reportlink {
