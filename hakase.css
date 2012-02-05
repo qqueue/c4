@@ -1,13 +1,29 @@
 html {
-	background: #EEF2FF;
 	min-height:100%;
 	font-family: sans-serif;
 	font-size: 10pt;
 }
 
+.sfw {
+	background: #EEF2FF;
+}
+
+.nsfw {
+	background: #FFFFEE;
+	color: #800000;
+}
+
 .thread {
 	padding-bottom: 5px;
 	border-bottom: 1px solid #B7C5D9;
+}
+
+.sfw .thread {
+	border-color: #b7c5d9;
+}
+
+.nsfw .thread {
+	border-color: gray;
 }
 
 .omitted-replies {
@@ -19,18 +35,28 @@ html {
 	margin-top: 3px;
 }
 
-.post:target {
+.sfw .post:target {
 	background-color: #D6BAD0;
 }
-
+.nsfw .post:target {
+	background-color: #F0C0B0;
+}
 .reply {
-	background: #D6DAF0;
 	padding: 2px;
 	margin-left: 1.5em;
-	border-color: #B7C5D9;
 	border-style: solid;
 	border-width: 0 1px 1px 0;
 	clear: both;
+}
+
+.sfw .reply {
+	background: #D6DAF0;
+	border-color: #B7C5D9;
+}
+
+.nsfw .reply {
+	background-color:#F0E0D6;
+	border-color: #D9BFB7;
 }
 
 .reply:before {
@@ -39,11 +65,19 @@ html {
 	height: 0;
 	margin-left: -1.5em;
 	font-size: 10pt;
+}
+.sfw .reply:before {
 	color: #B7C5D9;
 }
+.nsfw .reply:before {
+	color: #D9BFB7;
+}
 
-.op {
+.sfw .op {
 	background-color: #EEF2FF;
+}
+.nsfw .op {
+	background-color: #FFFFEE;
 }
 
 .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}
@@ -100,8 +134,12 @@ html {
 	content: " (OP)";
 }
 
-a.quotelink, a.backlink {
+.sfw a.quotelink {
 	color: #d00;
+}
+
+.nsfw a.quotelink {
+	color: #000080;
 }
 
 a.inlinedlink, strong.recursivelink {
