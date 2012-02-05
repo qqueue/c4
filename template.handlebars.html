@@ -1,5 +1,5 @@
 ﻿<header>
-	<nav>{{{nav}}}</nav>
+	<nav class="boardlinks">{{{nav}}}</nav>
 	<img src="{{banner}}" alt="4chan::" id="banner"/>
 	<hgroup>
 		<h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1>
@@ -12,7 +12,13 @@
 </div>
 {{#if pages}}
 <nav id="pages">
-	{{{pages}}} 
+	{{#if previous}}<a href="{{previous}}" id="previous">previous</a>{{/if}}
+	<ul>
+		{{#each pages}}
+			<li><a href="{{num}}" {{#if current}}id="current"{{/if}}>{{num}}</a></li>
+		{{/each}}
+	</ul>
+	{{#if next}}<a href="{{next}}" id="next">next</a>{{/if}}
 </nav>
 {{/if}}
 {{#if thread.locked}}
@@ -60,5 +66,12 @@
 	<input name="mode" value="usrdel" type="hidden">
 	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password" tabindex="20"></label>
 	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
-	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete Image</button>
+	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
 </form>
+<footer>
+	<nav class="boardlinks">{{{nav}}}</nav>
+	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
+	<p>
+		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster.</small>
+	</p>
+</footer>

@@ -5,23 +5,55 @@ html {
 }
 
 .sfw {
-	background: #EEF2FF;
+	background-image: linear-gradient(rgb(209, 213, 238), rgb(238, 242, 255) 200px);
+	background-image: -moz-linear-gradient(rgb(209, 213, 238), rgb(238, 242, 255) 200px);
 }
 
 .nsfw {
-	background: #FFFFEE;
+	background-image: linear-gradient(rgb(254,215,175), rgb(255,255,238) 200px);
+	background-image: -moz-linear-gradient(rgb(254,215,175), rgb(255,255,238) 200px);
 	color: #800000;
 }
 
-.thread {
-	padding-bottom: 5px;
-	border-bottom: 1px solid #B7C5D9;
+body > header {
+	text-align: center;
+	color: #AF0A0F;
+}
+body.sfw  > header a, body.sfw > footer a { color: #34345C; }
+body.nsfw > header a, body.nsfw > footer a{ color: #880000; }
+
+.boardlinks { font-size: 9pt;}
+.nsfw .boardlinks { color: #BB8866; }
+.sfw .boardlinks { color: #8899AA; }
+#boards a {
+    font-weight: normal;
+    padding: 1px;
+    text-decoration: none;
 }
 
+body > header h1 {
+	font-family: "Tahoma";
+	font-size: 24pt;
+	margin-bottom: 0;
+}
+body > header h1 a {
+	color: #AF0A0F !important;
+    text-decoration: none;
+}
+body > header h1 a:hover { text-decoration: underline; }
+body > header h2 { font-size: 10px; font-weight: normal; }
+.thread {
+	padding-bottom: 5px;
+	border-style: solid;
+	border-width: 0;
+	border-bottom-width: 1px;
+}
+.thread:first-child {
+	border-top-width: 1px;
+}
 .sfw .thread {
 	border-color: #b7c5d9;
 }
-
 .nsfw .thread {
 	border-color: gray;
 }
@@ -73,10 +105,10 @@ html {
 	color: #D9BFB7;
 }
 
-.sfw .op {
+.sfw #postpreview.op {
 	background-color: #EEF2FF;
 }
-.nsfw .op {
+.nsfw #postpreview.op {
 	background-color: #FFFFEE;
 }
 
@@ -128,15 +160,10 @@ html {
 	content: " (OP)";
 }
 
-.sfw a.quotelink {
-	color: #d00;
-}
+.sfw .quotelink {color: #d00;}
+.nsfw .quotelink {color: #000080;}
 
-.nsfw a.quotelink {
-	color: #000080;
-}
-
-a.inlinedlink, strong.recursivelink {
+a.quotelink.inlinedlink, strong.recursivelink {
 	font-weight: bold;
 	color: black;
 }
@@ -226,6 +253,39 @@ a.permalink:hover, a.saucelink:hover {
 	outline: 3px dashed blue;
 }
 
+#pages {
+	text-align: center;
+}
+
+#pages ul {
+	display: inline;
+	margin: 0pt;
+	padding: 0pt;
+}
+
+#pages li {
+	display: inline;
+}
+
+#pages a {
+	border-color: #AAAAAA;
+	border-style: solid;
+	border-width: 1px 0;
+	color: black;
+	display: inline-block;
+	margin: 0.25em;
+	padding: 0.5em 1em;
+	text-decoration: none;
+}
+
+#current {
+	font-weight: bold;
+}
+
+#pages a:hover {
+	background-color: rgba(200, 200, 200, 0.7);
+}
+
 #postform {
     display: table;
     border-spacing: 1px;
@@ -258,4 +318,8 @@ a.permalink:hover, a.saucelink:hover {
     margin: 0 2px 0 0;
     width: 100%;
     padding: 2px 0 3px 0;
+}
+
+body > footer {
+	text-align: center;
 }
