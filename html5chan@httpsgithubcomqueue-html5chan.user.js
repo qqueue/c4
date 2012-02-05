@@ -374,10 +374,11 @@ $('#threads')
 			left = Math.max( 10, e.pageX - 10 - width );
 		}
 		preview
-			.constrainY({
+			.css({
+				position: "absolute",
 				left: left,
 				top: e.pageY+($(this).is('.backlink') ? 10 : -20 - height) 
-			}, 10);
+			});
 	})
 	.on('mouseleave.html5chan.postpreview', 'a.quotelink', function(e) {
 		$('#postpreview').remove(); });
