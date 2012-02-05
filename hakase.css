@@ -163,7 +163,7 @@ body > header h2 { font-size: 10px; font-weight: normal; }
 .sfw .quotelink {color: #d00;}
 .nsfw .quotelink {color: #000080;}
 
-a.quotelink.inlinedlink, strong.recursivelink {
+a.quotelink.inlinedlink, strong.quotelink.recursivelink {
 	font-weight: bold;
 	color: black;
 }

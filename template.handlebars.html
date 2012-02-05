@@ -10,6 +10,7 @@
 	{{#each threads}}{{>thread}}{{/each}}
 	{{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }}
 </div>
+{{#if thread}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
 {{#if pages}}
 <nav id="pages">
 	{{#if previous}}<a href="{{previous}}" id="previous">previous</a>{{/if}}
