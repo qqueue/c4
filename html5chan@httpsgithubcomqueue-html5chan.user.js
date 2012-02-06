@@ -10,38 +10,8 @@
 // @require http://cloud.github.com/downloads/wycats/handlebars.js/handlebars-1.0.0.beta.6.js
 // ==/UserScript==
 
-//script injection @require replacement
-//inserts the scripts as arguments, in order, into the <head>
-//scripts can be either a string, interpreted as a src attribute
-//or a function, which is inserted as a string
-var inject = function () {
-	if( arguments.length == 0 ) return;
-	var script = document.createElement("script");
-	var name;
-	if( typeof arguments[0] == "string" ) {
-		script.setAttribute("src", arguments[0]);
-		name = arguments[0];
-	} else if( typeof arguments[0] == "function" ) {
-		script.setAttribute("src", "data:text/javascript;base64," + btoa("(" + arguments[0].toString() + ")();"));
-		name = "function()";
-	} else {
-		throw new Error("argument not injectible as script!");
-	}
-	var rest = Array.prototype.slice.call(arguments,1);
-	//time the script load
-	console.time("inject script: "+name);
-	script.addEventListener('load', function () {
-		console.timeEnd("inject script: "+name);
-		//inject the rest of the scripts
-		inject.apply(null, rest);
-	},false);
-	document.head.appendChild(script);
-}
+"use strict";
 
-inject( "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js",
-		"http://cloud.github.com/downloads/wycats/handlebars.js/handlebars-1.0.0.beta.6.js",
-		function () {
-"use strict"; //will it work?
 //////////////////////////////////////
 // Initialization
 //////////////////////////////////////
@@ -314,12 +284,17 @@ $('body')
 
 console.timeEnd('handlebars');
 $('<style>').html('html { min-height:100%; font-family: sans-serif; font-size: 10pt; }  .sfw { background-image: linear-gradient(rgb(209, 213, 238), rgb(238, 242, 255) 200px); background-image: -moz-linear-gradient(rgb(209, 213, 238), rgb(238, 242, 255) 200px); }  .nsfw { background-image: linear-gradient(rgb(254,215,175), rgb(255,255,238) 200px); background-image: -moz-linear-gradient(rgb(254,215,175), rgb(255,255,238) 200px); color: #800000; }  body > header { text-align: center; color: #AF0A0F; } body.sfw  > header a, body.sfw > footer a { color: #34345C; } body.nsfw > header a, body.nsfw > footer a{ color: #880000; }  .boardlinks { font-size: 9pt;} .nsfw .boardlinks { color: #BB8866; } .sfw .boardlinks { color: #8899AA; } #boards a { font-weight: normal; padding: 1px; text-decoration: none; }  body > header h1 { font-family: "Tahoma"; font-size: 24pt; margin-bottom: 0; } body > header h1 a { color: #AF0A0F !important; text-decoration: none; } body > header h1 a:hover { text-decoration: underline; } body > header h2 { font-size: 10px; font-weight: normal; } .thread { padding-bottom: 5px; border-style: solid; border-width: 0; border-bottom-width: 1px; } .thread:first-child { border-top-width: 1px; } .sfw .thread { border-color: #b7c5d9; } .nsfw .thread { border-color: gray; }  .omitted-replies { clear: left; text-align: right; }  .post { margin-top: 3px; }  .sfw .post:target { background-color: #D6BAD0; } .nsfw .post:target { background-color: #F0C0B0; } .reply { padding: 2px; margin-left: 1.5em; border-style: solid; border-width: 0 1px 1px 0; clear: both; }  .sfw .reply { background: #D6DAF0; border-color: #B7C5D9; }  .nsfw .reply { background-color:#F0E0D6; border-color: #D9BFB7; }  .reply:before { content: ">>"; display: block; height: 0; margin-left: -1.5em; font-size: 10pt; } .sfw .reply:before { color: #B7C5D9; } .nsfw .reply:before { color: #D9BFB7; }  .sfw #postpreview.op { background-color: #EEF2FF; } .nsfw #postpreview.op { background-color: #FFFFEE; }  .post h1 { display: inline; margin: 0; padding: 0; font-size: 100%; font-weight: normal;}  .op>header>h1 { font-size: 130%; }  .post .title { color: #0f0c5d; font-weight: 800; }  .poster { color:#117743; font-weight: 800; }  .tripcode { color: #228854; }  .file { display: block; float: left; margin: 3px 20px; position: relative; }  .capcode { color: red; font-weight: 800; }  button.hide { cursor: pointer; float: right; margin: 0 0 0 2px; padding: 0 1px; line-height: 1em; }  .post.hidden { opacity: .6; } .post.hidden .fileinfo, .post.hidden .file, .post.hidden .comment, .post.hidden footer { display: none; }  a.quotelink.hiddenlink { text-decoration: line-through; }  .reportlink { float: right; }  .oplink:after { content: " (OP)"; }  .sfw .quotelink {color: #d00;} .nsfw .quotelink {color: #000080;}  a.quotelink.inlinedlink, strong.quotelink.recursivelink { font-weight: bold; color: black; }  a.permalink { text-decoration: none; color: inherit; float: right; }  a.saucelink { color: inherit; text-decoration: none; }  a.permalink:hover, a.saucelink:hover { text-decoration: underline; }  .comment { padding: 0 1em ; margin: 1em 40px; }   .greentext { font-weight: normal; color: #789922; }  .spoiler { text-decoration: none; color: black; background: black; } .spoiler .greentext, .spoiler a { color: black; }  .spoiler:hover { color: white; }  .spoiler:hover .greentext, .spoiler:hover a { color:white; }  .post footer { clear:both; }  .backlink { margin-right: 1em; }  #postpreview  { outline: 3px dashed blue; margin: 0; } #postpreview:before, .reply.inline:before { display: none; }  .post.inline { margin-left: -1px; background-color: rgba(255,255,255,.1); border: 1px solid #aaa; border-left-width: 0; padding-left: 0; }  .post.inline .comment { padding-left: 0; margin-left: 0; }  .backlink+.post.inline > .comment { margin: 1em 40px; padding: 0 1em; }  .inline .backlinks > .recursivelink { opacity: 0; }  .hovered { outline: 3px dashed blue; }  #pages { text-align: center; }  #pages ul { display: inline; margin: 0pt; padding: 0pt; }  #pages li { display: inline; }  #pages a { border-color: #AAAAAA; border-style: solid; border-width: 1px 0; color: black; display: inline-block; margin: 0.25em; padding: 0.5em 1em; text-decoration: none; }  #current { font-weight: bold; }  #pages a:hover { background-color: rgba(200, 200, 200, 0.7); }  #postform { display: table; border-spacing: 1px; margin: 1em auto; } #postform > div { display: table-row; padding: 5px 0; } #postform > div > * { display: table-cell; } #postform >div > label { vertical-align: middle; padding: 0 5px; font-weight: 800; border: 1px solid; background: #9988EE; } #rules { font-size: 10px; width: 0; overflow: visible; } #rules li { width: 30em; }  #postform input[type="text"], #postform textarea { margin: 0 2px 0 0; width: 100%; padding: 2px 0 3px 0; }  body > footer { text-align: center; }').appendTo('head');
+
 //create recaptcha with script already included on page (using 4chan's public key)
-if( !(data.thread && data.thread.locked) ) 
+var script = document.createElement("script");
+script.textContent = "("+(function() {
 	Recaptcha.create("6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc", "captcha", {
 		theme: "clean",
 		tabindex: 10
 	});
+}).toString()+")()";
+document.body.appendChild(script);
+
 //rescroll to target element if this page hasn't been loaded before
 //this retains the browser's natural scroll position memory
 //while still scrolling to the new hash target's position 
@@ -544,5 +519,3 @@ if( data.thread ) {
 			});
 	}, 30000);
 }
-
-});
