@@ -14,6 +14,6 @@ task 'build', 'build userscript', (options) ->
 		Thread: read_and_escape "thread.handlebars.html"
 		Post: read_and_escape "post.handlebars.html"
 	}
-	html5chan = read "html5chan.js"
+	html5chan = coffee.compile read("html5chan.coffee"), {bare: true}
 	fs.writeFile "html5chan@httpsgithubcomqueue-html5chan.user.js", handlebars.compile(html5chan)(includes)
 	
