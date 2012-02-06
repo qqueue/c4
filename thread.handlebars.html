@@ -1,0 +1,9 @@
+<article class="thread{{#if sticky}} sticky {{/if}}{{#if locked}} locked {{/if}}{{#if preview}} preview {{/if}}" id="thread-{{id}}" tabindex="1">
+	<div class="op post" id="{{op.id}}"> {{#with op}} {{> post}} {{/with}} </div>
+	{{#if omittedReplies}}<div class="omitted-replies">{{omittedReplies}} replies {{#if omittedImageReplies}}and {{omittedImageReplies}} image replies{{/if}} omitted. Latest {{replies.length}} shown.</div>{{/if}}
+	<div class="replies">
+		{{#each replies}}
+			<article class="post reply{{#if sage}} sage {{/if}}{{#if image}} imagepost {{/if}}" id="{{id}}"> {{> post}} </article>
+		{{/each}}
+	</div>
+</article>

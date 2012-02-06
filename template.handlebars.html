@@ -1,0 +1,78 @@
+﻿<header>
+	<nav class="boardlinks">{{{nav}}}</nav>
+	<img src="{{banner}}" alt="4chan::" id="banner"/>
+	<hgroup>
+		<h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1>
+		<h2>{{{board.subtitle}}}</h2>
+	</hgroup>
+</header>
+<div id="threads">
+	{{#each threads}}{{>thread}}{{/each}}
+	{{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }}
+</div>
+{{#if thread}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
+{{#if pages}}
+<nav id="pages">
+	{{#if previous}}<a href="{{previous}}" id="previous">previous</a>{{/if}}
+	<ul>
+		{{#each pages}}
+			<li><a href="{{num}}" {{#if current}}id="current"{{/if}}>{{num}}</a></li>
+		{{/each}}
+	</ul>
+	{{#if next}}<a href="{{next}}" id="next">next</a>{{/if}}
+</nav>
+{{/if}}
+{{#if thread.locked}}
+<p>Thread closed.<br>You may not reply at this time.</p>
+{{else}}
+<form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank">
+	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
+	<input type="hidden" value="regist" name="mode">
+	{{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}}
+	<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
+	<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
+	<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
+	<div  id="comment-field"><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4" tabindex="10" ></textarea></div>
+	<div id="captcha-field"><label>Verification: </label><div id="captcha"></div></div>
+	<div id="file-field">
+		<label for="file">Image: </label>
+		<div>
+			<input type="file" id="file" name="upfile" tabindex="10" />
+			<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler Image?</label>
+		</div>
+	</div>
+	<div title="for file deletion" id="password-field">
+		<label for="password">Password: </label>
+		<input id="password" type="password" maxlength="8" name="pwd" value="{{deletePassword}}" tabindex="10" >
+	</div>
+	<div id="buttons-wrapper">
+		<label>Submit: </label>
+		<div id="buttons">
+			<button type="submit" tabindex="10" id="post">Post</button>
+			<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
+			<button type="submit" name="email" value="noko" tabindex="10" id="sage">Noko</button>
+		</div>
+	</div>
+	<ul id="rules">
+		<li>Supported file types are: GIF, JPG, PNG </li>
+		<li>Maximum file size allowed is 3072 KB. </li>
+		<li>Images greater than 250x250 pixels will be thumbnailed. </li>
+		<li>Read the <a href="http://www.4chan.org/rules#{{board.name}}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
+		<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
+	</ul>
+</form>
+
+{{/if}}
+<form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php" target="_blank">
+	<input name="mode" value="usrdel" type="hidden">
+	<label>Password <input name="pwd" size="8" maxlength="8" value="{{deletePassword}}" type="password" tabindex="20"></label>
+	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
+	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
+</form>
+<footer>
+	<nav class="boardlinks">{{{nav}}}</nav>
+	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
+	<p>
+		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster.</small>
+	</p>
+</footer>
