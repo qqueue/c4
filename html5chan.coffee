@@ -58,187 +58,198 @@ $.fn.extend
 			window.scrollBy after.left - before.left, after.top - before.top
 		return this
 
+# regexes, for some paltry speedup
+re = 
+	boardname: /\/(\w+)\//
+	dimensions: /(\d+)x(\d+)/
+	size: /[\d\.]+ [KM]?B/
+	crossboard: /http:\/\/boards.4chan.org/g
+	link: /https?:\/\/[\w\.\-_\/=&;?#%]+/g
+	date: /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
+	omittedReplies: /\d+(?= posts?)/
+	omittedImageReplies: /\d+(?= image (?:replies|reply))/
 
+# Assuming DST in may
+DSTOffset = (new Date().getTimezoneOffset() - new Date((new Date()).setMonth(6)).getTimezoneOffset())/60
+	
+# frickin octal
+to10 = (str) ->
+	parseInt(str, 10)
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # parse 4chan's shitty markup into data
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-Image = (imageLink, filesize) ->
+# general page info
+board =
+	name: document.title.match(re.boardname)[1] # easiest way to get it 
+	title: $('div.logo b').text()
+	subtitle: $('div.logo font[size="1"]').html()
+	nsfw: $('link[rel=stylesheet]')[0].href is 'http://static.4chan.org/css/yotsuba.9.css' # the yellow theme
+	
+board.url = "http://boards.4chan.org/#{board.name}/"
+board.threadurl = "#{board.url}res/"
+
+parseImage = (imageLink, filesize) ->
 	thumb = imageLink.children 'img'
-	dimensions = filesize.text().match /(\d+)x(\d+)/
+	dimensions = filesize.text().match re.dimensions
 	
-	@url = imageLink.attr 'href'
+	thumb:
+		url: thumb.attr 'src'
+		width: parseInt thumb.attr('width'), 10
+		height: parseInt thumb.attr('height'), 10
 	
-	@width = parseInt dimensions[1]
-	@height = parseInt dimensions[2]
+	url: imageLink.attr 'href'
 	
-	@size =
-		thumb.attr('alt').match(/[\d\.]+ [KM]?B/)[0]
-	@filename = 
-		filesize.find('span[title]').attr('title')
-	@md5 =
-		thumb.attr('md5')
-	@spoiler = 
-		/^Spoiler Image/.test(thumb.attr('alt'))
-	@thumb = {
-		url: thumb.attr('src')
-		width: parseInt(thumb.attr('width'))
-		height: parseInt(thumb.attr('height'))
-	}
-	return this
-
+	width: parseInt dimensions[1], 10
+	height: parseInt dimensions[2], 10
+	
+	size: thumb.attr('alt').match(re.size)[0]
+	filename: filesize.find('span[title]').attr 'title'
+	md5: thumb.attr 'md5'
+	
+	spoiler: /^Spoiler Image/.test thumb.attr('alt')
+	
 
 parseComment = (comment) ->
-	return comment.clone() # don't operate on actual dom elements for speed
+	comment.clone() # don't operate on actual dom elements for speed
 		.find('font > .quotelink')
 			.removeAttr('onclick')
 			.unwrap()
 		.end()
-		.find('font.unkfunc').changeTo('<b>', {class: "greentext"}).end()
-		.find('span.spoiler').changeTo('<s>',{class:"spoiler"}).end()
+		.find('font.unkfunc').changeTo('<b>', class: "greentext").end()
+		.find('span.spoiler').changeTo('<s>', class:"spoiler").end()
 		.find('a.quotelink').each ->
 			if( /^(\d+)#\1/.test($(this).attr('href')) ) # if the path and hash match exactly
 				$(this).addClass('oplink')
-
 		.end()
 		.html()
-			.replace(/http:\/\/boards.4chan.org/g, "") # strips the url from cross-board links so they don't get linkified
-			.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+			.replace(re.crossboard, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
+			.replace(re.link,'<a href="$&" target="_blank">$&</a>') # linkify other links
 
 # instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 # this function pulls out numbers with regex
-parse4ChanDate = (dateString) ->
-	# perfect place for destructuring assignment 
-	matches = dateString.match(/(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/)
-	return undefined unless matches
-	date = matches.slice(1).map (val) -> parseInt(val,10)
-	# and corrects for >year 2000 and 4chan's time zone (EST)
-	return new Date(Date.UTC(
-		date[2]+2000
-		date[0]-1, date[1]
-		(date[3]+( if ((new Date()).getTimezoneOffset() == (new Date((new Date()).setMonth(6))).getTimezoneOffset()) then 4 else 5))%24, # DST detection
-		date[4]));
-
+parse4ChanDate = (date) ->
+	unless match = date.match re.date
+		throw "Couldn't parse date: #{date}" 
+	[ month, day, year, hour, minute ] = match.slice(1).map to10
+	new Date Date.UTC(
+		year + 2000
+		month - 1,
+		day,
+		(hour + 4 + DSTOffset)%24, # 4chan is EST
+		minute
+	)
 
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
-Post = ($,op,thread) -> 
-	poster = $.filter(if op then '.postername' else '.commentpostername' )
-	email = poster.find('a.linkmail').attr('href')
-
-	# non-enumerable circular reference to thread, for rendering
-	Object.defineProperty(this, 'thread', { value: thread, enumerable: false })
-	
-	@id =
-		$.filter('input').attr('name')
-	@op = 
-		op
-	@sage = 
-		if email then /^mailto:sage$/i.test(email) else false
-	
-	@url = # op has wrapper, but replies don't, so we need just the text
-		$.find('a.quotejs').eq(0).attr('href')
-	@time = # only the op has a nice wrapper around the date ;_
-		parse4ChanDate( if op then $.filter('.posttime').text() else $.immediateText())
-	@title = 
-		$.filter( if op then '.filetitle' else '.replytitle' ).text() or undefined
-	
-	imagelink = $.filter('a[target="_blank"]')
-	if( imagelink.exists() )
-		@image = new Image(imagelink, $.filter('.filesize'))
-	else
-		@imageDeleted = $.exists('img[alt="File deleted."]')
-	
-	
-	@poster = 
-		poster.eq(0).text()
-	@email =
-		email && email.substring(7); # if email is defined, strip mailto:
-	@tripcode = # poster trips with emails are wrapped in the anchor
-		$.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
-	@capcode = # replies have two commentpostername spans
-		($.filter('.commentpostername').eq(if op then 0 else 1).text()) or undefined
-	@comment = parseComment( $.filter('blockquote') )
+class Post 
+	constructor: ($,op,thread) -> 
+		poster = $.filter if op then '.postername' else '.commentpostername'
+		email = poster.find('a.linkmail').attr 'href'
+		
+		@id = $.filter('input').attr 'name'
+		@op = op
+		@sage = email and /^mailto:sage$/i.test email
+		
+		@url = 
+			if op then thread.url else thread.url+'#'+@id
+		@time = # only the op has a nice wrapper around the date ;_
+			parse4ChanDate( if op then $.filter('.posttime').text() else $.immediateText())
+		@title = 
+			$.filter( if op then '.filetitle' else '.replytitle' ).text() or undefined
+		
+		imagelink = $.filter 'a[target="_blank"]'
+		if imagelink.exists()
+			@image = parseImage imagelink, $.filter('.filesize')
+		else
+			@imageDeleted = $.exists 'img[alt="File deleted."]'
+		
+		@poster = poster.eq(0).text()
+		@email = email and email.substring(7); # strip mailto:
+		@tripcode = # poster trips with emails are wrapped in the anchor
+			$.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
+		@capcode = # replies have two commentpostername spans
+			$.filter('.commentpostername').eq( if op then 0 else 1).text() or undefined
+			
+		@comment = parseComment $.filter('blockquote')
+		
+		# non-enumerable circular references for rendering
+		Object.defineProperty this, 'thread', value: thread, enumerable: false
 
 # constructor for post, from jquery element list and whether this is a full thread
-Thread = ($,preview,board) ->
-	# non-enumerable circular reference to thread, for rendering
-	Object.defineProperty(this, 'board', { value: board, enumerable: false })
-	
-	thread = this
-	@replies = 
-		$.find('td.reply').map -> 
-			new Post(jQuery(this).children(),false, thread)
-		.get()
-	@op = 
-		new Post($,true, this)
-	@id = 
-		@op.id
-	
-	@locked = 
-		$.exists('img[alt="closed"]')
-	@sticky = 
-		$.exists('img[alt="sticky"]')
-	
-	@url = 
-		"res/"+this.id
-	
-	@preview = 
-		preview
-	if( preview )
-		omittedposts = $.filter('.omittedposts').text()
-		@omittedReplies =
-			parseInt(omittedposts.match(/\d+(?= posts?)/), 10) || 0
-		@omittedImageReplies =
-			parseInt(omittedposts.match(/\d+(?= image (?:replies|reply))/), 10) || 0
+class Thread 
+	constructor: ($,preview) ->
+		@id = $.filter('input').attr 'name'
+		@url = board.threadurl+@id
+		
+		@op = 
+			new Post $, true, this
+		@replies = 
+			$.find('td.reply').map (i,post) => 
+				new Post jQuery(post).children(), false, this
+			.get()
+		
+		
+		@locked = 
+			$.exists('img[alt="closed"]')
+		@sticky = 
+			$.exists('img[alt="sticky"]')
+		
+		
+		if @preview = preview 
+			omittedposts = $.filter('.omittedposts').text()
+			@omittedReplies =
+				to10 omittedposts.match(re.omittedReplies) or 0
+			@omittedImageReplies =
+				to10 omittedposts.match(re.omittedImageReplies) or 0
+				
+	# non-enumerable circular reference for rendering
+	Object.defineProperty Thread.prototype, 'board', value: board, enumerable: false
 
 # parse entire board
 parse4chan = ->
 	# detect whether this is board view or post view based on the existence of the [Return] link
 	isThread = $('a[accesskey]').exists()
-	
-	board = {
-		name: document.title.match(/\/(\w+)\//)[1] # easiest way to get it 
-		title: $('div.logo b').text()
-		subtitle: $('div.logo font[size="1"]').html()
-		nsfw: ($('link[rel=stylesheet]')[0].href is 'http:# static.4chan.org/css/yotsuba.9.css') # the yellow theme
-	}
-	
+
 	current = 0
-	previous = null
-	next = null
-	pages = $('table.pages').find('a,b').map (idx) -> 
-		current = idx if( $(this).is('b')) 
-		return { current: $(this).is('b'), num: idx }
-	.get()
-	previous = if current > 0 then current -1 else undefined
-	next = if current < (pages.length-1) then current + 1 else undefined
+	pages = if ( $pages = $('table.pages') ).exists()
+		$('table.pages').find('a,b').map (i) -> 
+			current = i if $(this).is 'b'
+			return current: current is i, num: i
+		.get()
+	previous = if pages and current > 0 then current -1 else undefined
+	next = if pages and current < (pages.length-1) then current + 1 else undefined
 	
-	threads = undefined
-	unless isThread
-		threads = ($('form[name="delform"] > br[clear="left"]').map ->
-			new Thread( $($(this).prevUntil("hr").get().reverse()), true, board)
-		).get()
+	threads = thread = undefined
+	if isThread
+		thread = new Thread $('form[name="delform"]').children(), false
+	else
+		# reliable way to separate threads into separate collections of elements
+		threads = $('form[name="delform"] > br[clear="left"]').map ->
+			new Thread $($(this).prevUntil("hr").get().reverse()), true
+		.get()
+
+	nav: $('#navtop').html()
+	banner: $('div.logo img').attr('src')
 	
-	return {
-		nav: $('#navtop').html()
-		banner: $('div.logo img').attr('src')
-		deletePassword: $('input[type="password"]').get(0).value, # so we don't have to recheck the cookie
-		board: board
-		thread: if isThread then new Thread( $('form[name="delform"]').children(),false,board ) else undefined
-		 # reliable way to separate threads into separate collections of elements
-		threads: threads
-		
-		pages: if pages.length > 0 then pages else undefined
-		previous: previous
-		next: next
-	};
+	deletePassword: $('input[type="password"]').get(0).value # so we don't have to recheck the cookie
+	board: board
+	
+	thread: thread
+	threads: threads
+	
+	pages: pages
+	previous: previous
+	next: next
 
 console.time("extract threads")
 data = parse4chan()
 console.dir(data)
 console.timeEnd("extract threads"); 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # /
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Render data back to html
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # /
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 
 # disable 4chan styles
