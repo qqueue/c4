@@ -19,43 +19,34 @@ $.fn.extend
 		@parent().clone().children().remove().end().text()
 	
 	exists: (selector) -> 
-		( if selector then this.find(selector) else this ).length > 0
+		( if selector then @find selector else this ).length > 0
 	
 	changeTo: (replacement, options) -> 
 		@replaceWith ->
 			$(replacement,options).html($(this).html())
 
-	constrainY: (offset, margin) ->
-		height = this.height()
+	constrainY: ({left, top}, margin = 0) ->
+		height = @height()
+		bottom = top + height
 		screentop = $(window).scrollTop()
 		screenbottom = screentop + $(window).height()
 		
-		if (offset.top + height) > screenbottom
-			offset.top = screenbottom - height - margin
+		if bottom > screenbottom
+			top = screenbottom - margin - height
 			
 		if top < screentop
-			offset.top = screentop + margin
+			top = screentop + margin
 			
-		return this.css
-			left: offset.left
-			top: offset.top
+		return @css
+			left: left
+			top: top
 			position: "absolute"
-
-	visibleY: (margin) -> 
-		margin = margin || 0
-		offset = this.offset()
-		top = offset.top
-		bottom = offset.top + this.height()
-		screentop = $(window).scrollTop()
-		screenbottom = screentop + $(window).height()
-		
-		return top > screentop && bottom < screenbottom
-		
+			
 	beforeAndScroll: (content) ->
-		before = this.offset()
-		@before(content)
-		after = this.offset()
-		window.scrollBy(after.left-before.left, after.top-before.top)
+		before = @offset()
+		@before content
+		after = @offset()
+		window.scrollBy after.left - before.left, after.top - before.top 
 		return this
 		
 	removeAndScroll: (relativeTo) ->
@@ -63,9 +54,8 @@ $.fn.extend
 		@remove()
 		after = relativeTo.offset()
 		# unless the scrollbar is already at the bottom (which autocorrects position)
-		if( ($(document).height() - ($(window).scrollTop() + $(window).height())) > 10 )
-			window.scrollBy(after.left-before.left, after.top-before.top)
-			
+		unless window.scrollY is window.scrollMaxY
+			window.scrollBy after.left - before.left, after.top - before.top
 		return this
 
 
