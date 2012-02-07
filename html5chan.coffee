@@ -14,7 +14,7 @@
 
 "use strict"
 
-$.fn.extend {
+$.fn.extend
 	immediateText: -> 
 		@parent().clone().children().remove().end().text()
 	
@@ -68,18 +68,18 @@ $.fn.extend {
 			window.scrollBy(after.left-before.left, after.top-before.top)
 			
 		return this
-}
+
 
 # parse 4chan's shitty markup into data
 
 Image = (imageLink, filesize) ->
-	thumb = imageLink.children('img')
-	dimensions = filesize.text().match(/(\d+)x(\d+)/)
+	thumb = imageLink.children 'img'
+	dimensions = filesize.text().match /(\d+)x(\d+)/
 	
-	@url = imageLink.attr('href')
+	@url = imageLink.attr 'href'
 	
-	@width = parseInt(dimensions[1])
-	@height = parseInt(dimensions[2])
+	@width = parseInt dimensions[1]
+	@height = parseInt dimensions[2]
 	
 	@size =
 		thumb.attr('alt').match(/[\d\.]+ [KM]?B/)[0]
