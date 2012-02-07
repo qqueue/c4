@@ -1,6 +1,7 @@
 fs = require 'fs'
 coffee = require 'coffee-script'
 handlebars = require 'handlebars'
+_ = require 'underscore'
 
 read = (file) -> 
 	fs.readFileSync file, "utf8"
@@ -25,11 +26,11 @@ task 'build', 'build userscript', (options) ->
 		console.error error
 	
 task 'watch', 'watch for changes and rebuild automatically', (options) ->
-	fs.watch ".", interval: 1000, (event, filename) ->
+	fs.watch ".", interval: 1000, (_.debounce((event, filename) ->
 		unless filename
 			console.log "filename not given... exiting"
 			return
 		if event is "change" and filename isnt outfile
-			console.log "event: #{event}"
 			console.log "change detected in #{filename}. rebuilding..."
 			invoke "build"
+	, 500))

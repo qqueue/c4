@@ -30,18 +30,17 @@ $.fn.extend
 		screentop = $(window).scrollTop()
 		screenbottom = screentop + $(window).height()
 		
-		if( (offset.top + height) > screenbottom )
+		if (offset.top + height) > screenbottom
 			offset.top = screenbottom - height - margin
 			
-		if( top < screentop )
+		if top < screentop
 			offset.top = screentop + margin
 			
-		return this.css({
+		return this.css
 			left: offset.left
 			top: offset.top
 			position: "absolute"
-		})
-	
+
 	visibleY: (margin) -> 
 		margin = margin || 0
 		offset = this.offset()
