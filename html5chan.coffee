@@ -498,7 +498,7 @@ if( data.thread )
 				# parse posts newer than last post
 				last_post = data.thread.replies[data.thread.replies.length-1]
 				posts = $('a[name='+last_post.id+'] ~ a[name]',html).eq(0).nextAll().find('td.reply').map( ->
-					return new Post($(this).children(),false)
+					return new Post($(this).children(),false, data.thread)
 				).get()
 				console.dir(posts)
 				
