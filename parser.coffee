@@ -29,22 +29,27 @@ parseImage = (imageLink, filesize) ->
 	spoiler: /^Spoiler Image/.test thumb.attr('alt')
 	
 
-parseComment = (comment) ->
-	comment.clone() # don't operate on actual dom elements for speed
-		.find('font > .quotelink')
-			.removeAttr('onclick')
-			.unwrap()
-		.end()
-		.find('font.unkfunc').changeTo('<b>', class: "greentext").end()
-		.find('span.spoiler').changeTo('<s>', class:"spoiler").end()
-		.find('a.quotelink').each ->
-			if( /^(\d+)#\1/.test($(this).attr('href')) ) # if the path and hash match exactly
-				$(this).addClass('oplink')
-		.end()
-		.html()
-			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
-			.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+# globally perform some substitutions instead of in loop
+console.time "preprocess"
 
+$('font > .quotelink')
+	.removeAttr('onclick')
+	.unwrap()
+$('font.unkfunc').changeTo('<b>', class: "greentext")
+$('span.spoiler').changeTo('<s>', class:"spoiler").end()
+
+for link in $('a.quotelink')
+	l = $(link)
+	if /^(\d+)#\1/.test l.attr('href') # if the path and hash match exactly
+		l.addClass 'oplink'
+
+parseComment = (comment) ->
+	comment.html()
+		.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
+		.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+
+console.timeEnd "preprocess"
+		
 # instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 # this function pulls out numbers with regex
 parse4ChanDate = (date) ->
@@ -62,6 +67,7 @@ parse4ChanDate = (date) ->
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
 class Post 
 	constructor: ($,op,thread) -> 
+		console.time "parse post op: #{op}"
 		poster = $.filter if op then '.postername' else '.commentpostername'
 		email = poster.find('a.linkmail').attr 'href'
 		
@@ -88,26 +94,28 @@ class Post
 			$.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
 		@capcode = # replies have two commentpostername spans
 			$.filter('.commentpostername').eq( if op then 0 else 1).text() or undefined
-			
+
 		@comment = parseComment $.filter('blockquote')
-		
+
 		# non-enumerable circular references for rendering
 		Object.defineProperty this, 'thread', value: thread, enumerable: false
+		console.timeEnd "parse post op: #{op}"
 
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
 	constructor: ($,preview) ->
+		console.time "parse thread"
 		@id = $.filter('input').attr 'name'
 		@url = board.threadurl+@id
 		
 		@op = 
 			new Post $, true, this
+		thread = this
+		console.time "parse replies"
 		@replies = 
-			$.find('td.reply').map (i,post) => 
-				new Post jQuery(post).children(), false, this
-			.get()
-		
-		
+			for post in $.find('td.reply') 
+				new Post jQuery(post).children(), false, thread
+		console.timeEnd "parse replies"
 		@locked = 
 			$.exists('img[alt="closed"]')
 		@sticky = 
@@ -120,9 +128,13 @@ class Thread
 				to10 omittedposts.match(/\d+(?= posts?)/) or 0
 			@omittedImageReplies =
 				to10 omittedposts.match(/\d+(?= image (?:replies|reply))/) or 0
-				
+		
+		console.timeEnd "parse thread"
+		
 	# non-enumerable circular reference for rendering
 	Object.defineProperty Thread.prototype, 'board', value: board, enumerable: false
+	
+	
 
 # parse entire board
 parse4chan = ->
@@ -142,10 +154,11 @@ parse4chan = ->
 	if isThread
 		thread = new Thread $('form[name="delform"]').children(), false
 	else
-		# reliable way to separate threads into separate collections of elements
-		threads = $('form[name="delform"] > br[clear="left"]').map ->
-			new Thread $($(this).prevUntil("hr").get().reverse()), true
-		.get()
+		# insert a <br> at the beginning of the first thread, to make separating them easier
+		oldThreads = $('form[name="delform"]').prepend('<hr>').find('hr').get().slice(0,-2);
+		threads = 
+			for t in oldThreads
+				new Thread $(t).nextUntil('hr'), true
 
 	nav: $('#navtop').html()
 	banner: $('div.logo img').attr('src')
