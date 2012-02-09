@@ -10,6 +10,8 @@ read_and_escape = (file) ->
 
 
 outfile = "html5chan@httpsgithubcomqueue-html5chan.user.js"
+parts = ['utils', 'parser', 'renderer', 'features']
+metadata = 'metadata.txt'
 
 task 'build', 'build userscript', (options) ->
 	includes = 
@@ -18,7 +20,8 @@ task 'build', 'build userscript', (options) ->
 		Thread: read_and_escape "thread.handlebars.html"
 		Post: read_and_escape "post.handlebars.html"
 	try	
-		html5chan = coffee.compile read("html5chan.coffee"), bare: true
+		html5chan = 
+			read(metadata) + coffee.compile (read "#{file}.coffee" for file in parts).join("\n"), bare: true
 		fs.writeFileSync outfile, handlebars.compile(html5chan)(includes)
 		console.log "compiled script to #{outfile}"
 	catch error
