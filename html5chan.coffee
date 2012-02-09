@@ -58,23 +58,11 @@ $.fn.extend
 			window.scrollBy after.left - before.left, after.top - before.top
 		return this
 
-# regexes, for some paltry speedup
-re = 
-	boardname: /\/(\w+)\//
-	dimensions: /(\d+)x(\d+)/
-	size: /[\d\.]+ [KM]?B/
-	crossboard: /http:\/\/boards.4chan.org/g
-	link: /https?:\/\/[\w\.\-_\/=&;?#%]+/g
-	date: /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
-	omittedReplies: /\d+(?= posts?)/
-	omittedImageReplies: /\d+(?= image (?:replies|reply))/
-
 # Assuming DST in may
 DSTOffset = (new Date().getTimezoneOffset() - new Date((new Date()).setMonth(6)).getTimezoneOffset())/60
 	
 # frickin octal
-to10 = (str) ->
-	parseInt(str, 10)
+to10 = (str) -> parseInt(str, 10)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # parse 4chan's shitty markup into data
@@ -82,7 +70,7 @@ to10 = (str) ->
 
 # general page info
 board =
-	name: document.title.match(re.boardname)[1] # easiest way to get it 
+	name: document.title.match(/\/(\w+)\//)[1] # easiest way to get it 
 	title: $('div.logo b').text()
 	subtitle: $('div.logo font[size="1"]').html()
 	nsfw: $('link[rel=stylesheet]')[0].href is 'http://static.4chan.org/css/yotsuba.9.css' # the yellow theme
@@ -92,7 +80,7 @@ board.threadurl = "#{board.url}res/"
 
 parseImage = (imageLink, filesize) ->
 	thumb = imageLink.children 'img'
-	dimensions = filesize.text().match re.dimensions
+	dimensions = filesize.text().match /(\d+)x(\d+)/
 	
 	thumb:
 		url: thumb.attr 'src'
@@ -104,7 +92,7 @@ parseImage = (imageLink, filesize) ->
 	width: parseInt dimensions[1], 10
 	height: parseInt dimensions[2], 10
 	
-	size: thumb.attr('alt').match(re.size)[0]
+	size: thumb.attr('alt').match(/[\d\.]+ [KM]?B/)[0]
 	filename: filesize.find('span[title]').attr 'title'
 	md5: thumb.attr 'md5'
 	
@@ -124,13 +112,13 @@ parseComment = (comment) ->
 				$(this).addClass('oplink')
 		.end()
 		.html()
-			.replace(re.crossboard, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
-			.replace(re.link,'<a href="$&" target="_blank">$&</a>') # linkify other links
+			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
+			.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 
 # instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 # this function pulls out numbers with regex
 parse4ChanDate = (date) ->
-	unless match = date.match re.date
+	unless match = date.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
 		throw "Couldn't parse date: #{date}" 
 	[ month, day, year, hour, minute ] = match.slice(1).map to10
 	new Date Date.UTC(
@@ -199,9 +187,9 @@ class Thread
 		if @preview = preview 
 			omittedposts = $.filter('.omittedposts').text()
 			@omittedReplies =
-				to10 omittedposts.match(re.omittedReplies) or 0
+				to10 omittedposts.match(/\d+(?= posts?)/) or 0
 			@omittedImageReplies =
-				to10 omittedposts.match(re.omittedImageReplies) or 0
+				to10 omittedposts.match(/\d+(?= image (?:replies|reply))/) or 0
 				
 	# non-enumerable circular reference for rendering
 	Object.defineProperty Thread.prototype, 'board', value: board, enumerable: false
