@@ -27,6 +27,10 @@
 <a class="file" target="_blank" href="{{../image.url}}"><img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/></a>
 {{/with}}
 
+{{else}}
+{{#if deletedImage}}
+<img class="deleted-image" alt="File deleted." src="http://static.4chan.org/image/filedeleted.gif">
+{{/if}}
 {{/if}}
 <div class="comment">
 	{{{comment}}}

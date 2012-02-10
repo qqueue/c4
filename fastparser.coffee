@@ -84,12 +84,12 @@ timeEnd "post ids"
 # parse all names and capcodes (which share elements)
 # ########################################################
 time "names"
-replynames = (el for el in document.getElementsByClassName('commentpostername'))
-opnames = (el for el in document.getElementsByClassName('postername'))
+replynames = Array::slice.call document.getElementsByClassName('commentpostername')
+opnames = Array::slice.call document.getElementsByClassName('postername')
 timeEnd "names"
 
 # ########################################################
-# parse all titles
+# parse all titles (elements always exist even when blank)
 # ########################################################
 time "titles"
 replytitles = (el.textContent for el in document.getElementsByClassName('replytitle'))
@@ -97,18 +97,25 @@ optitles = (el.textContent for el in document.getElementsByClassName('filetitle'
 timeEnd "titles"
 
 # ########################################################
-# parse all emails
+# get all emails
 # ########################################################
 time "emails"
-emails = (el for el in document.getElementsByClassName('linkmail'))
+emails = Array::slice.call document.getElementsByClassName('linkmail')
 timeEnd "emails"
 
 # ########################################################
-# parse all tripcodes
+# get all tripcodes
 # ########################################################
 time "tripcodes"
-tripcodes = (el for el in document.getElementsByClassName('postertrip'))
+tripcodes = Array::slice.call document.getElementsByClassName('postertrip')
 timeEnd "tripcodes"
+
+# ########################################################
+# get all deleted images
+# ########################################################
+time "deleted images"
+deletedImages = Array::slice.call document.querySelectorAll('img[alt="File deleted."]')
+timeEnd "deleted images"
 
 # ########################################################
 # parse all images
@@ -200,6 +207,9 @@ class Post
 		if (op and imageEls[0]?._threadnum is threadnum) or (not op and imageEls[0]?.parentNode is el)
 			imageEls.shift()
 			@image = images.shift()
+		if not @image and (op and deletedImages[0]?._threadnum is threadnum) or (not op and deletedImages[0]?.parentNode is el)
+			deletedImages.shift()
+			@deletedImage = true
 		
 		@poster = (if op then opnames.shift() else replynames.shift()).textContent
 		
