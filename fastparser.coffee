@@ -13,34 +13,14 @@ isThread = document.location.pathname.match /res\/(\d+)/
 threadID = if isThread then isThread[1]
 opHash = if threadID then '#'+threadID
 
-parseImage = (imageLink, filesize) ->
-	thumb = imageLink.children 'img'
-	dimensions = filesize.text().match /(\d+)x(\d+)/
-	
-	thumb:
-		url: thumb.attr 'src'
-		width: parseInt thumb.attr('width'), 10
-		height: parseInt thumb.attr('height'), 10
-	
-	url: imageLink.attr 'href'
-	
-	width: parseInt dimensions[1], 10
-	height: parseInt dimensions[2], 10
-	
-	size: thumb.attr('alt').match(/[\d\.]+ [KM]?B/)[0]
-	filename: filesize.find('span[title]').attr 'title'
-	md5: thumb.attr 'md5'
-	
-	spoiler: /^Spoiler Image/.test thumb.attr('alt')
-	
-
+time "preprocess"
 # ########################################################
 # find OP links
 # ########################################################
 
 time "find OP links"
 for link in document.getElementsByClassName 'quotelink'
-	if opHash == link.attributes.getNamedItem('href').value
+	if opHash == link.getAttribute('href').value
 		link.className += ' oplink'
 timeEnd "find OP links"
 		
@@ -85,6 +65,13 @@ comments = for el in document.getElementsByTagName 'blockquote'
 timeEnd "comments"
 
 # ########################################################
+# parse post ids
+# ########################################################
+time "post ids"
+ids = for el in document.querySelectorAll 'form[name="delform"] > a[name]'
+	el.attributes[0].value
+timeEnd "post ids"
+# ########################################################
 # parse all names
 # ########################################################
 time "names"
@@ -94,15 +81,49 @@ opnames = (el.textContent for el in document.getElementsByClassName('postername'
 timeEnd "names"
 
 # ########################################################
+# parse all images
+# ########################################################
+time "images"
+parseImage = (image, fileinfo) ->
+	thumb = image.childNodes[0]
+	dimensions = fileinfo.match /(\d+)x(\d+)/
+	filename = fileinfo.match /title="([^"]+)"/
+	
+	thumb:
+		url: thumb.getAttribute 'src'
+		width: parseInt thumb.getAttribute('width'), 10
+		height: parseInt thumb.getAttribute('height'), 10
+	
+	url: image.getAttribute 'href'
+	
+	width: parseInt dimensions[1], 10
+	height: parseInt dimensions[2], 10
+	
+	size: fileinfo.match(/[\d\.]+ [KM]?B/)[0]
+	filename: if filename then filename[1]
+	md5: thumb.getAttribute 'md5'
+	
+	spoiler: /^Spoiler Image/.test fileinfo
+
+imageEls = (el.parentNode for el in document.querySelectorAll('img[md5]'))
+fileinfos = (el.innerHTML for el in document.getElementsByClassName('filesize'))
+images = (for i in [0...imageEls.length]
+	parseImage(imageEls[i],fileinfos[i])
+)
+timeEnd "images"
+
+# ########################################################
+timeEnd "preprocess"
 
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
 class Post 
 	constructor: ($,op,thread) -> 
-		time "parse post #{if op then 'op' else ''}"
+		@id = ids.shift()
+		time "parse post #{if op then 'op' else ''} id: #{@id}"
 		poster = $.filter if op then '.postername' else '.commentpostername'
 		email = poster.find('a.linkmail').attr 'href'
 		
-		@id = $.filter('input').attr 'name'
+		
 		@op = op
 		@sage = email and /^mailto:sage$/i.test email
 		
@@ -114,7 +135,7 @@ class Post
 		
 		imagelink = $.filter 'a[target="_blank"]'
 		if imagelink.exists()
-			@image = parseImage imagelink, $.filter('.filesize')
+			@image = images.shift()
 		else
 			@imageDeleted = $.exists 'img[alt="File deleted."]'
 		
@@ -129,7 +150,7 @@ class Post
 
 		# non-enumerable circular references for rendering
 		Object.defineProperty this, 'thread', value: thread, enumerable: false
-		timeEnd "parse post #{if op then 'op' else ''}"
+		timeEnd "parse post #{if op then 'op' else ''} id: #{@id}"
 
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
