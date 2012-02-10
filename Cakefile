@@ -10,7 +10,7 @@ read_and_escape = (file) ->
 
 
 outfile = "html5chan@httpsgithubcomqueue-html5chan.user.js"
-parts =  ['utils', 'fastparser'] # ['utils', 'parser', 'renderer', 'features']
+parts =  ['utils', 'fastparser', 'renderer'] # ['utils', 'parser', 'renderer', 'features']
 metadata = 'metadata.txt'
 
 task 'build', 'build userscript', (options) ->
