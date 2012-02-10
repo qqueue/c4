@@ -13,6 +13,8 @@ isThread = document.location.pathname.match /res\/(\d+)/
 threadID = if isThread then isThread[1]
 opHash = if threadID then '#'+threadID
 
+delform = document.forms[1]
+
 time "preprocess"
 # ########################################################
 # find OP links
@@ -68,8 +70,14 @@ timeEnd "comments"
 # parse post ids
 # ########################################################
 time "post ids"
-ids = for el in document.querySelectorAll 'form[name="delform"] > a[name]'
-	el.attributes[0].value
+if isThread 
+	ids = for el in document.querySelectorAll 'form[name="delform"] > a[name]'
+		el.attributes[0].value
+else # first named anchor is 0 for board pages ;_;
+	ids = for el in document.querySelectorAll('form[name="delform"] > a[name], form[name="delform"] > input[value="delete"]')
+		id = el.getAttribute 'name'
+		if id is "0" then continue else id
+console.dir ids
 timeEnd "post ids"
 # ########################################################
 # parse all names
@@ -89,6 +97,13 @@ replytitles = (el.textContent for el in document.getElementsByClassName('replyti
 optitles = (el.textContent for el in document.getElementsByClassName('filetitle'))
 timeEnd "titles"
 
+# ########################################################
+# parse all emails
+# ########################################################
+time "emails"
+
+emails = (el for el in document.getElementsByClassName('replytitle'))
+timeEnd "emails"
 
 # ########################################################
 # parse all images
@@ -127,15 +142,14 @@ timeEnd "preprocess"
 
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
 class Post 
-	constructor: ($,op,thread) -> 
+	constructor: (threadnum,op,thread) -> 
 		@id = ids.shift()
-		time "parse post #{if op then 'op' else ''} id: #{@id}"
-		poster = $.filter if op then '.postername' else '.commentpostername'
-		email = poster.find('a.linkmail').attr 'href'
-		
+
+		if emails[0].parentNode._threadnum is threadnum
+			@email = emails.shift().href
 		
 		@op = op
-		@sage = email and /^mailto:sage$/i.test email
+		@sage = @email and /^mailto:sage$/i.test @email
 		
 		@url = 
 			if op then thread.url else thread.url+'#'+@id
@@ -143,54 +157,64 @@ class Post
 		@title = 
 			(if op then optitles.shift() else replytitles.shift()) or undefined
 		
-		imagelink = $.filter 'a[target="_blank"]'
-		if imagelink.exists()
+		if imageEls[0]?._threadnum is threadnum
+			imageEls.shift()
 			@image = images.shift()
-		else
-			@imageDeleted = $.exists 'img[alt="File deleted."]'
 		
 		@poster = if op then opnames.shift() else replynames.shift()
-		@email = email and email.substring(7); # strip mailto:
+		###
 		@tripcode = # poster trips with emails are wrapped in the anchor
 			$.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
 		@capcode = # replies have two commentpostername spans
 			$.filter('.commentpostername').eq( if op then 0 else 1).text() or undefined
-
+		###
 		@comment = comments.shift()
 
 		# non-enumerable circular references for rendering
 		Object.defineProperty this, 'thread', value: thread, enumerable: false
-		timeEnd "parse post #{if op then 'op' else ''} id: #{@id}"
 
+
+_threads = []
+_thread = 0
+for el in delform.children
+	break if el.tagName is "CENTER" # the ad at the end of the threads
+	if el.tagName is "HR"
+		_threads.push _thread
+		_thread++
+		continue
+	el._threadnum = _thread
+console.dir _threads
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
-	constructor: ($,preview) ->
-		time "parse thread"
-		@id = $.filter('input').attr 'name'
+	constructor: (threadnum) ->
+		@id = ids[0] # don't shift, because op will
+		time "parse thread #{@id}"
+		
 		@url = board.threadurl+@id
 		
 		@op = 
-			new Post $, true, this
+			new Post threadnum, true, this
 		thread = this
 		time "parse replies"
 		@replies = 
-			for post in $.find('td.reply') 
-				new Post jQuery(post).children(), false, thread
+			for el in document.getElementsByClassName 'reply' when el.parentNode.parentNode.parentNode._threadnum is threadnum
+				new Post threadnum, false, thread
 		timeEnd "parse replies"
+		###
 		@locked = 
 			$.exists('img[alt="closed"]')
 		@sticky = 
 			$.exists('img[alt="sticky"]')
-		
-		
+		###
+		###
 		if @preview = preview 
 			omittedposts = $.filter('.omittedposts').text()
 			@omittedReplies =
 				parseInt(omittedposts.match(/\d+(?= posts?)/), 10) or 0
 			@omittedImageReplies =
 				parseInt(omittedposts.match(/\d+(?= image (?:replies|reply))/), 10) or 0
-		
-		timeEnd "parse thread"
+		###
+		timeEnd "parse thread #{@id}"
 		
 	# non-enumerable circular reference for rendering
 	Object.defineProperty Thread.prototype, 'board', value: board, enumerable: false
@@ -199,7 +223,7 @@ class Thread
 
 # parse entire board
 parse4chan = ->
-
+	###
 	current = 0
 	pages = if ( $pages = $('table.pages') ).exists()
 		$('table.pages').find('a,b').map (i) -> 
@@ -208,29 +232,29 @@ parse4chan = ->
 		.get()
 	previous = if pages and current > 0 then current -1 else undefined
 	next = if pages and current < (pages.length-1) then current + 1 else undefined
-	
+	###
 	threads = thread = undefined
 	if isThread
-		thread = new Thread $('form[name="delform"]').children(), false
+		thread = new Thread 0
 	else
 		# insert a <br> at the beginning of the first thread, to make separating them easier
 		oldThreads = $('form[name="delform"]').prepend('<hr>').find('hr').get().slice(0,-2);
 		threads = 
-			for t in oldThreads
-				new Thread $(t).nextUntil('hr'), true
+			for t, idx in oldThreads
+				new Thread idx
 
-	nav: $('#navtop').html()
-	banner: $('div.logo img').attr('src')
+	nav: document.getElementById('navtop').innerHTML
+	banner: document.getElementsByTagName('img')[0].getAttribute 'src'
 	
-	deletePassword: $('input[type="password"]').get(0).value # so we don't have to recheck the cookie
+	# deletePassword: $('input[type="password"]').get(0).value # so we don't have to recheck the cookie
 	board: board
 	
 	thread: thread
 	threads: threads
 	
-	pages: pages
-	previous: previous
-	next: next
+	# pages: pages
+	# previous: previous
+	# next: next
 
 time("extract threads")
 
