@@ -20,7 +20,7 @@ time "preprocess"
 
 time "find OP links"
 for link in document.getElementsByClassName 'quotelink'
-	if opHash == link.getAttribute('href').value
+	if opHash == link.hash
 		link.className += ' oplink'
 timeEnd "find OP links"
 		
