@@ -176,7 +176,7 @@ $('#threads')
 # bypass inline replies on dblclick
 $('#threads').on 'dblclick', 'a.quotelink', ->
 	window.location.hash = this.hash if( this.hash ) # actually follow link
-
+###
 if( data.thread )
 	# let's try some ajax
 	refresh = ->
@@ -205,3 +205,4 @@ if( data.thread )
 				alert(status)
 			)
 	setTimeout refresh, 30000
+###

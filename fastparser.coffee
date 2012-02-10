@@ -240,13 +240,15 @@ class Thread
 		if _stickies > 0
 			_stickies--
 			@sticky = true
-			
-		if _omittedposts[0]?._threadnum is threadnum
-			omitted = _omittedposts.shift().textContent
-			@omittedReplies =
-				parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
-			@omittedImageReplies =
-				parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+		unless isThread
+			@preview = true
+			if _omittedposts[0]?._threadnum is threadnum
+				omitted = _omittedposts.shift().textContent
+				@omittedReplies =
+					parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
+				@omittedImageReplies =
+					parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+		
 		timeEnd "parse thread #{@id}"
 		
 	# non-enumerable circular reference for rendering
@@ -291,5 +293,3 @@ data = parse4chan()
 
 timeEnd("extract threads"); 
 
-console.log _log.join("\n")
-console.dir(data)

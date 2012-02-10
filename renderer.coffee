@@ -18,7 +18,7 @@ Handlebars.registerHelper 'datetime', ( time, options ) ->
 Handlebars.registerHelper 'ISOString', (time) ->
 	return new Date(time).toISOString()
 
-
+time "compile handlebars"
 Post.render = Handlebars.compile('{{{Post}}}')
 Post.prototype.render = -> Post.render(this)
 Handlebars.registerPartial('post',Post.render)
@@ -28,6 +28,8 @@ Thread.prototype.render = -> Thread.render(this)
 Handlebars.registerPartial('thread',Thread.render)
 
 template = Handlebars.compile('{{{template}}}')
+timeEnd "compile handlebars"
+time "render"
 $('body')
 	.removeAttr('vlink text link bgcolor')
 	.attr({id: data.board.name})
@@ -56,3 +58,6 @@ if ( !sessionStorage.getItem("html5chan-"+document.URL) )
 	window.location.hash = window.location.hash
 	sessionStorage.setItem("html5chan-"+document.URL, true)
 
+timeEnd "render"
+console.log _log.join("\n")
+console.dir(data)
