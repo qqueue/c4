@@ -20,7 +20,6 @@ time "preprocess"
 # ########################################################
 # find OP links
 # ########################################################
-
 time "find OP links"
 for link in document.getElementsByClassName 'quotelink'
 	if opHash == link.hash
@@ -31,7 +30,6 @@ timeEnd "find OP links"
 # parse all times
 # ########################################################
 time "times"
-
 # instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 # this function pulls out numbers with regex
 parse4ChanDate = (date) ->
@@ -55,7 +53,6 @@ timeEnd "times"
 # parse all comments
 # ########################################################
 time "comments"
-
 parseComment = (comment) ->
 	comment
 		.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
@@ -79,20 +76,19 @@ else # first named anchor is 0 for board pages ;_;
 		id = el.getAttribute 'name'
 		if id is "0" then continue else id
 timeEnd "post ids"
+
 # ########################################################
-# parse all names
+# parse all names and capcodes (which share elements)
 # ########################################################
 time "names"
-
-replynames = (el.textContent for el in document.getElementsByClassName('commentpostername'))
-opnames = (el.textContent for el in document.getElementsByClassName('postername'))
+replynames = (el for el in document.getElementsByClassName('commentpostername'))
+opnames = (el for el in document.getElementsByClassName('postername'))
 timeEnd "names"
 
 # ########################################################
 # parse all titles
 # ########################################################
 time "titles"
-
 replytitles = (el.textContent for el in document.getElementsByClassName('replytitle'))
 optitles = (el.textContent for el in document.getElementsByClassName('filetitle'))
 timeEnd "titles"
@@ -101,7 +97,6 @@ timeEnd "titles"
 # parse all emails
 # ########################################################
 time "emails"
-
 emails = (el for el in document.getElementsByClassName('linkmail'))
 timeEnd "emails"
 
@@ -109,11 +104,8 @@ timeEnd "emails"
 # parse all tripcodes
 # ########################################################
 time "tripcodes"
-
 tripcodes = (el for el in document.getElementsByClassName('postertrip'))
-console.dir tripcodes
 timeEnd "tripcodes"
-
 
 # ########################################################
 # parse all images
@@ -175,15 +167,15 @@ class Post
 			imageEls.shift()
 			@image = images.shift()
 		
-		@poster = if op then opnames.shift() else replynames.shift()
+		@poster = (if op then opnames.shift() else replynames.shift()).textContent
 		
-		@tripcode = # poster trips with emails are wrapped in the anchor, annoying
-			if (if @email then tripcodes[0]?.parentNode.parentNode else tripcodes[0]?.parentNode) is el
-				console.log "tripcode for #{@id}"
-				tripcodes.shift().textContent
-		# $.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
-		# @capcode = # replies have two commentpostername spans
-		#	$.filter('.commentpostername').eq( if op then 0 else 1).text() or undefined
+		# poster trips with emails are wrapped in the anchor, annoying
+		if (if @email then tripcodes[0]?.parentNode.parentNode else tripcodes[0]?.parentNode) is el
+				@tripcode = tripcodes.shift().textContent
+		
+		# if the next replyname (.commentpostername) has ## in it, then it must be this post's capcode
+		if /##/.test replynames[0]?.textContent
+			@capcode = replynames.shift().textContent
 		
 		@comment = comments.shift()
 
@@ -201,6 +193,14 @@ for el in delform.children
 		continue
 	el._threadnum = _thread
 
+	
+# stickies are at the top
+_stickies = document.querySelectorAll('img[alt="sticky"]').length
+# we could probably assume locked threads are too, but we'll be safe
+_closedThreads = Array::slice.call document.querySelectorAll('img[alt="closed"]')
+
+_omittedposts = Array::slice.call document.getElementsByClassName('omittedposts')
+
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
 	constructor: (threadnum) ->
@@ -212,53 +212,48 @@ class Thread
 		@op = 
 			new Post threadnum, true, this
 		thread = this
-		time "parse replies"
 		@replies = 
 			for el in document.getElementsByClassName 'reply' when el.parentNode.parentNode.parentNode._threadnum is threadnum
 				new Post threadnum, false, thread
-		timeEnd "parse replies"
-		###
-		@locked = 
-			$.exists('img[alt="closed"]')
-		@sticky = 
-			$.exists('img[alt="sticky"]')
-		###
-		###
-		if @preview = preview 
-			omittedposts = $.filter('.omittedposts').text()
+		
+		if _closedThreads[0]?.parentNode._threadnum is threadnum
+			_closedThreads.shift()
+			@locked = true
+		
+		if _stickies > 0
+			_stickies--
+			@sticky = true
+			
+		if _omittedposts[0]?._threadnum is threadnum
+			omitted = _omittedposts.shift().textContent
 			@omittedReplies =
-				parseInt(omittedposts.match(/\d+(?= posts?)/), 10) or 0
+				parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
 			@omittedImageReplies =
-				parseInt(omittedposts.match(/\d+(?= image (?:replies|reply))/), 10) or 0
-		###
+				parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 		timeEnd "parse thread #{@id}"
 		
 	# non-enumerable circular reference for rendering
 	Object.defineProperty Thread.prototype, 'board', value: board, enumerable: false
 	
-	
 
 # parse entire board
 parse4chan = ->
-	###
-	current = 0
-	pages = if ( $pages = $('table.pages') ).exists()
-		$('table.pages').find('a,b').map (i) -> 
-			current = i if $(this).is 'b'
-			return current: current is i, num: i
-		.get()
-	previous = if pages and current > 0 then current -1 else undefined
-	next = if pages and current < (pages.length-1) then current + 1 else undefined
-	###
+	time "pages"
+	unless isThread
+		current = parseInt(document.location.pathname.split('/')?[2], 10) or 0
+		pages = for i in [0..15] # let's assume they all have 15 pages
+			{ num: i, current: current is i }
+		next = if current < 15 then current + 1
+		previous = if current > 0 then current - 1
+		
+	timeEnd "pages"
 	threads = thread = undefined
 	if isThread
 		thread = new Thread 1
 	else
 		# insert a <br> at the beginning of the first thread, to make separating them easier
-		oldThreads = $('form[name="delform"]').prepend('<hr>').find('hr').get().slice(0,-2);
-		threads = 
-			for t, idx in oldThreads
-				new Thread idx+1
+		threads = for i in _threads
+				new Thread i
 
 	nav: document.getElementById('navtop').innerHTML
 	banner: document.getElementsByTagName('img')[0].getAttribute 'src'
@@ -269,9 +264,9 @@ parse4chan = ->
 	thread: thread
 	threads: threads
 	
-	# pages: pages
-	# previous: previous
-	# next: next
+	pages: pages
+	previous: previous
+	next: next
 
 
 
