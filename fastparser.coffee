@@ -81,6 +81,16 @@ opnames = (el.textContent for el in document.getElementsByClassName('postername'
 timeEnd "names"
 
 # ########################################################
+# parse all titles
+# ########################################################
+time "titles"
+
+replytitles = (el.textContent for el in document.getElementsByClassName('replytitle'))
+optitles = (el.textContent for el in document.getElementsByClassName('filetitle'))
+timeEnd "titles"
+
+
+# ########################################################
 # parse all images
 # ########################################################
 time "images"
@@ -131,7 +141,7 @@ class Post
 			if op then thread.url else thread.url+'#'+@id
 		@time = if op then optimes.shift() else replytimes.shift()
 		@title = 
-			$.filter( if op then '.filetitle' else '.replytitle' ).text() or undefined
+			(if op then optitles.shift() else replytitles.shift()) or undefined
 		
 		imagelink = $.filter 'a[target="_blank"]'
 		if imagelink.exists()
