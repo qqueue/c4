@@ -1,3 +1,4 @@
+time("extract threads")
 # general page info
 board =
 	name: document.title.match(/\/(\w+)\//)[1] # easiest way to get it 
@@ -77,7 +78,6 @@ else # first named anchor is 0 for board pages ;_;
 	ids = for el in document.querySelectorAll('form[name="delform"] > a[name], form[name="delform"] > input[value="delete"]')
 		id = el.getAttribute 'name'
 		if id is "0" then continue else id
-console.dir ids
 timeEnd "post ids"
 # ########################################################
 # parse all names
@@ -102,8 +102,18 @@ timeEnd "titles"
 # ########################################################
 time "emails"
 
-emails = (el for el in document.getElementsByClassName('replytitle'))
+emails = (el for el in document.getElementsByClassName('linkmail'))
 timeEnd "emails"
+
+# ########################################################
+# parse all tripcodes
+# ########################################################
+time "tripcodes"
+
+tripcodes = (el for el in document.getElementsByClassName('postertrip'))
+console.dir tripcodes
+timeEnd "tripcodes"
+
 
 # ########################################################
 # parse all images
@@ -140,12 +150,16 @@ timeEnd "images"
 # ########################################################
 timeEnd "preprocess"
 
+_replies = Array::slice.call document.getElementsByClassName('reply')
+
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
 class Post 
 	constructor: (threadnum,op,thread) -> 
 		@id = ids.shift()
-
-		if emails[0].parentNode._threadnum is threadnum
+		
+		el = if op then delform else _replies.shift()
+		
+		if emails[0]?.parentNode.parentNode is el
 			@email = emails.shift().href
 		
 		@op = op
@@ -157,17 +171,20 @@ class Post
 		@title = 
 			(if op then optitles.shift() else replytitles.shift()) or undefined
 		
-		if imageEls[0]?._threadnum is threadnum
+		if imageEls[0]?.parentNode is el
 			imageEls.shift()
 			@image = images.shift()
 		
 		@poster = if op then opnames.shift() else replynames.shift()
-		###
-		@tripcode = # poster trips with emails are wrapped in the anchor
-			$.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
-		@capcode = # replies have two commentpostername spans
-			$.filter('.commentpostername').eq( if op then 0 else 1).text() or undefined
-		###
+		
+		@tripcode = # poster trips with emails are wrapped in the anchor, annoying
+			if (if @email then tripcodes[0]?.parentNode.parentNode else tripcodes[0]?.parentNode) is el
+				console.log "tripcode for #{@id}"
+				tripcodes.shift().textContent
+		# $.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
+		# @capcode = # replies have two commentpostername spans
+		#	$.filter('.commentpostername').eq( if op then 0 else 1).text() or undefined
+		
 		@comment = comments.shift()
 
 		# non-enumerable circular references for rendering
@@ -175,7 +192,7 @@ class Post
 
 
 _threads = []
-_thread = 0
+_thread = 1
 for el in delform.children
 	break if el.tagName is "CENTER" # the ad at the end of the threads
 	if el.tagName is "HR"
@@ -183,7 +200,7 @@ for el in delform.children
 		_thread++
 		continue
 	el._threadnum = _thread
-console.dir _threads
+
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
 	constructor: (threadnum) ->
@@ -235,13 +252,13 @@ parse4chan = ->
 	###
 	threads = thread = undefined
 	if isThread
-		thread = new Thread 0
+		thread = new Thread 1
 	else
 		# insert a <br> at the beginning of the first thread, to make separating them easier
 		oldThreads = $('form[name="delform"]').prepend('<hr>').find('hr').get().slice(0,-2);
 		threads = 
 			for t, idx in oldThreads
-				new Thread idx
+				new Thread idx+1
 
 	nav: document.getElementById('navtop').innerHTML
 	banner: document.getElementsByTagName('img')[0].getAttribute 'src'
@@ -256,7 +273,7 @@ parse4chan = ->
 	# previous: previous
 	# next: next
 
-time("extract threads")
+
 
 data = parse4chan()
 
