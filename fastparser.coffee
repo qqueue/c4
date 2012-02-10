@@ -8,6 +8,11 @@ board =
 board.url = "http://boards.4chan.org/#{board.name}/"
 board.threadurl = "#{board.url}res/"
 
+# general thread info
+isThread = document.location.pathname.match /res\/(\d+)/
+threadID = if isThread then isThread[1]
+opHash = if threadID then '#'+threadID
+
 parseImage = (imageLink, filesize) ->
 	thumb = imageLink.children 'img'
 	dimensions = filesize.text().match /(\d+)x(\d+)/
@@ -29,24 +34,21 @@ parseImage = (imageLink, filesize) ->
 	spoiler: /^Spoiler Image/.test thumb.attr('alt')
 	
 
-# globally perform some substitutions instead of in loop
-time "preprocess"
-###
-$('font > .quotelink')
-	.removeAttr('onclick')
-	.unwrap()
-$('font.unkfunc').changeTo('<b>', class: "greentext")
-$('span.spoiler').changeTo('<s>', class:"spoiler").end()
-###
-for link in $('a.quotelink')
-	l = $(link)
-	if /^(\d+)#\1/.test l.attr('href') # if the path and hash match exactly
-		l.addClass 'oplink'
+# ########################################################
+# find OP links
+# ########################################################
 
-
-
-timeEnd "preprocess"
+time "find OP links"
+for link in document.getElementsByClassName 'quotelink'
+	if opHash == link.attributes.getNamedItem('href').value
+		link.className += ' oplink'
+timeEnd "find OP links"
 		
+# ########################################################
+# parse all times
+# ########################################################
+time "times"
+
 # instead of relying on js's Date.parse function, which doesn't parse 12 as 2012 among other things
 # this function pulls out numbers with regex
 parse4ChanDate = (date) ->
@@ -59,11 +61,7 @@ parse4ChanDate = (date) ->
 		(parseInt(match[4],10) + 4 + DSTOffset)%24, # 4chan is EST
 		parseInt(match[5],10)
 	)
-# ########################################################
-# parse all times
-# ########################################################
 
-time "times"
 optimes = for el in document.getElementsByClassName 'posttime'
 	parse4ChanDate el.textContent
 replytimes = for el in document.getElementsByClassName 'reply'
@@ -71,6 +69,9 @@ replytimes = for el in document.getElementsByClassName 'reply'
 timeEnd "times"
 
 # ########################################################
+# parse all comments
+# ########################################################
+time "comments"
 
 parseComment = (comment) ->
 	comment
@@ -79,21 +80,25 @@ parseComment = (comment) ->
 		.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
 		.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 	
-# ########################################################
-# parse all comments
-# ########################################################
-
-time "comments"
 comments = for el in document.getElementsByTagName 'blockquote'
 	parseComment el.innerHTML
 timeEnd "comments"
 
 # ########################################################
-	
+# parse all names
+# ########################################################
+time "names"
+
+replynames = (el.textContent for el in document.getElementsByClassName('commentpostername'))
+opnames = (el.textContent for el in document.getElementsByClassName('postername'))
+timeEnd "names"
+
+# ########################################################
+
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
 class Post 
 	constructor: ($,op,thread) -> 
-		time "parse post op: #{op}"
+		time "parse post #{if op then 'op' else ''}"
 		poster = $.filter if op then '.postername' else '.commentpostername'
 		email = poster.find('a.linkmail').attr 'href'
 		
@@ -113,7 +118,7 @@ class Post
 		else
 			@imageDeleted = $.exists 'img[alt="File deleted."]'
 		
-		@poster = poster.eq(0).text()
+		@poster = if op then opnames.shift() else replynames.shift()
 		@email = email and email.substring(7); # strip mailto:
 		@tripcode = # poster trips with emails are wrapped in the anchor
 			$.filter('.postertrip').text() or $.filter('.linkmail').find('.postertrip').text() or undefined
@@ -124,7 +129,7 @@ class Post
 
 		# non-enumerable circular references for rendering
 		Object.defineProperty this, 'thread', value: thread, enumerable: false
-		timeEnd "parse post op: #{op}"
+		timeEnd "parse post #{if op then 'op' else ''}"
 
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
@@ -163,8 +168,6 @@ class Thread
 
 # parse entire board
 parse4chan = ->
-	# detect whether this is board view or post view based on the existence of the [Return] link
-	isThread = $('a[accesskey]').exists()
 
 	current = 0
 	pages = if ( $pages = $('table.pages') ).exists()
