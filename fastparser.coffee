@@ -57,6 +57,9 @@ parseComment = (comment) ->
 	comment
 		.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
 		.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
+		.replace(/<font class="unkfunc">(<a[^q]+quotelink"[^>]*>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
+		.replace(/<font class="unkfunc">/g, '<b class="greentext">') # unkfunc?
+		.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 		.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
 		.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 	
@@ -140,18 +143,49 @@ images = (for i in [0...imageEls.length]
 timeEnd "images"
 
 # ########################################################
-timeEnd "preprocess"
+# get list of reply elements for post to check
+# ########################################################
 
 _replies = Array::slice.call document.getElementsByClassName('reply')
+
+# ########################################################
+# label all elements by thread (faster than appending nodes)
+# ########################################################
+time "label elements"
+_threads = []
+_thread = 1
+for el in delform.children
+	break if el.tagName is "CENTER" # the ad at the end of the threads
+	if el.tagName is "HR"
+		_threads.push _thread
+		_thread++
+		continue
+	el._threadnum = _thread
+timeEnd "label elements"
+# ########################################################
+# pull out some more elements to check against
+# ########################################################
+
+# stickies are at the top
+_stickies = document.querySelectorAll('img[alt="sticky"]').length
+# we could probably assume locked threads are too, but we'll be safe
+_closedThreads = Array::slice.call document.querySelectorAll('img[alt="closed"]')
+
+_omittedposts = Array::slice.call document.getElementsByClassName('omittedposts')
+
+# ########################################################
+timeEnd "preprocess"
+
+
 
 # constructor for post, from jquery element list, 'op?' flag, and parent thread
 class Post 
 	constructor: (threadnum,op,thread) -> 
 		@id = ids.shift()
 		
-		el = if op then delform else _replies.shift()
+		el = _replies.shift() unless op
 		
-		if emails[0]?.parentNode.parentNode is el
+		if (op and emails[0]?.parentNode._threadnum is threadnum) or (not op and emails[0]?.parentNode.parentNode is el)
 			@email = emails.shift().href
 		
 		@op = op
@@ -163,7 +197,7 @@ class Post
 		@title = 
 			(if op then optitles.shift() else replytitles.shift()) or undefined
 		
-		if imageEls[0]?.parentNode is el
+		if (op and imageEls[0]?._threadnum is threadnum) or (not op and imageEls[0]?.parentNode is el)
 			imageEls.shift()
 			@image = images.shift()
 		
@@ -183,23 +217,6 @@ class Post
 		Object.defineProperty this, 'thread', value: thread, enumerable: false
 
 
-_threads = []
-_thread = 1
-for el in delform.children
-	break if el.tagName is "CENTER" # the ad at the end of the threads
-	if el.tagName is "HR"
-		_threads.push _thread
-		_thread++
-		continue
-	el._threadnum = _thread
-
-	
-# stickies are at the top
-_stickies = document.querySelectorAll('img[alt="sticky"]').length
-# we could probably assume locked threads are too, but we'll be safe
-_closedThreads = Array::slice.call document.querySelectorAll('img[alt="closed"]')
-
-_omittedposts = Array::slice.call document.getElementsByClassName('omittedposts')
 
 # constructor for post, from jquery element list and whether this is a full thread
 class Thread 
