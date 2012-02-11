@@ -150,8 +150,8 @@ parse4chan = (document) ->
 		# this needs to happen after the op and crossthread link identification
 		comments = (parseComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
 
-		ids = (el.name for el in delform.children when el.hasAttribute 'name' )
-	
+		ids = (el.name for el in delform.querySelectorAll 'form > a[name]' when el.hasAttribute 'name' )
+
 		thread = new Thread ids[0], false
 		thread.op = new Post(
 			ids.shift(),
