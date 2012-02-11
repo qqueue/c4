@@ -20,11 +20,13 @@ time "preprocess"
 # ########################################################
 # find OP links
 # ########################################################
-time "find OP links"
-for link in document.getElementsByClassName 'quotelink'
-	if opHash == link.hash
-		link.className += ' oplink'
-timeEnd "find OP links"
+
+if isThread
+	time "find OP links"	
+	for link in document.getElementsByClassName 'quotelink'
+		if opHash == link.hash
+			link.className += ' oplink'
+	timeEnd "find OP links"
 		
 # ########################################################
 # parse all times
@@ -57,7 +59,7 @@ parseComment = (comment) ->
 	comment
 		.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
 		.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
-		.replace(/<font class="unkfunc">(<a[^q]+quotelink"[^>]*>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
+		.replace(/<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
 		.replace(/<font class="unkfunc">/g, '<b class="greentext">') # unkfunc?
 		.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 		.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
