@@ -29,6 +29,7 @@ task 'build', 'build userscript', (options) ->
 		console.error error
 	
 task 'watch', 'watch for changes and rebuild automatically', (options) ->
+	invoke "build"
 	fs.watch ".", interval: 1000, (_.debounce((event, filename) ->
 		unless filename
 			console.log "filename not given... exiting"

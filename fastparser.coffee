@@ -192,7 +192,7 @@ class Post
 		
 		el = _replies.shift() unless op
 		
-		if (op and emails[0]?.parentNode._threadnum is threadnum) or (not op and emails[0]?.parentNode.parentNode is el)
+		if emails[0] and (if op then emails[0].parentNode._threadnum is threadnum else emails[0]?.parentNode.parentNode is el)
 			@email = emails.shift().href
 		
 		@op = op
@@ -204,18 +204,18 @@ class Post
 		@title = 
 			(if op then optitles.shift() else replytitles.shift()) or undefined
 		
-		if (op and imageEls[0]?._threadnum is threadnum) or (not op and imageEls[0]?.parentNode is el)
+		if imageEls[0] and (if op then imageEls[0]._threadnum is threadnum else imageEls[0]?.parentNode is el)
 			imageEls.shift()
 			@image = images.shift()
-		if not @image and (op and deletedImages[0]?._threadnum is threadnum) or (not op and deletedImages[0]?.parentNode is el)
+		if deletedImages[0] and not @image and (if op then deletedImages[0]._threadnum is threadnum else deletedImages[0].parentNode is el)
 			deletedImages.shift()
 			@deletedImage = true
 		
 		@poster = (if op then opnames.shift() else replynames.shift()).textContent
 		
 		# poster trips with emails are wrapped in the anchor, annoying
-		if (if @email then tripcodes[0]?.parentNode.parentNode else tripcodes[0]?.parentNode) is el
-				@tripcode = tripcodes.shift().textContent
+		if tripcodes[0] and (if @email then (if op then tripcodes[0].parentNode._threadnum is threadnum else tripcodes[0].parentNode.parentNode is el) else (if op then tripcodes[0]._threadnum is threadnum else tripcodes[0].parentNode is el))
+			@tripcode = tripcodes.shift().textContent
 		
 		# if the next replyname (.commentpostername) has ## in it, then it must be this post's capcode
 		if /##/.test replynames[0]?.textContent
