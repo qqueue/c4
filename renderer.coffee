@@ -6,7 +6,7 @@ $('link[rel*="stylesheet"], style').remove()
 # than it doest to load this script
 window.onload = window.onunload = undefined
 
-console.time('handlebars')
+
 Handlebars.registerHelper 'datetime', ( time, options ) ->
 	pad = (number) ->
 		str = number.toString()
@@ -37,7 +37,6 @@ $('body')
 	.addClass( if data.thread then 'threadpage' else 'boardpage')
 	.html(template(data))
 
-console.timeEnd('handlebars')
 $('<style>').html('{{{css}}}').appendTo('head')
 
 # create recaptcha with script already included on page (using 4chan's public key)
