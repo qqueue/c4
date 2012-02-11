@@ -25,6 +25,7 @@ body.nsfw > header a, body.nsfw > footer a{ color: #880000; }
 .boardlinks { font-size: 9pt;}
 .nsfw .boardlinks { color: #BB8866; }
 .sfw .boardlinks { color: #8899AA; }
+#banner { margin: 1em 0; }
 #boards a {
     font-weight: normal;
     padding: 1px;
@@ -34,7 +35,7 @@ body.nsfw > header a, body.nsfw > footer a{ color: #880000; }
 body > header h1 {
 	font-family: "Tahoma";
 	font-size: 24pt;
-	margin-bottom: 0;
+	margin: 0;
 }
 body > header h1 a {
 	color: #AF0A0F !important;
@@ -169,6 +170,10 @@ a.quotelink.hiddenlink {
 	content: " (OP)";
 }
 
+.crossthread:after {
+	content: " (Crossthread)";
+}
+
 .sfw .quotelink {color: #d00;}
 .nsfw .quotelink {color: #000080;}
 
@@ -237,7 +242,7 @@ a.permalink:hover, a.saucelink:hover {
 }
 
 .post.inline {
-	margin-left: -1px;
+	margin-left: 0;
 	background-color: rgba(255,255,255,.1);
 	border: 1px solid #aaa;
 	border-left-width: 0;

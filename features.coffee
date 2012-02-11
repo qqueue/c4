@@ -81,9 +81,8 @@ backlink = ->
 							$('<a>',{'class': 'backlink quotelink', href: '#'+quoter.id}).html('&gt;&gt;'+quoter.id)
 						)
 						.append(' ') # necessary for the line to wrap properly; stupid i know
-console.time "backlinking"
 backlink()
-console.timeEnd "backlinking"
+
 # post hover previews
 $('#threads')
 	.on('mouseenter.html5chan.postpreview', 'a.quotelink:not(.inlinedlink, .hiddenlink)',(e) ->

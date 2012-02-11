@@ -12,21 +12,25 @@ board.threadurl = "#{board.url}res/"
 # general thread info
 isThread = document.location.pathname.match /res\/(\d+)/
 threadID = if isThread then isThread[1]
+threadPath = if isThread then "/#{board.name}/res/"+threadID
 opHash = if threadID then '#'+threadID
 
 delform = document.forms[1]
 
 time "preprocess"
 # ########################################################
-# find OP links
+# find OP and crossthread links
 # ########################################################
 
 if isThread
-	time "find OP links"	
+	time "find OP/Crossthread links"	
 	for link in document.getElementsByClassName 'quotelink'
-		if opHash == link.hash
+		if opHash is link.hash
 			link.className += ' oplink'
-	timeEnd "find OP links"
+		else 
+			if threadPath isnt link.pathname
+				link.className += ' crossthread'
+	timeEnd "find OP/Crossthread links"
 		
 # ########################################################
 # parse all times
