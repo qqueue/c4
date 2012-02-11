@@ -200,15 +200,13 @@ parse4chan = (document) ->
 		# or is the current reply element (for replies)
 		# then it's popped (shifted) from the beginning of the list
 		# so the next post processed will look at the next element
-		threadNums = []
-		_thread = 0
+		numThreads = 0
 		for el in delform.children
 			break if el.tagName is "CENTER" # the ad at the end of the threads
 			if el.tagName is "HR"
-				threadNums.push _thread
-				_thread++
+				numThreads++
 				continue
-			el.threadNum = _thread # oh so horrible
+			el.threadNum = numThreads # oh so horrible
 		
 		# this is the same as in thread mode, but without op and crossboard labeling
 		comments = (parseComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
@@ -224,7 +222,7 @@ parse4chan = (document) ->
 
 		omittedposts = Array::slice.call document.getElementsByClassName('omittedposts')
 
-		threads = for i in threadNums
+		threads = for i in [0...numThreads]
 			thread = new Thread ids[0], true
 			thread.op = new Post(
 				ids.shift(),
@@ -273,7 +271,7 @@ parse4chan = (document) ->
 	# return 
 	board: board
 	
-	thread: thread
+	thread: thread if isThread
 	threads: threads
 	
 	pages: pages
