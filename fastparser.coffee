@@ -6,7 +6,7 @@ centerEls = document.getElementsByTagName 'center'
 board =
 	name: document.title.match(/\/(\w+)\//)[1] # easiest way to get it 
 	title: logoEl.children[2].children[0].children[0].textContent
-	subtitle: logoEl.children[4].innerHTML
+	subtitle: logoEl.children[4]?.innerHTML
 	nsfw: document.styleSheets[0].ownerNode.href is 'http://static.4chan.org/css/yotsuba.9.css' # the yellow theme
 	nav: document.getElementById('navtop').innerHTML # I could hard code it, but then I'd miss updates
 	banner: document.getElementsByTagName('img')[0].src
