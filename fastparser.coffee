@@ -100,7 +100,7 @@ parse4chan = (document) ->
 			.replace(/<font class="unkfunc">/g, '<b class="greentext">') # unkfunc?
 			.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
-			.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 
 	# ########################################################
 	# parses a single reply, same in board and thread pages
@@ -127,7 +127,7 @@ parse4chan = (document) ->
 		# tripcode gets wrapped in the email anchor if present
 		if tripcodes[0] and (if post.email? then tripcodes[0].parentNode else tripcodes[0]).parentNode is el
 			post.tripcode = tripcodes.shift().textContent
-			emails.shift() if emails[0].parentNode is el # clear extra linkmail element
+			emails.shift() if emails[0]?.parentNode is el # clear extra linkmail element
 		# capcodes are hidden within replyPosters
 		post.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
 		
