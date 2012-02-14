@@ -133,6 +133,11 @@ body > header h2 { font-size: 10px; font-weight: normal; }
 	font-weight: 800;
 }
 
+.poster:link {
+	color: #34345C;
+	text-decoration: underline;
+}
+
 .tripcode {
 	color: #228854;
 }

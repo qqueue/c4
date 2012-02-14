@@ -74,6 +74,7 @@ parse4chan = (document) ->
 		spoiler: /^Spoiler Image/.test thumb.alt
 	
 	emails = Array::slice.call document.getElementsByClassName('linkmail')
+
 	tripcodes = Array::slice.call document.getElementsByClassName('postertrip')
 	deletedImages = Array::slice.call document.querySelectorAll('img[alt="File deleted."]')
 	
@@ -100,8 +101,7 @@ parse4chan = (document) ->
 			.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
 			.replace(/https?:\/\/[\w\.\-_\/=&;?#%]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
-	
-	
+
 	# ########################################################
 	# parses a single reply, same in board and thread pages
 	# ########################################################
@@ -125,7 +125,9 @@ parse4chan = (document) ->
 				deletedImages.shift()
 				post.deletedImage = true 
 		# tripcode gets wrapped in the email anchor if present
-		post.tripcode = tripcodes.shift().textContent if tripcodes[0] and (if post.email? then tripcodes[0].parentNode else tripcodes[0]).parentNode is el
+		if tripcodes[0] and (if post.email? then tripcodes[0].parentNode else tripcodes[0]).parentNode is el
+			post.tripcode = tripcodes.shift().textContent
+			emails.shift() if emails[0].parentNode is el # clear extra linkmail element
 		# capcodes are hidden within replyPosters
 		post.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
 		
@@ -138,15 +140,17 @@ parse4chan = (document) ->
 		threadId = isThread[1]
 		threadPath = "/#{board.name}/res/"+threadId
 		opHash = '#'+threadId
-
-		# classify op and crossthread links
-		for link in document.getElementsByClassName 'quotelink'
-			if opHash is link.hash
-				link.className += ' oplink'
-			else 
-				if threadPath isnt link.pathname
-					link.className += ' crossthread'
 		
+		# classify op and crossthread links
+		time "classify links"
+		for link in document.getElementsByClassName 'quotelink'
+			unless />>>/.test link.textContent # skip crossboard links
+				if opHash is link.hash
+					link.className += ' oplink'
+				else 
+					if threadPath isnt link.pathname
+						link.className += ' crossthread'
+		timeEnd "classify links"
 		# this needs to happen after the op and crossthread link identification
 		comments = (parseComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
 
@@ -181,25 +185,6 @@ parse4chan = (document) ->
 	# ########################################################
 	else # board page
 	# ########################################################
-		# So, general strategy here
-		#
-		# 1. in one pass, label all direct child elements of
-		# delform (the overall thread container) with a number of
-		# the thread they're in. (label being adding the attribute
-		# _threadnum to all of them. oh javascript you so easy)
-		#
-		# 2. for the elements that exist in every post,
-		# we pull parse them in one loop using the ultra-fast
-		# getElementsByClassName selector
-		#
-		# 3. for the elements that don't, we'll pull out just the
-		# elements themselves into a shift()able array
-		# inside the post parser, the post will check the first
-		# element of the respective array, and if it's parent was
-		# either labeled to the thread (for op)
-		# or is the current reply element (for replies)
-		# then it's popped (shifted) from the beginning of the list
-		# so the next post processed will look at the next element
 		numThreads = 0
 		for el in delform.children
 			break if el.tagName is "CENTER" # the ad at the end of the threads
@@ -267,7 +252,7 @@ parse4chan = (document) ->
 			{ num: i, current: current is i }
 		next = if current < 15 then current + 1
 		previous = if current > 0 then current - 1
-			
+
 	# return 
 	board: board
 	

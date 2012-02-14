@@ -64,24 +64,24 @@ $('#threads')
 
 # backlinks
 backlink = ->
-	$('.post').not('.inline').each ->
+	$('.post').not('.inline').each( ->
 		quoter = this
 		$(quoter).find('.comment a.quotelink').not('.inline a.quotelink').each ->
-			if( /^#\d+/.test(this.hash) ) # relative postlink
+			if( (quoted = $(this.hash)).exists() ) # relative postlink
 				quoted = $(this.hash)
-				backlinks = quoted.data('backlinks')
-				if( !backlinks )
-					backlinks = {}
-					quoted.data('backlinks', backlinks)
-				
+				backlinks = quoted.data('backlinks') or quoted.data('backlinks',{}).data('backlinks')
 				unless backlinks[quoter.id]
 					backlinks[quoter.id] = true
-					quoted.find('.backlinks')
-						.append(
-							$('<a>',{'class': 'backlink quotelink', href: '#'+quoter.id}).html('&gt;&gt;'+quoter.id)
-						)
-						.append(' ') # necessary for the line to wrap properly; stupid i know
-backlink()
+	# render all the backlinks (faster this way)
+	).each ->
+		backlinks = $(this).data('backlinks');
+		html = ""
+		for post of backlinks
+			html += "<a href=\"##{post}\" class=\"backlink quotelink\">&gt;&gt;#{post}</a> ";
+		$(this).children('.backlinks').html(html);
+
+setTimeout backlink, 0 # deferred, so the page at least appears to load faster
+
 
 # post hover previews
 $('#threads')
@@ -205,3 +205,6 @@ if( data.thread )
 			)
 	setTimeout refresh, 30000
 ###
+
+console.log _log.join("\n")
+console.dir(data)

@@ -58,5 +58,3 @@ if ( !sessionStorage.getItem("html5chan-"+document.URL) )
 	sessionStorage.setItem("html5chan-"+document.URL, true)
 
 timeEnd "render"
-console.log _log.join("\n")
-console.dir(data)
