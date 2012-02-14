@@ -5,6 +5,7 @@
 		<h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1>
 		<h2>{{{board.subtitle}}}</h2>
 	</hgroup>
+	<div id="motd">{{{board.motd}}}</div>
 </header>
 <div id="threads">
 	{{#each threads}}{{>thread}}{{/each}}
@@ -61,7 +62,7 @@
 		<li>Maximum file size allowed is 3072 KB. </li>
 		<li>Images greater than 250x250 pixels will be thumbnailed. </li>
 		<li>Read the <a href="http://www.4chan.org/rules#{{board.name}}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
-		<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">?????????</a> - <a href="http://www.nifty.com/globalgate/">??</a></li>
+		<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
 	</ul>
 </form>
 

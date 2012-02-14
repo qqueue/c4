@@ -2,6 +2,7 @@
 # general page info
 # ########################################################
 logoEl = document.getElementsByClassName('logo')[0]
+centerEls = document.getElementsByTagName 'center'
 board =
 	name: document.title.match(/\/(\w+)\//)[1] # easiest way to get it 
 	title: logoEl.children[2].children[0].children[0].textContent
@@ -9,7 +10,7 @@ board =
 	nsfw: document.styleSheets[0].ownerNode.href is 'http://static.4chan.org/css/yotsuba.9.css' # the yellow theme
 	nav: document.getElementById('navtop').innerHTML # I could hard code it, but then I'd miss updates
 	banner: document.getElementsByTagName('img')[0].src
-	# once moot posts another notice, I'll grab it here too
+board.motd = centerEls[2].innerHTML if centerEls.length > 4 # the captcha, 2 ads, and footer tag are also in center tags
 board.url = "http://boards.4chan.org/#{board.name}/"
 board.threadurl = "#{board.url}res/"
 
@@ -54,7 +55,6 @@ parse4chan = (document) ->
 	fileinfos = document.getElementsByClassName 'filesize'
 	imageEls = Array::slice.call document.querySelectorAll('img[md5]')
 	images = for thumb,i in imageEls
-		link = thumb.parentNode
 		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
 		
 		thumb:
@@ -62,7 +62,7 @@ parse4chan = (document) ->
 			width: thumb.width
 			height: thumb.height
 		
-		url: link.href
+		url: thumb.parentNode.href
 		
 		width: parseInt dimensions[1], 10
 		height: parseInt dimensions[2], 10

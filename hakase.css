@@ -43,6 +43,10 @@ body > header h1 a {
 }
 body > header h1 a:hover { text-decoration: underline; }
 body > header h2 { font-size: 10px; font-weight: normal; }
+
+#motd {
+	margin: 1em 0;
+}
 .thread {
 	padding-bottom: 5px;
 	border-style: solid;
