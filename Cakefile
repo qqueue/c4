@@ -18,9 +18,9 @@ task 'build', 'build userscript', (options) ->
 	includes = 
 		css: read_and_escape "hakase.css"
 	try
-		code = coffee.compile (read "#{file}.coffee" for file in parts).join("\n"), bare: true
+		code = coffee.compile (read "src/#{file}.coffee" for file in parts).join("\n"), bare: true
 		compiledTemplates = (for name in templates
-			"Handlebars.template.#{name} = Handlebars.template(#{handlebars.precompile read(name+".handlebars.html"), knownHelpersOnly: true})"
+			"Handlebars.template.#{name} = Handlebars.template(#{handlebars.precompile read("templates/"+name+".handlebars.html"), knownHelpersOnly: true})"
 		).join("\n") + "\n"
 		html5chan = 
 			read(metadata) + compiledTemplates + code
