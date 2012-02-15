@@ -56,8 +56,8 @@ cleanComment = (comment) ->
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
 			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():~]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 
-# in the context of given document
-parse4chan = (document) ->
+# in the context of given element
+parse4chan = (context) ->
 	parsePost = (thread, op, data, testAttr, testObj) ->
 		post = new Post(
 			ids.shift(),
@@ -96,7 +96,7 @@ parse4chan = (document) ->
 		
 		# classify op and crossthread links
 		time "classify links"
-		for link in document.getElementsByClassName 'quotelink'
+		for link in context.getElementsByClassName 'quotelink'
 			unless />>>/.test link.textContent # skip crossboard links
 				if opHash is link.hash
 					link.className += ' oplink'
@@ -105,7 +105,7 @@ parse4chan = (document) ->
 						link.className += ' crossthread'
 		timeEnd "classify links"
 	else # board page
-		omittedposts = Array::slice.call document.getElementsByClassName('omittedposts')
+		omittedposts = Array::slice.call context.getElementsByClassName('omittedposts')
 		
 		# redo the board pages all nice
 		current = parseInt(document.location.pathname.split('/')?[2], 10) or 0
@@ -116,7 +116,7 @@ parse4chan = (document) ->
 	
 	time "label elements"
 	numThreads = 0
-	for el in document.querySelector('form[name="delform"]').children # our wonderful parent element
+	for el in context.children # our wonderful parent element
 		break if el.tagName is "CENTER" # the ad at the end of the threads
 		if el.tagName is "HR"
 			numThreads++
@@ -124,8 +124,8 @@ parse4chan = (document) ->
 		el.threadNum = numThreads # oh so horrible
 	timeEnd "label elements"
 	
-	fileinfos = document.getElementsByClassName 'filesize'
-	imageEls = Array::slice.call document.querySelectorAll('img[md5]')
+	fileinfos = context.getElementsByClassName 'filesize'
+	imageEls = Array::slice.call context.querySelectorAll('img[md5]')
 	images = for thumb,i in imageEls
 		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
 		
@@ -145,27 +145,27 @@ parse4chan = (document) ->
 		
 		spoiler: /^Spoiler Image/.test thumb.alt
 	
-	ids = (el.name for el in document.querySelectorAll('form[name="delform"] input[value="delete"]'))
-	emails = Array::slice.call document.getElementsByClassName('linkmail')
-	tripcodes = Array::slice.call document.getElementsByClassName('postertrip')
-	deletedImages = Array::slice.call document.querySelectorAll('img[alt="File deleted."]')
-	comments = (cleanComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
+	ids = (el.name for el in context.querySelectorAll('input[value="delete"]'))
+	emails = Array::slice.call context.getElementsByClassName('linkmail')
+	tripcodes = Array::slice.call context.getElementsByClassName('postertrip')
+	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
+	comments = (cleanComment el.innerHTML for el in context.getElementsByTagName 'blockquote')
 	
 	_op = 
-		times: (parse4ChanDate el.textContent for el in document.getElementsByClassName 'posttime')
-		posters: (el.textContent for el in document.getElementsByClassName('postername'))
-		titles: (el.textContent for el in document.getElementsByClassName('filetitle'))
+		times: (parse4ChanDate el.textContent for el in context.getElementsByClassName 'posttime')
+		posters: (el.textContent for el in context.getElementsByClassName('postername'))
+		titles: (el.textContent for el in context.getElementsByClassName('filetitle'))
 	
-	replyEls = document.getElementsByClassName('reply')
+	replyEls = context.getElementsByClassName('reply')
 	
 	_reply = 
-		posters: (el.textContent for el in document.getElementsByClassName('commentpostername'))
+		posters: (el.textContent for el in context.getElementsByClassName('commentpostername'))
 		times: (parse4ChanDate el.textContent for el in replyEls) # no wrapper ;_;
-		titles: (el.textContent for el in document.getElementsByClassName('replytitle'))
+		titles: (el.textContent for el in context.getElementsByClassName('replytitle'))
 	# stickies are at the top, so we just need the number of them
-	stickies = document.querySelectorAll('img[alt="sticky"]').length
+	stickies = context.querySelectorAll('img[alt="sticky"]').length
 	# we could probably assume locked threads are too, but we'll be safe
-	closedThreads = Array::slice.call document.querySelectorAll('img[alt="closed"]')
+	closedThreads = Array::slice.call context.querySelectorAll('img[alt="closed"]')
 	timeEnd "preprocess"
 	
 	# ########################################################
@@ -208,5 +208,5 @@ parse4chan = (document) ->
 	next: next
 
 time "parse"
-data = parse4chan document
+data = parse4chan document.querySelector('form[name="delform"]')
 timeEnd "parse"

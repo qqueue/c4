@@ -1,4 +1,3 @@
-"use strict"
 
 $.fn.extend
 	immediateText: -> 
