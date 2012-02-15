@@ -10,7 +10,7 @@ read_and_escape = (file) ->
 
 
 outfile = "html5chan@httpsgithubcomqueue-html5chan.user.js"
-parts =  ['utils', 'fastparser', 'renderer', 'features'] # ['utils', 'parser', 'renderer', 'features']
+parts =  ['utils', 'parser', 'renderer', 'features']
 metadata = 'metadata.txt'
 templates = ['page', 'thread', 'post']
 
