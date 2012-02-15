@@ -22,7 +22,7 @@ class Post
 		@email = email?.substring(7) # strip mailto:
 		@url = if op then thread.url else thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
-
+		
 class Thread 
 	constructor: (@id, @preview) ->
 		@url = board.threadurl+@id
@@ -42,57 +42,11 @@ parse4ChanDate = (date) ->
 			(parseInt(match[4],10) + 4 + DSTOffset)%24, # 4chan is EST
 			parseInt(match[5],10)
 		)
-
-# in the context of given document
-parse4chan = (document) ->
-	
-	delform = document.forms[1] # our wonderful parent element
-	
-	# ########################################################
-	# these elements are mercifully the same in thread and board mode
-	# ########################################################
-
-	fileinfos = document.getElementsByClassName 'filesize'
-	imageEls = Array::slice.call document.querySelectorAll('img[md5]')
-	images = for thumb,i in imageEls
-		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
 		
-		thumb:
-			url: thumb.src
-			width: thumb.width
-			height: thumb.height
-		
-		url: thumb.parentNode.href
-		
-		width: parseInt dimensions[1], 10
-		height: parseInt dimensions[2], 10
-		
-		size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-		filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
-		md5: thumb.getAttribute 'md5'
-		
-		spoiler: /^Spoiler Image/.test thumb.alt
-	
-	emails = Array::slice.call document.getElementsByClassName('linkmail')
-
-	tripcodes = Array::slice.call document.getElementsByClassName('postertrip')
-	deletedImages = Array::slice.call document.querySelectorAll('img[alt="File deleted."]')
-	
-	replyEls = document.getElementsByClassName('reply')
-	
-	replyPosters = (el.textContent for el in document.getElementsByClassName('commentpostername'))
-	replyTimes = (parse4ChanDate el.textContent for el in document.getElementsByClassName 'reply')
-	replyTitles = (el.textContent for el in document.getElementsByClassName('replytitle'))
-	
-	# stickies are at the top, so we just need the number of them
-	stickies = document.querySelectorAll('img[alt="sticky"]').length
-	# we could probably assume locked threads are too, but we'll be safe
-	closedThreads = Array::slice.call document.querySelectorAll('img[alt="closed"]')
-	
-	# ########################################################
-	# parse all comments
-	# ########################################################
-	parseComment = (comment) ->
+# ########################################################
+# comment cleaner
+# ########################################################
+cleanComment = (comment) ->
 		comment
 			.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
 			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
@@ -102,10 +56,9 @@ parse4chan = (document) ->
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
 			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 
-	# ########################################################
-	# parses a single reply, same in board and thread pages
-	# ########################################################
-	parseReply = (el) ->
+# in the context of given document
+parse4chan = (document) ->
+	parseReply = (el, thread) ->
 		post = new Post(
 			ids.shift(),
 			false,
@@ -131,12 +84,38 @@ parse4chan = (document) ->
 		# capcodes are hidden within replyPosters
 		post.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
 		
-		post # return post to replies
+		return post 
 	
-	
+	parseOP = (thread, i) ->
+		op = new Post(
+			ids.shift(),
+			true,
+			thread,
+			opTimes.shift(),
+			opTitles.shift(),
+			opPosters.shift(),
+			comments.shift(),
+			emails.shift().href if emails[0]?.parentNode.threadNum is i
+		)
+		# add to op
+		if imageEls[0]?.parentNode.threadNum is i
+			imageEls.shift()
+			op.image = images.shift()
+		else
+			if deletedImages[0]?.threadNum is i
+				deletedImages.shift()
+				op.deletedImage = true 
+		# tripcode gets wrapped in the email anchor if present
+		op.tripcode = tripcodes.shift().textContent if tripcodes[0] and (if op.email? then tripcodes[0].parentNode else tripcodes[0]).threadNum is i
+		# capcodes are hidden within replyPosters
+		op.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
+		
+		return op
+		
 	# ########################################################
-	if isThread = document.location.pathname.match /res\/(\d+)/
+	time "preprocess"
 	# ########################################################
+	if isThread = document.location.pathname.match /res\/(\d+)/ # also match for thread id
 		threadId = isThread[1]
 		threadPath = "/#{board.name}/res/"+threadId
 		opHash = '#'+threadId
@@ -151,112 +130,100 @@ parse4chan = (document) ->
 					if threadPath isnt link.pathname
 						link.className += ' crossthread'
 		timeEnd "classify links"
-		# this needs to happen after the op and crossthread link identification
-		comments = (parseComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
-
-		ids = (el.name for el in delform.querySelectorAll 'form > a[name]' when el.hasAttribute 'name' )
-
-		thread = new Thread ids[0], false
-		thread.op = new Post(
-			ids.shift(),
-			true,
-			thread,
-			parse4ChanDate(document.getElementsByClassName('posttime')[0].textContent),
-			document.getElementsByClassName('filetitle')[0].textContent,
-			document.getElementsByClassName('postername')[0].textContent,
-			comments.shift(),
-			emails.shift().href if emails[0]?.parentNode is delform
-		)
-		# add to op
-		if imageEls[0]?.parentNode.parentNode  is delform
-			imageEls.shift()
-			thread.op.image = images.shift()
-		else
-			if deletedImages[0]?.parentNode is delform
-				deletedImages.shift()
-				thread.op.deletedImage = true 
-		# tripcode gets wrapped in the email anchor if present
-		thread.op.tripcode = tripcodes.shift().textContent if tripcodes[0] and (if thread.op.email? then tripcodes[0].parentNode else tripcodes[0]).parentNode is delform
-		# capcodes are hidden within replyPosters
-		thread.op.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
-		
-		thread.replies = (parseReply el for el in replyEls)
-			
-	# ########################################################
 	else # board page
-	# ########################################################
-		numThreads = 0
-		for el in delform.children
-			break if el.tagName is "CENTER" # the ad at the end of the threads
-			if el.tagName is "HR"
-				numThreads++
-				continue
-			el.threadNum = numThreads # oh so horrible
-		
-		# this is the same as in thread mode, but without op and crossboard labeling
-		comments = (parseComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
-		
-		# first named anchor is 0 for board pages ;_;
-		ids = for el in document.querySelectorAll('form[name="delform"] > a[name], form[name="delform"] > input[value="delete"]') # selects in document order which is useful
-			id = el.getAttribute 'name'
-			if id is "0" then continue else id # skip those pesky 0 names
-
-		opTimes = (parse4ChanDate el.textContent for el in document.getElementsByClassName 'posttime')
-		opPosters = (el.textContent for el in document.getElementsByClassName('postername'))
-		opTitles = (el.textContent for el in document.getElementsByClassName('filetitle'))
-
 		omittedposts = Array::slice.call document.getElementsByClassName('omittedposts')
-
-		threads = for i in [0...numThreads]
-			thread = new Thread ids[0], true
-			thread.op = new Post(
-				ids.shift(),
-				true,
-				thread,
-				opTimes.shift(),
-				opTitles.shift(),
-				opPosters.shift(),
-				comments.shift(),
-				emails.shift().href if emails[0]?.parentNode.threadNum is i
-			)
-			# add to op
-			if imageEls[0]?.parentNode.threadNum is i
-				imageEls.shift()
-				thread.op.image = images.shift()
-			else
-				if deletedImages[0]?.threadNum is i
-					deletedImages.shift()
-					thread.op.deletedImage = true 
-			# tripcode gets wrapped in the email anchor if present
-			thread.op.tripcode = tripcodes.shift().textContent if tripcodes[0] and (if thread.op.email? then tripcodes[0].parentNode else tripcodes[0]).threadNum is i
-			# capcodes are hidden within replyPosters
-			thread.op.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
-			
-			thread.replies = (parseReply el for el in replyEls when el.parentNode.parentNode.parentNode.threadNum is i) # walk to table from td
-			if closedThreads[0]?.parentNode.threadNum is i
-				closedThreads.shift()
-				thread.locked = true
-			if stickies > 0
-				stickies--
-				thread.sticky = true
-			if omittedposts[0]?.threadNum is i
-				omitted = omittedposts.shift().textContent
-				thread.omittedReplies = parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
-				thread.omittedImageReplies = parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
-		  
-			thread # return thread to threads
-			
+		
 		# redo the board pages all nice
 		current = parseInt(document.location.pathname.split('/')?[2], 10) or 0
 		pages = for i in [0..15] # let's assume they all have 15 pages
 			{ num: i, current: current is i }
 		next = if current < 15 then current + 1
 		previous = if current > 0 then current - 1
-
+	
+	time "label elements"
+	numThreads = 0
+	for el in document.forms[1].children # our wonderful parent element
+		break if el.tagName is "CENTER" # the ad at the end of the threads
+		if el.tagName is "HR"
+			numThreads++
+			continue
+		el.threadNum = numThreads # oh so horrible
+	timeEnd "label elements"
+	
+	fileinfos = document.getElementsByClassName 'filesize'
+	imageEls = Array::slice.call document.querySelectorAll('img[md5]')
+	images = for thumb,i in imageEls
+		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
+		
+		thumb:
+			url: thumb.src
+			width: thumb.width
+			height: thumb.height
+		
+		url: thumb.parentNode.href
+		
+		width: parseInt dimensions[1], 10
+		height: parseInt dimensions[2], 10
+		
+		size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+		filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
+		md5: thumb.getAttribute 'md5'
+		
+		spoiler: /^Spoiler Image/.test thumb.alt
+	
+	ids = (el.name for el in document.querySelectorAll('form[name="delform"] input[value="delete"]'))
+	emails = Array::slice.call document.getElementsByClassName('linkmail')
+	tripcodes = Array::slice.call document.getElementsByClassName('postertrip')
+	deletedImages = Array::slice.call document.querySelectorAll('img[alt="File deleted."]')
+	comments = (cleanComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
+	
+	opTimes = (parse4ChanDate el.textContent for el in document.getElementsByClassName 'posttime')
+	opPosters = (el.textContent for el in document.getElementsByClassName('postername'))
+	opTitles = (el.textContent for el in document.getElementsByClassName('filetitle'))
+	
+	replyEls = document.getElementsByClassName('reply')
+	
+	replyPosters = (el.textContent for el in document.getElementsByClassName('commentpostername'))
+	replyTimes = (parse4ChanDate el.textContent for el in document.getElementsByClassName 'reply')
+	replyTitles = (el.textContent for el in document.getElementsByClassName('replytitle'))
+	
+	# stickies are at the top, so we just need the number of them
+	stickies = document.querySelectorAll('img[alt="sticky"]').length
+	# we could probably assume locked threads are too, but we'll be safe
+	closedThreads = Array::slice.call document.querySelectorAll('img[alt="closed"]')
+	timeEnd "preprocess"
+	
+	# ########################################################
+	time "create objects"
+	# ########################################################
+	threads = for i in [0...numThreads]
+		thread = new Thread ids[0], !isThread
+		thread.op = parseOP thread, i
+		thread.replies = (parseReply(el,thread) for el in replyEls when el.parentNode.parentNode.parentNode.threadNum is i) # walk to table from td
+		if closedThreads[0]?.parentNode.threadNum is i
+			closedThreads.shift()
+			thread.locked = true
+		if stickies > 0
+			stickies--
+			thread.sticky = true
+		if !isThread and omittedposts[0]?.threadNum is i
+			omitted = omittedposts.shift().textContent
+			thread.omittedReplies = parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
+			thread.omittedImageReplies = parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+		
+		thread # return thread to threads
+	timeEnd "create objects"	
+	# ########################################################
 	# return 
+	# ########################################################
 	board: board
 	
-	thread: thread if isThread
+	isThread: !!isThread
+	isBoard: !isThread
+	threadId: threadId
+	locked: if isThread then threads[0].locked
+	
+	thread: threads[0] if isThread
 	threads: threads
 	
 	pages: pages

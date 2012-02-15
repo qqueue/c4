@@ -9,9 +9,8 @@
 </header>
 <div id="threads">
 	{{#each threads}}{{>thread}}{{/each}}
-	{{#if thread}}{{#with thread}}{{>thread}}{{/with}}{{/if}}{{! for single thread views }}
 </div>
-{{#if thread}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
+{{#if isBoard}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
 {{#if pages}}
 <nav id="pages">
 	{{#if previous}}<a href="{{previous}}" id="previous">previous</a>{{/if}}
@@ -23,13 +22,13 @@
 	{{#if next}}<a href="{{next}}" id="next">next</a>{{/if}}
 </nav>
 {{/if}}
-{{#if thread.locked}}
+{{#if locked}}
 <p>Thread closed.<br>You may not reply at this time.</p>
 {{else}}
 <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank">
 	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 	<input type="hidden" value="regist" name="mode">
-	{{#if thread}}<input type="hidden" value="{{thread.id}}" name="resto">{{/if}}
+	{{#if isThread}}<input type="hidden" value="{{threadID}}" name="resto">{{/if}}
 	<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
 	<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
 	<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
