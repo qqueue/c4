@@ -54,7 +54,7 @@ cleanComment = (comment) ->
 			.replace(/<font class="unkfunc">/g, '<b class="greentext">') # unkfunc?
 			.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
-			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():~]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 
 # in the context of given document
 parse4chan = (document) ->
@@ -82,7 +82,7 @@ parse4chan = (document) ->
 			post.tripcode = tripcodes.shift().textContent
 			emails.shift() if emails[0]?[testAttr] is testObj # clear extra linkmail element
 		# capcodes are hidden within reply posters, even for ops
-		post.capcode = _reply.posters.shift().textContent if /##/.test _reply.posters[0]?.textContent
+		post.capcode = _reply.posters.shift() if /##/.test _reply.posters[0]
 		
 		return post 
 
@@ -116,7 +116,7 @@ parse4chan = (document) ->
 	
 	time "label elements"
 	numThreads = 0
-	for el in document.forms[1].children # our wonderful parent element
+	for el in document.querySelector('form[name="delform"]').children # our wonderful parent element
 		break if el.tagName is "CENTER" # the ad at the end of the threads
 		if el.tagName is "HR"
 			numThreads++
@@ -162,7 +162,7 @@ parse4chan = (document) ->
 		posters: (el.textContent for el in document.getElementsByClassName('commentpostername'))
 		times: (parse4ChanDate el.textContent for el in replyEls) # no wrapper ;_;
 		titles: (el.textContent for el in document.getElementsByClassName('replytitle'))
-	
+	console.dir _reply
 	# stickies are at the top, so we just need the number of them
 	stickies = document.querySelectorAll('img[alt="sticky"]').length
 	# we could probably assume locked threads are too, but we'll be safe
