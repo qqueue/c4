@@ -58,60 +58,34 @@ cleanComment = (comment) ->
 
 # in the context of given document
 parse4chan = (document) ->
-	parseReply = (el, thread) ->
+	parsePost = (thread, op, data, testAttr, testObj) ->
 		post = new Post(
 			ids.shift(),
-			false,
+			op,
 			thread,
-			replyTimes.shift(),
-			replyTitles.shift(),
-			replyPosters.shift(),
+			data.times.shift(),
+			data.titles.shift(),
+			data.posters.shift(),
 			comments.shift(),
-			emails.shift().href if emails[0]?.parentNode.parentNode is el
+			emails.shift().href if emails[0]?.parentNode[testAttr] is testObj
 		)
 		# add to post
-		if imageEls[0]?.parentNode.parentNode is el
+		if imageEls[0]?.parentNode[testAttr] is testObj
 			imageEls.shift()
 			post.image = images.shift()
 		else
-			if deletedImages[0]?.parentNode is el
+			if deletedImages[0]?[testAttr] is testObj
 				deletedImages.shift()
 				post.deletedImage = true 
 		# tripcode gets wrapped in the email anchor if present
-		if tripcodes[0] and (if post.email? then tripcodes[0].parentNode else tripcodes[0]).parentNode is el
+		if tripcodes[0] and (if post.email? then tripcodes[0].parentNode else tripcodes[0])[testAttr] is testObj
 			post.tripcode = tripcodes.shift().textContent
-			emails.shift() if emails[0]?.parentNode is el # clear extra linkmail element
-		# capcodes are hidden within replyPosters
-		post.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
+			emails.shift() if emails[0]?[testAttr] is testObj # clear extra linkmail element
+		# capcodes are hidden within reply posters, even for ops
+		post.capcode = _reply.posters.shift().textContent if /##/.test _reply.posters[0]?.textContent
 		
 		return post 
-	
-	parseOP = (thread, i) ->
-		op = new Post(
-			ids.shift(),
-			true,
-			thread,
-			opTimes.shift(),
-			opTitles.shift(),
-			opPosters.shift(),
-			comments.shift(),
-			emails.shift().href if emails[0]?.parentNode.threadNum is i
-		)
-		# add to op
-		if imageEls[0]?.parentNode.threadNum is i
-			imageEls.shift()
-			op.image = images.shift()
-		else
-			if deletedImages[0]?.threadNum is i
-				deletedImages.shift()
-				op.deletedImage = true 
-		# tripcode gets wrapped in the email anchor if present
-		op.tripcode = tripcodes.shift().textContent if tripcodes[0] and (if op.email? then tripcodes[0].parentNode else tripcodes[0]).threadNum is i
-		# capcodes are hidden within replyPosters
-		op.capcode = replyPosters.shift().textContent if /##/.test replyPosters[0]?.textContent
-		
-		return op
-		
+
 	# ########################################################
 	time "preprocess"
 	# ########################################################
@@ -177,15 +151,17 @@ parse4chan = (document) ->
 	deletedImages = Array::slice.call document.querySelectorAll('img[alt="File deleted."]')
 	comments = (cleanComment el.innerHTML for el in document.getElementsByTagName 'blockquote')
 	
-	opTimes = (parse4ChanDate el.textContent for el in document.getElementsByClassName 'posttime')
-	opPosters = (el.textContent for el in document.getElementsByClassName('postername'))
-	opTitles = (el.textContent for el in document.getElementsByClassName('filetitle'))
+	_op = 
+		times: (parse4ChanDate el.textContent for el in document.getElementsByClassName 'posttime')
+		posters: (el.textContent for el in document.getElementsByClassName('postername'))
+		titles: (el.textContent for el in document.getElementsByClassName('filetitle'))
 	
 	replyEls = document.getElementsByClassName('reply')
 	
-	replyPosters = (el.textContent for el in document.getElementsByClassName('commentpostername'))
-	replyTimes = (parse4ChanDate el.textContent for el in document.getElementsByClassName 'reply')
-	replyTitles = (el.textContent for el in document.getElementsByClassName('replytitle'))
+	_reply = 
+		posters: (el.textContent for el in document.getElementsByClassName('commentpostername'))
+		times: (parse4ChanDate el.textContent for el in replyEls) # no wrapper ;_;
+		titles: (el.textContent for el in document.getElementsByClassName('replytitle'))
 	
 	# stickies are at the top, so we just need the number of them
 	stickies = document.querySelectorAll('img[alt="sticky"]').length
@@ -198,8 +174,8 @@ parse4chan = (document) ->
 	# ########################################################
 	threads = for i in [0...numThreads]
 		thread = new Thread ids[0], !isThread
-		thread.op = parseOP thread, i
-		thread.replies = (parseReply(el,thread) for el in replyEls when el.parentNode.parentNode.parentNode.threadNum is i) # walk to table from td
+		thread.op = parsePost thread, true, _op, "threadNum", i
+		thread.replies = (parsePost(thread,false,_reply,"parentNode", el) for el in replyEls when el.parentNode.parentNode.parentNode.threadNum is i) # walk to table from td
 		if closedThreads[0]?.parentNode.threadNum is i
 			closedThreads.shift()
 			thread.locked = true

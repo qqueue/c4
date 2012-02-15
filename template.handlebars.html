@@ -10,7 +10,7 @@
 <div id="threads">
 	{{#each threads}}{{>thread}}{{/each}}
 </div>
-{{#if isBoard}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
+{{#if isThread}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
 {{#if pages}}
 <nav id="pages">
 	{{#if previous}}<a href="{{previous}}" id="previous">previous</a>{{/if}}
