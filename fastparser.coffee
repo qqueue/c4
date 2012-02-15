@@ -162,7 +162,6 @@ parse4chan = (document) ->
 		posters: (el.textContent for el in document.getElementsByClassName('commentpostername'))
 		times: (parse4ChanDate el.textContent for el in replyEls) # no wrapper ;_;
 		titles: (el.textContent for el in document.getElementsByClassName('replytitle'))
-	console.dir _reply
 	# stickies are at the top, so we just need the number of them
 	stickies = document.querySelectorAll('img[alt="sticky"]').length
 	# we could probably assume locked threads are too, but we'll be safe
@@ -184,8 +183,10 @@ parse4chan = (document) ->
 			thread.sticky = true
 		if !isThread and omittedposts[0]?.threadNum is i
 			omitted = omittedposts.shift().textContent
-			thread.omittedReplies = parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
-			thread.omittedImageReplies = parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+			thread.omitted = {}
+			thread.omitted.replies = parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
+			thread.omitted.imageReplies = parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+			thread.omitted.shown = thread.replies.length # weird wording, i know, but for rendering
 		
 		thread # return thread to threads
 	timeEnd "create objects"	

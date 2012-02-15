@@ -1,3 +1,5 @@
+"use strict"
+
 $.fn.extend
 	immediateText: -> 
 		@parent().clone().children().remove().end().text()

@@ -15,9 +15,6 @@ Handlebars.registerHelper 'datetime', ( time, options ) ->
 	date = new Date(time)
 	return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+" "+pad(date.getHours())+":"+pad(date.getMinutes())
 
-Handlebars.registerHelper 'ISOString', (time) ->
-	return new Date(time).toISOString()
-
 time "compile handlebars"
 Post.render = Handlebars.compile('{{{Post}}}')
 Post.prototype.render = -> Post.render(this)
@@ -30,24 +27,27 @@ Handlebars.registerPartial('thread',Thread.render)
 template = Handlebars.compile('{{{template}}}')
 timeEnd "compile handlebars"
 time "render"
-$('body')
-	.removeAttr('vlink text link bgcolor')
-	.attr({id: data.board.name})
-	.addClass( if data.board.nsfw then 'nsfw' else 'sfw')
-	.addClass( if data.thread then 'threadpage' else 'boardpage')
-	.html(template(data))
+document.body.removeAttribute 'vlink'
+document.body.removeAttribute 'text'
+document.body.removeAttribute 'link'
+document.body.removeAttribute 'bgcolor'
+document.body.id = board.name
+document.body.className += if board.nsfw then ' nsfw' else ' sfw'
+document.body.className += if data.thread then ' threadpage' else ' boardpage'
+document.body.innerHTML = template(data)
 
-$('<style>').html('{{{css}}}').appendTo('head')
+style = document.createElement 'style'
+style.textContent = '{{{css}}}'
+document.head.appendChild style
 
 # create recaptcha with script already included on page (using 4chan's public key)
-script = document.createElement("script")
-script.textContent = "("+( ->
-	Recaptcha.create("6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc", "captcha", {
-		theme: "clean"
-		tabindex: 10
-	})
-).toString()+")()"
-document.body.appendChild(script)
+unless data.locked
+	script = document.createElement("script")
+	script.textContent = "Recaptcha.create('6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', 'captcha', {
+			theme: 'clean',
+			tabindex: 10,
+		})"
+	document.head.appendChild(script)
 
 # rescroll to target element if this page hasn't been loaded before
 # this retains the browser's natural scroll position memory

@@ -1,25 +1,27 @@
 <header>
-	<nav class="boardlinks">{{{board.nav}}}</nav>
-	<img src="{{board.banner}}" alt="4chan::" id="banner"/>
+	{{#board}}
+	<nav class="boardlinks">{{{nav}}}</nav>
+	<img src="{{banner}}" alt="4chan::" id="banner"/>
 	<hgroup>
-		<h1><a href="http://boards.4chan.org/{{board.name}}/">{{board.title}}</a></h1>
-		<h2>{{{board.subtitle}}}</h2>
+		<h1><a href="http://boards.4chan.org/{{name}}/">{{title}}</a></h1>
+		<h2>{{{subtitle}}}</h2>
 	</hgroup>
-	<div id="motd">{{{board.motd}}}</div>
+	<div id="motd">{{{motd}}}</div>
+	{{/board}}
 </header>
 <div id="threads">
-	{{#each threads}}{{>thread}}{{/each}}
+	{{#threads}}{{>thread}}{{/threads}}
 </div>
 {{#if isThread}}<a href="http://boards.4chan.org/{{board.name}}/">[Return]</a>{{/if}}
 {{#if pages}}
 <nav id="pages">
-	{{#if previous}}<a href="{{previous}}" id="previous">previous</a>{{/if}}
+	{{#previous}}<a href="{{this}}" id="previous">previous</a>{{/previous}}
 	<ul>
-		{{#each pages}}
-			<li><a href="{{num}}" {{#if current}}id="current"{{/if}}>{{num}}</a></li>
-		{{/each}}
+		{{#pages}}
+			<li><a href="{{num}}" {{#current}}id="current"{{/current}}>{{num}}</a></li>
+		{{/pages}}
 	</ul>
-	{{#if next}}<a href="{{next}}" id="next">next</a>{{/if}}
+	{{#next}}<a href="{{this}}" id="next">next</a>{{/next}}
 </nav>
 {{/if}}
 {{#if locked}}
@@ -28,7 +30,7 @@
 <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post" target="_blank">
 	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 	<input type="hidden" value="regist" name="mode">
-	{{#if isThread}}<input type="hidden" value="{{threadID}}" name="resto">{{/if}}
+	{{#threadID}}<input type="hidden" value="{{this}}" name="resto">{{/threadID}}
 	<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
 	<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
 	<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
