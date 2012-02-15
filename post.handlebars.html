@@ -7,7 +7,7 @@
 		<a class="poster" {{#email}}href="mailto:{{this}}"{{/email}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>
 		<span class="capcode">{{capcode}}</span>
-		{{#time}}<time pubdate datetime="{{toISOString}}">{{datetime this}}</time>{{/time}}
+		{{#time}}<time pubdate datetime="{{toISOString}}">{{prettyPrint}}</time>{{/time}}
 		{{#if op}}
 		{{#thread}}
 			{{#sticky}}<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">{{/sticky}}

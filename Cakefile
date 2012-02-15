@@ -12,16 +12,18 @@ read_and_escape = (file) ->
 outfile = "html5chan@httpsgithubcomqueue-html5chan.user.js"
 parts =  ['utils', 'fastparser', 'renderer', 'features'] # ['utils', 'parser', 'renderer', 'features']
 metadata = 'metadata.txt'
+templates = ['page', 'thread', 'post']
 
 task 'build', 'build userscript', (options) ->
 	includes = 
 		css: read_and_escape "hakase.css"
-		template: read_and_escape "template.handlebars.html"
-		Thread: read_and_escape "thread.handlebars.html"
-		Post: read_and_escape "post.handlebars.html"
-	try	
+	try
+		code = coffee.compile (read "#{file}.coffee" for file in parts).join("\n"), bare: true
+		compiledTemplates = (for name in templates
+			"Handlebars.template.#{name} = Handlebars.template(#{handlebars.precompile read(name+".handlebars.html"), knownHelpersOnly: true})"
+		).join("\n") + "\n"
 		html5chan = 
-			read(metadata) + coffee.compile (read "#{file}.coffee" for file in parts).join("\n"), bare: true
+			read(metadata) + compiledTemplates + code
 		fs.writeFileSync outfile, handlebars.compile(html5chan)(includes)
 		console.log "compiled script to #{outfile}"
 	catch error

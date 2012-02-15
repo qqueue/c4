@@ -7,25 +7,22 @@ $('link[rel*="stylesheet"], style').remove()
 window.onload = window.onunload = undefined
 
 
-Handlebars.registerHelper 'datetime', ( time, options ) ->
+Date::prettyPrint = ( time, options ) ->
 	pad = (number) ->
 		str = number.toString()
 		return if str.length < 2 then "0"+str else str; # pad to 2 digits
 	
-	date = new Date(time)
-	return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+" "+pad(date.getHours())+":"+pad(date.getMinutes())
+	return @getFullYear()+"-"+pad(@getMonth()+1)+"-"+pad(@getDate())+" "+pad(@getHours())+":"+pad(@getMinutes())
 
-time "compile handlebars"
-Post.render = Handlebars.compile('{{{Post}}}')
+Post.render = Handlebars.template.post
 Post.prototype.render = -> Post.render(this)
 Handlebars.registerPartial('post',Post.render)
 
-Thread.render = Handlebars.compile('{{{Thread}}}')
+Thread.render = Handlebars.template.thread
 Thread.prototype.render = -> Thread.render(this)
 Handlebars.registerPartial('thread',Thread.render)
 
-template = Handlebars.compile('{{{template}}}')
-timeEnd "compile handlebars"
+template = Handlebars.template.page
 time "render"
 document.body.removeAttribute 'vlink'
 document.body.removeAttribute 'text'
