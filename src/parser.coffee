@@ -23,6 +23,20 @@ class Post
 		@url = if op then thread.url else thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
 		
+		# backlinker
+		if quotelinks = @comment.match /&gt;&gt;\d+/
+			for link in quotelinks
+				(Post.backlinks[link.substring(8)] ?= {})[@id] = true
+	
+	backlinks: ->
+		html = ""
+		if backlinks = Post.backlinks[@id]
+			for post of backlinks
+				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&gt;&gt;#{post}</a> ";
+		return html
+	
+	Post.backlinks = {} # using object as a hashset 
+	
 class Thread 
 	constructor: (@id, @preview) ->
 		@url = board.threadurl+@id
