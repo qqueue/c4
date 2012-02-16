@@ -1,2 +1,2 @@
-console.log _log.join("\n")
+console.log log.all()
 console.dir(data)

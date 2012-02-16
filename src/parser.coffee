@@ -32,7 +32,7 @@ class Post
 		html = ""
 		if backlinks = Post.backlinks[@id]
 			for post of backlinks
-				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&gt;&gt;#{post}</a> ";
+				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&lt;&lt;#{post}</a> ";
 		return html
 	
 	Post.backlinks = {} # using object as a hashset 

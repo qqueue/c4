@@ -43,13 +43,5 @@ $.fn.extend
 			window.scrollBy after.left - before.left, after.top - before.top
 		return this
 
-_log = []
-log = (message) -> _log.push message
-_times = {}
-time = (name) ->
-	_times[name] = Date.now()
-timeEnd = (name) ->
-	log "#{name}: #{Date.now() - _times[name]}ms"
-		
 # Assuming DST in may
 DSTOffset = (new Date().getTimezoneOffset() - new Date((new Date()).setMonth(6)).getTimezoneOffset())/60
