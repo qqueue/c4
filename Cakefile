@@ -10,7 +10,7 @@ read_and_escape = (file) ->
 
 
 outfile = "html5chan@httpsgithubcomqueue-html5chan.user.js"
-parts =  ['utils', 'parser', 'renderer', 'features']
+parts =  ['utils', 'parser', 'renderer']
 metadata = 'metadata.txt'
 templates = ['page', 'thread', 'post']
 
@@ -18,7 +18,9 @@ task 'build', 'build userscript', (options) ->
 	includes = 
 		css: read_and_escape "hakase.css"
 	try
-		code = coffee.compile (read "src/#{file}.coffee" for file in parts).join("\n"), bare: true
+		main = (read "src/#{file}.coffee" for file in parts).join("\n")
+		features = (read("src/features/#{name}") for name in fs.readdirSync('src/features')).join("\n")
+		code = coffee.compile [read('src/intro.coffee'), main, features, read('src/outro.coffee')].join("\n"), bare: true
 		compiledTemplates = (for name in templates
 			"Handlebars.template.#{name} = Handlebars.template(#{handlebars.precompile read("templates/"+name+".handlebars.html"), knownHelpersOnly: true})"
 		).join("\n") + "\n"
@@ -32,11 +34,15 @@ task 'build', 'build userscript', (options) ->
 	
 task 'watch', 'watch for changes and rebuild automatically', (options) ->
 	invoke "build"
-	fs.watch ".", interval: 1000, (_.debounce((event, filename) ->
+	rebuild = _.debounce((event, filename) ->
 		unless filename
 			console.log "filename not given... exiting"
 			return
 		if event is "change" and filename isnt outfile
 			console.log "change detected in #{filename}. rebuilding..."
 			invoke "build"
-	, 500))
+	, 1000)
+	fs.watch ".", interval: 1000, rebuild
+	fs.watch "src/", interval: 1000, rebuild
+	fs.watch "src/features", interval: 1000, rebuild
+	fs.watch "templates/", interval: 1000, rebuild
