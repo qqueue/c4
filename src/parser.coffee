@@ -72,7 +72,7 @@ cleanComment = (comment) ->
 			.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
 			.replace(/"http:\/\/dis.4chan.org/g, "\"dis.4chan.org") # protect textboard links from linkification
-			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():~]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+			.replace(/https?:\/\/[\w\.\-_\/=&;?#%:~]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
 			.replace(/"dis.4chan.org/g, "\"http://dis.4chan.org") # add http: back to textboard links
 
 # in the context of given element
