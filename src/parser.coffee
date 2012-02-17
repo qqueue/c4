@@ -1,3 +1,6 @@
+if document.title is "4chan - 404"
+	# fail almost elegantly
+	throw "404 page detected, exiting" 
 # ########################################################
 # general page info
 # ########################################################
