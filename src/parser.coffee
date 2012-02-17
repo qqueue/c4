@@ -68,7 +68,9 @@ cleanComment = (comment) ->
 			.replace(/<font class="unkfunc">/g, '<b class="greentext">') # unkfunc?
 			.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
 			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
+			.replace(/"http:\/\/dis.4chan.org/g, "\"dis.4chan.org") # protect textboard links from linkification
 			.replace(/https?:\/\/[\w\.\-_\/=&;?#%():~]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
+			.replace(/"dis.4chan.org/g, "\"http://dis.4chan.org") # add http: back to textboard links
 
 # in the context of given element
 parse4chan = (context) ->
@@ -163,8 +165,9 @@ parse4chan = (context) ->
 	emails = Array::slice.call context.getElementsByClassName('linkmail')
 	tripcodes = Array::slice.call context.getElementsByClassName('postertrip')
 	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
+	time "clean comments"
 	comments = (cleanComment el.innerHTML for el in context.getElementsByTagName 'blockquote')
-	
+	timeEnd "clean comments"
 	_op = 
 		times: (parse4ChanDate el.textContent for el in context.getElementsByClassName 'posttime')
 		posters: (el.textContent for el in context.getElementsByClassName('postername'))
