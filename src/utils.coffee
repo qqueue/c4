@@ -10,8 +10,8 @@ $.fn.extend
 		@replaceWith ->
 			$(replacement,options).html($(this).html())
 
-	constrainY: ({left, top, height}, margin = 0) ->
-		height ?= @height() 
+	constrainY: ({left, top}, margin = 0) ->
+		height = @height() 
 		bottom = top + height
 		screentop = $(window).scrollTop()
 		screenbottom = screentop + $(window).height()
