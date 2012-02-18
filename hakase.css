@@ -15,6 +15,16 @@ html {
 	color: #800000;
 }
 
+::selection {
+	background: #29DF75;
+	color: white;
+}
+::-moz-selection  {
+	background: #29DF75;
+	color: black; 
+}
+
+
 body > header {
 	text-align: center;
 	color: #AF0A0F;
@@ -370,3 +380,4 @@ a.permalink .id:hover, a.saucelink:hover {
 body > footer {
 	text-align: center;
 }
+
