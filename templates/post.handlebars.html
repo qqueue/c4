@@ -15,7 +15,7 @@
 			{{#if preview}}<a href="{{url}}" class="replylink">[Reply]</a>{{/if}}
 		{{/thread}}
 		{{/if}}
-		<a href="{{url}}" class="permalink" {{#if thread.preview}}target="_blank"{{/if}}>
+		<a href="{{url}}" class="permalink">
 			No.<span class="id">{{id}}</span>
 		</a>
 	</h1>
@@ -26,7 +26,7 @@
 	{{/image}}
 </header>
 {{#image}}
-<a class="file" target="_blank" href="{{url}}" data-width="{{width}}" data-height="{{height}}" >
+<a class="file" target="_blank" href="{{url}}" >
 {{#thumb}}<img class="thumb" src="{{url}}" width="{{width}}" height="{{height}}"/>{{/thumb}}
 </a>
 {{/image}}

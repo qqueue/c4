@@ -21,10 +21,13 @@ board.threadurl = "#{board.url}res/"
 # our cool data structures
 # ########################################################
 class Post 
-	constructor: (@id,@op,@thread,@time,@title,@poster,@comment,email) -> 
+	constructor: (@id,@op,@thread,@time,@title,@poster,@comment,email,@image,@deletedImage,@tripcode,@capcode) -> 
 		@email = email?.substring(7) # strip mailto:
 		@url = if op then thread.url else thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
+		
+		# tripcode collection
+		Post.tripcodes[@tripcode] = true if @tripcode
 		
 		# backlinker
 		if quotelinks = @comment.match /&gt;&gt;\d+/
@@ -48,6 +51,7 @@ class Post
 		return c
 	
 	Post.backlinks = {} # using object as a hashset 
+	Post.tripcodes = {}
 	
 class Thread 
 	constructor: (@id, @preview) ->
@@ -99,24 +103,17 @@ parse4chan = (context) ->
 			data.titles.shift(),
 			data.posters.shift(),
 			comments.shift(),
-			emails.shift().href if emails[0]?.parentNode[testAttr] is testObj
+			(email = true) and emails.shift().href if emails[0]?.parentNode[testAttr] is testObj,
+			imageEls.shift() and images.shift() if imageEls[0]?.parentNode[testAttr] is testObj,
+			!!deletedImages.shift() if deletedImages[0]?[testAttr] is testObj,
+			# tripcode gets wrapped in the email anchor if present
+			(if tripcodes[0] and (if email? then tripcodes[0].parentNode else tripcodes[0])[testAttr] is testObj
+				emails.shift() if emails[0]?[testAttr] is testObj # clear extra linkmail element
+				tripcodes.shift().textContent
+			),
+			# capcodes are hidden within reply posters, even for ops
+			_reply.posters.shift() if /##/.test _reply.posters[0]
 		)
-		# add to post
-		if imageEls[0]?.parentNode[testAttr] is testObj
-			imageEls.shift()
-			post.image = images.shift()
-		else
-			if deletedImages[0]?[testAttr] is testObj
-				deletedImages.shift()
-				post.deletedImage = true 
-		# tripcode gets wrapped in the email anchor if present
-		if tripcodes[0] and (if post.email? then tripcodes[0].parentNode else tripcodes[0])[testAttr] is testObj
-			post.tripcode = tripcodes.shift().textContent
-			emails.shift() if emails[0]?[testAttr] is testObj # clear extra linkmail element
-		# capcodes are hidden within reply posters, even for ops
-		post.capcode = _reply.posters.shift() if /##/.test _reply.posters[0]
-		
-		return post 
 
 	# ########################################################
 	time "preprocess"
