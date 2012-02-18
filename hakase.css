@@ -95,6 +95,10 @@ body > header h2 { font-size: 10px; font-weight: normal; }
 	border-color: #D9BFB7;
 }
 
+.sage > header > h1 > .poster:after {
+	content: " (sage)";
+}
+
 .reply:before {
 	content: ">>";
 	display: block;
@@ -211,7 +215,7 @@ a.saucelink {
 	text-decoration: none;
 }
 
-a.permalink:hover, a.saucelink:hover {
+a.permalink .id:hover, a.saucelink:hover {
 	text-decoration: underline;
 }
 
