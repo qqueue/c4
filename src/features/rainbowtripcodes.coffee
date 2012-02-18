@@ -10,7 +10,7 @@ do ->
 		"hsl(#{hue}, #{saturation}%, #{lightness}%)"
 	$('<style>', id: 'rainbowtripcodes').text(
 		(for tripcode of Post.tripcodes
-			".tripcoded.#{tripcode.replace(/[!+\/\.]/g,'\\$&')} { background-color: #{color(tripcode)}; }"
+			".tripcoded.#{tripcode.replace(/[!+\/\.]/g,'\\$&')}:not(.op) { background-color: #{color(tripcode)}; }"
 		).join("\n")
 	).appendTo 'head'
 	timeEnd "rainbow tripcodes"
