@@ -68,12 +68,8 @@ cleanComment = (comment) ->
 			.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
 			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
 			.replace(/<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
-			.replace(/<font class="unkfunc">/g, '<b class="greentext">') # unkfunc?
-			.replace(/<\/font>/g, '</b>') # we can blindly select for this because only greentext is in here
-			.replace(/http:\/\/boards.4chan.org/g, "") # strips http://boards.4chan.org/ from cross-board links so they don't get linkified
-			.replace(/"http:\/\/dis.4chan.org/g, "\"dis.4chan.org") # protect textboard links from linkification
-			.replace(/https?:\/\/[\w\.\-_\/=&;?#%:~]+/g,'<a href="$&" target="_blank">$&</a>') # linkify other links
-			.replace(/"dis.4chan.org/g, "\"http://dis.4chan.org") # add http: back to textboard links
+			.replace(/<font class="unkfunc">/g, '<font class="greentext">') # unkfunc?
+			.replace(/[^"'](https?:\/\/[\w\.\-_\/=&;?#%:~]+)/g,'<a href="$1" target="_blank">$1</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 
 # in the context of given element
 parse4chan = (context) ->
@@ -132,7 +128,6 @@ parse4chan = (context) ->
 			{ num: i, current: current is i }
 		next = if current < 15 then current + 1
 		previous = if current > 0 then current - 1
-	
 	time "label elements"
 	numThreads = 0
 	for el in context.children # our wonderful parent element

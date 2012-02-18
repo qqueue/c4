@@ -1,6 +1,6 @@
 $('#threads')
 	.on 'click.html5chan.imgexpand', 'a.file', (e) ->
-		unless e.altKey or e.ctrlKey
+		unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
 			if $(this).hasClass 'expanded'
 				$(this)
 					.find('img.full').remove().end()
