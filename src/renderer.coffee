@@ -6,7 +6,6 @@ $('link[rel*="stylesheet"], style').remove()
 # than it doest to load this script
 window.onload = window.onunload = undefined
 
-
 Date::prettyPrint = ( time, options ) ->
 	pad = (number) ->
 		str = number.toString()

@@ -29,9 +29,27 @@ task 'build', 'build userscript', (options) ->
 		fs.writeFileSync outfile, handlebars.compile(html5chan)(includes)
 		console.log "compiled script to #{outfile}"
 	catch error
-		console.error "Error compiling script"
-		console.error error
-	
+		# find out in which file the error occured
+		for name in fs.readdirSync('src/features')
+			try
+				coffee.compile read("src/features/#{name}"), bare: true
+			catch e
+				console.error "Error compiling #{name}: "
+				console.error e
+		for name in parts
+			try
+				coffee.compile read("src/#{name}.coffee"), bare: true
+			catch e
+				console.error "Error compiling #{name}: "
+				console.error e
+		for name in ['intro', 'outro']
+			try
+				coffee.compile read("src/#{name}.coffee"), bare: true
+			catch e
+				console.error "Error compiling #{name}: "
+				console.error e
+		
+				
 task 'watch', 'watch for changes and rebuild automatically', (options) ->
 	invoke "build"
 	rebuild = _.debounce((event, filename) ->
