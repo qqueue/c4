@@ -19,8 +19,18 @@ $('#threads')
 						).end()
 					.attr('id', 'postpreview')
 					.appendTo('body')
-			$this.trigger('mousemove.html5chan.postpreview')
-		
+			preview = $('#postpreview')
+			height = preview.height()
+			width = preview.width()
+			left = e.pageX + 10
+			if( (left + width ) > $(window).width() ) 
+				left = Math.max( 10, e.pageX - 10 - width )
+			preview
+				.css({
+					position: "absolute"
+					left: left
+					top: e.pageY+( if $(this).is('.backlink') then 10 else -30 - height) 
+				})
 	)
 	.on('mousemove.html5chan.postpreview', 'a.quotelink', (e) ->
 		preview = $('#postpreview')
@@ -33,7 +43,7 @@ $('#threads')
 			.css({
 				position: "absolute"
 				left: left
-				top: e.pageY+( if $(this).is('.backlink') then 10 else -20 - height) 
+				top: e.pageY+( if $(this).is('.backlink') then 10 else -30 - height) 
 			})
 	)
 	.on('mouseleave.html5chan.postpreview', 'a.quotelink', (e) ->
