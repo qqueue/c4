@@ -90,7 +90,7 @@ cleanComment = (comment) ->
 			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
 			.replace(/<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
 			.replace(/<font class="unkfunc">/g, '<font class="greentext">') # unkfunc?
-			.replace(/[^"'](https?:\/\/[\w\.\-_\/=&;?#%:~]+)/g,'<a href="$1" target="_blank">$1</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
+			.replace(/([^"']|^)(https?:\/\/[\w\.\-_\/=&;?#%:~]+)/g,'$1<a href="$2" target="_blank">$2</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 
 # in the context of given element
 parse4chan = (context) ->
