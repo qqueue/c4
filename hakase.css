@@ -167,7 +167,7 @@ img.full {
 	color: 800080
 }
 
-button.hide {
+button.hide, button.report {
 	cursor: pointer;
 	float: right;
 	margin: 0 0 0 2px;
@@ -182,10 +182,6 @@ button.hide {
 
 a.quotelink.hiddenlink {
 	text-decoration: line-through;
-}
-
-.reportlink {
-	float: right;
 }
 
 .oplink:after {

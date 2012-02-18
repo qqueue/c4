@@ -2,7 +2,7 @@
 	<h1>
 		<input type="checkbox" value="delete" name="{{id}}" form="delform">
 		<button type="button" class="hide" data-post="#{{id}}">&times;</button>
-		<a class="reportlink" target="_blank" href="http://sys.4chan.org/{{thread.board.name}}/imgboard.php?mode=report&amp;no={{id}}">[!]</a>
+		<button type="submit" form="reportform" class="report" name="no" value="{{id}}">!</button>
 		<span class="title">{{title}}</span>
 		<a class="poster" {{#email}}href="mailto:{{this}}"{{/email}}>{{poster}}</a>
 		<span class="tripcode">{{tripcode}}</span>
