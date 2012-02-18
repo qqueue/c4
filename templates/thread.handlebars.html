@@ -1,9 +1,9 @@
 <article class="thread{{#sticky}} sticky {{/sticky}}{{#locked}} locked {{/locked}}{{#preview}} preview {{/preview}}" id="thread-{{id}}" tabindex="1">
-	{{#op}} <div class="op post" id="{{id}}">{{> post}}</div> {{/op}} 
+	{{#op}} <div class="{{className}}" id="{{id}}">{{> post}}</div> {{/op}} 
 	{{#omitted}}<div class="omitted-replies">{{replies}} replies {{#imageReplies}}and {{this}} image replies{{/imageReplies}} omitted. Latest {{shown}} shown.</div>{{/omitted}}
 	<div class="replies">
 		{{#replies}}
-			<article class="post reply{{#sage}} sage {{/sage}}{{#image}} imagepost {{/image}}{{#tripcode}} tripcoded {{/tripcode}}{{#capcode}} capcoded {{/capcode}}" id="{{id}}"> {{> post}} </article>
+			<article class="{{className}}" id="{{id}}"> {{> post}} </article>
 		{{/replies}}
 	</div>
 </article>

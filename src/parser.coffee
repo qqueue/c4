@@ -38,11 +38,28 @@ class Post
 				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&lt;&lt;#{post}</a> ";
 		return html
 	
+	className: -> # generates the correct classes to use
+		c = 'post ' + if @op then 'op ' else 'reply '
+		c += 'imagepost ' if @image
+		c += 'sage ' if @sage
+		c += 'tripcoded ' + @tripcode + ' ' if @tripcode
+		if @capcode
+			c += if @capcode is "## Admin" then 'admin' else 'mod'
+		return c
+	
 	Post.backlinks = {} # using object as a hashset 
 	
 class Thread 
 	constructor: (@id, @preview) ->
 		@url = board.threadurl+@id
+	
+	className: ->
+		c = 'thread '
+		c += 'sticky ' if @sticky
+		c += ' locked' if @locked
+		c += ' preview' if @preview
+		return c
+	
 	# for rendering
 	Thread::board = board
 
