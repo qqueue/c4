@@ -29,8 +29,8 @@
 {{else}}
 <form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/{{board.name}}/post">
 	<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
+	{{#threadId}}<input type="hidden" value="{{this}}" name="resto">{{/threadId}}
 	<input type="hidden" value="regist" name="mode">
-	{{#threadID}}<input type="hidden" value="{{this}}" name="resto">{{/threadID}}
 	<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
 	<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
 	<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
@@ -53,9 +53,9 @@
 	<div id="buttons-wrapper">
 		<label>Submit: </label>
 		<div id="buttons">
-			<button type="submit" tabindex="10" id="post">Post</button>
+			<button type="submit" tabindex="10" id="post" value="Submit">Post</button>
 			<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
-			<button type="submit" name="email" value="noko" tabindex="10" id="sage">Noko</button>
+			<button type="submit" name="email" value="noko" tabindex="10" id="noko">Noko</button>
 		</div>
 	</div>
 	<ul id="rules">
@@ -70,7 +70,7 @@
 {{/if}}
 <form id="delform" method="POST" action="http://sys.4chan.org/{{board.name}}/imgboard.php">
 	<input name="mode" value="usrdel" type="hidden">
-	<label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20"></label>
+	<label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20" id="delpassword"></label>
 	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
 	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
 </form>
