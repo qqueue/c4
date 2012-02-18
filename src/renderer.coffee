@@ -6,7 +6,7 @@ $('link[rel*="stylesheet"], style').remove()
 # than it doest to load this script
 window.onload = window.onunload = undefined
 
-Date::prettyPrint = ( time, options ) ->
+Date::prettyPrint = ->
 	pad = (number) ->
 		str = number.toString()
 		return if str.length < 2 then "0"+str else str; # pad to 2 digits
@@ -73,3 +73,16 @@ unless sessionStorage.getItem "html5chan" + document.URL
 		window.addEventListener 'scroll', registerPage
 	
 timeEnd "render"
+
+if data.isThread
+	document.title = ''
+	if data.thread.op.title
+		document.title = data.thread.op.title
+	else
+		document.title = data.thread.op.poster + " - " if data.thread.op.poster isnt "Anonymous"
+		if (op = document.getElementById(data.thread.op.id).querySelector('.comment').textContent).length > 0
+			document.title += op.substring(0,20)
+			document.title += "..." if op.length > 20
+		else 
+			document.title = "Anonymous #{data.thread.op.time.prettyPrint()}"
+	document.title += " - /#{board.name}/" 
