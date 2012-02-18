@@ -85,12 +85,12 @@ body > header h2 { font-size: 10px; font-weight: normal; }
 	border-width: 0 1px 1px 0;
 }
 
-.sfw .reply {
+.sfw .reply, .sfw .post.inline:not(.tripcoded) {
 	background: #D6DAF0;
 	border-color: #B7C5D9;
 }
 
-.nsfw .reply {
+.nsfw .reply, .nsfw .post.inline:not(.tripcoded) {
 	background-color:#F0E0D6;
 	border-color: #D9BFB7;
 }
