@@ -30,7 +30,7 @@ class Post
 		Post.tripcodes[@tripcode] = true if @tripcode
 		
 		# backlinker
-		if quotelinks = @comment.match /&gt;&gt;\d+/
+		if quotelinks = @comment.match /&gt;&gt;\d+/g
 			for link in quotelinks
 				(Post.backlinks[link.substring(8)] ?= {})[@id] = true
 	
