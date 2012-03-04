@@ -12,6 +12,17 @@ do ->
 		return if str.length < 2 then "0"+str else str; # pad to 2 digits
 	Date::prettyPrint = ->
 		return @getFullYear()+"-"+pad(@getMonth()+1)+"-"+pad(@getDate())+" "+pad(@getHours())+":"+pad(@getMinutes())
+	Date::prettyRelative = ->
+		if (days = (new Date().getTime! - @getTime!) / 86400000) > 30
+			@prettyPrint! # just give absolute time
+		else if days > 1
+			"#{Math.ceil days} days ago"
+		else if (hours = days * 24) >= 1
+			"#{h = Math.round hours} hour#{if h > 1 then \s else ''} ago"
+		else if (minutes = hours * 60) > 1
+			"#{Math.ceil minutes} minutes ago"
+		else
+			"Less than a minute ago"
 
 time "render"
 document.body.removeAttribute 'vlink'

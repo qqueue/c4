@@ -51,7 +51,7 @@ class Post
 			<a class="poster" #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
 			<span class="tripcode">#{@tripcode or ''}</span>
 			<span class="capcode">#{@capcode or ''}</span>
-			<time pubdate datetime="#{@time.toISOString!}">#{@time.prettyPrint!}</time>
+			<time pubdate datetime="#{@time.toISOString!}" title="#{@time.prettyPrint!}">#{@time.prettyRelative!}</time>
 			#{if @op and @thread.sticky then '<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">' else ''}
 			#{if @op and @thread.closed then '<img alt="closed" src="http://static.4chan.org/image/closed.gif">' else ''}
 			#{if @op and @thread.preview then "<a href=\"#{@url}\" class=\"replylink\">[Reply]</a>" else ''}
