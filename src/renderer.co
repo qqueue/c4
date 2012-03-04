@@ -1,5 +1,6 @@
 # disable 4chan styles
-$('link[rel*="stylesheet"], style').remove()
+for el of document.querySelectorAll 'link[rel*="stylesheet"], style'
+	el.parentNode.removeChild el
 # disable 4chan's onload functions
 # we can do this because onload has to wait
 # for all the images, which obstensibly takes longer
@@ -130,61 +131,60 @@ document.body.innerHTML = do ->
 	</footer>
 	"""
 
-style = document.createElement 'style'
-style.textContent =
-	'''
-	%hakase.css%
-	'''
-document.head.appendChild style
+document.head.appendChild do
+	create \style ->
+		@id = \html5chan-style
+		@textContent = 
+			'''
+			%hakase.css%
+			'''
 
 # create or restore delete password 
 do ->
-	password = localStorage.getItem("html5chan-password") or Math.random().toString().substr(-8)
-	document.getElementById('delpassword').value = password
-	document.getElementById('delpassword').title = password
-	if field = document.getElementById 'password'
+	password = get \password or Math.random().toString().substr(-8)
+	document.getElementById \delpassword .value = password
+	document.getElementById \delpassword .title = password
+	if field = document.getElementById \password
 		field.value = password
-		save = -> localStorage.setItem "html5chan-password", @value
+		field.title = password
+		save = -> set password: field.value
 		field.addEventListener 'input', save # allows saving of custom passwords
 		document.getElementById('postform').addEventListener 'submit', save # also save to localStorage on submit
 
 # create recaptcha with script already included on page (using 4chan's public key)
-do ->
-	script = document.createElement("script")
-	script.textContent = """
-		if( document.getElementById('captcha') ) {
-			Recaptcha.create('6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', 'captcha', {
-					theme: 'clean',
-					tabindex: 10,
-				});
-		}
-	"""
-	document.head.appendChild(script)
+document.head.appendChild do
+	create \script ->
+		@textContent =
+			"if( document.getElementById('captcha') ) {
+				Recaptcha.create('6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', 'captcha', {
+						theme: 'clean',
+						tabindex: 10,
+					});
+			}"
 
 # rescroll to target element if this page hasn't been scrolled before
 # this retains the browser's natural scroll position memory
 # while still scrolling to the new hash target's position 
 # the first time the page loads (or if window hasn't been scrolled
-if window.location.hash and not sessionStorage.getItem "html5chan" + document.URL 
+if window.location.hash and not sget document.URL 
 	window.location.hash = window.location.hash
-	do ->
-		registerPage = -> # stupid coffeescript not having named function expressions
-			sessionStorage.setItem "html5chan"+document.URL, true
-			window.removeEventListener 'scroll', registerPage
-
-		window.addEventListener 'scroll', registerPage
+	window.addEventListener 'scroll', function registerPage
+		sset (document.URL): true
+		window.removeEventListener 'scroll', registerPage
 	
 timeEnd "render"
 
 if data.isThread
-	document.title = ''
-	if data.thread.op.title
-		document.title = data.thread.op.title
-	else
-		document.title = data.thread.op.poster + " - " if data.thread.op.poster is not "Anonymous"
-		if (op = document.getElementById(data.thread.op.id).querySelector('.comment').textContent).length > 0
-			document.title += op.substring(0,20)
-			document.title += "..." if op.length > 20
-		else 
-			document.title = "Anonymous #{data.thread.op.time.prettyPrint()}"
-	document.title += " - /#{board.name}/" 
+	with data.thread.op
+		truncate = -> if it.length > 20 then "#{it.substring 0 20}..." else it
+		if @title
+			document.title = truncate that
+		else
+			document.title = that + " - " if @poster is not \Anonymous
+			if (op = document.getElementById(@id).querySelector('.comment').textContent).length > 0
+				document.title += truncate op
+			else if @image
+				document.title += truncate that.filename
+			else
+				document.title = @time.prettyPrint!
+		document.title += " - /#{board.name}/" 

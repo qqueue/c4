@@ -12,12 +12,15 @@ class Post
 		@deletedImage
 		@tripcode
 		@capcode 
+		@uid
 	) ->
 		@url = if op then thread.url else thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
+
+		Post[@id] = this
 		
-		# tripcode collection
 		Post.tripcodes[@tripcode] = true if @tripcode
+		Post.uids[@uid] = true if @uid
 		
 		# backlinker
 		if quotelinks = @comment.match /&gt;&gt;\d+/g
@@ -36,9 +39,11 @@ class Post
 		c = 'post ' + if @op then 'op ' else 'reply '
 		c += 'imagepost ' if @image
 		c += 'sage ' if @sage
-		c += 'tripcoded ' + @tripcode + ' ' if @tripcode
+		c += "tripcoded #that " if @tripcode
 		if @capcode
-			c += if @capcode is "## Admin" then 'admin' else 'mod'
+			c += if @capcode is "## Admin" then 'admin ' else 'mod '
+		if @uid
+			c += "uid #that"
 		return c
 
 	render: ->
@@ -49,8 +54,10 @@ class Post
 			<button type="submit" form="reportform" class="report" name="no" value="#{@id}">!</button>
 			<span class="title">#{@title or ''}</span>
 			<a class="poster" #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
+
 			<span class="tripcode">#{@tripcode or ''}</span>
 			<span class="capcode">#{@capcode or ''}</span>
+			<span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
 			<time pubdate datetime="#{@time.toISOString!}" title="#{@time.prettyPrint!}">#{@time.prettyRelative!}</time>
 			#{if @op and @thread.sticky then '<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">' else ''}
 			#{if @op and @thread.closed then '<img alt="closed" src="http://static.4chan.org/image/closed.gif">' else ''}
@@ -65,3 +72,4 @@ class Post
 	
 	Post.backlinks = {} 
 	Post.tripcodes = {}
+	Post.uids = {}

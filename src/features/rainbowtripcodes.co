@@ -1,17 +1,21 @@
 # rainbow tripcodes
 # because I can
 do ->
-	time "rainbow tripcodes"
-	# from original yotsuba blue
-	saturation = 36
-	lightness = 89 
-	color = (tripcode) -> # generate colored hash
-		hue = (((c.charCodeAt(0) for c of tripcode).reduce((x,y) -> x + y)) * 3413 ) % 360
+	time "rainbow tripcodes and uids"
+	color = -> # generate colored hash
+		hue = (((c.charCodeAt(0) for c of it).reduce((x,y) -> x + y)) * 3413 ) % 360
 		hue += 180 if Math.abs(hue - 231) < 15 # avoid close colors to standard blue
-		"hsl(#{hue}, #{saturation}%, #{lightness}%)"
+		"hsl(#hue, 36%, 89%)" # lightness and saturation of original yotsuba
+	escape = -> #css escape classnames
+		it.replace /[!+\/\.]/g '\\$&' .replace /^\d/ '\\3$& '
 	$('<style>', id: 'rainbowtripcodes').text(
 		(for tripcode in Post.tripcodes
-			".tripcoded.#{tripcode.replace(/[!+\/\.]/g,'\\$&')}:not(.op) { background-color: #{color(tripcode)}; }"
+			".tripcoded.#{escape tripcode}:not(.op) { background-color: #{color(tripcode)}; }"
 		).join("\n")
 	).appendTo 'head'
-	timeEnd "rainbow tripcodes"
+	$('<style>', id: 'rainbowuids').text(
+		(for uid in Post.uids
+			".uid.#{escape uid} { background-color: #{color(uid)}; }"
+		).join("\n")
+	).appendTo 'head'
+	timeEnd "rainbow tripcodes and uids"

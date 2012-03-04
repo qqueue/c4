@@ -1,6 +1,7 @@
 class Thread
 	(@id, @preview) ->
 		@url = board.threadurl+@id
+		Thread[@id] = this
 	
 	className: ->
 		c = 'thread '
@@ -22,6 +23,3 @@ class Thread
 		}
 		<div class="replies">#rendered_replies</div>
 		"""
-	
-	# for rendering
-	Thread::board = board

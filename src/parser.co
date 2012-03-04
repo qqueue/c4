@@ -29,14 +29,17 @@ parse4ChanDate = do ->
 
 # in the context of given element
 parse4chan = (context) ->
-	parsePost = (thread, op, data, testAttr, testObj) -> new Post do
-			ids.shift()
+	n = 0 # counter for elements that always exist, starts at -1 for pre-incrementing
+	_poster = 0 # need separate counter since capcodes are hidden in this selector
+	parsePost = (thread, op, testAttr, testObj) -> 
+		p = new Post do
+			ids[n].name
 			op
 			thread
-			data.times.shift()
-			data.titles.shift()
-			data.posters.shift()
-			comments.shift()
+			parse4ChanDate times[n].textContent
+			titles[n].textContent
+			posters[_poster++].textContent
+			comments[n]
 			(email = true) and emails.shift().href.substring(7) if emails[0]?.parentNode[testAttr] is testObj
 			imageEls.shift() and images.shift() if imageEls[0]?.parentNode[testAttr] is testObj
 			!!deletedImages.shift() if deletedImages[0]?[testAttr] is testObj
@@ -46,7 +49,12 @@ parse4chan = (context) ->
 				tripcodes.shift().textContent
 			)
 			# capcodes are hidden within reply posters, even for ops
-			_reply.posters.shift() if /##/.test _reply.posters[0]
+			posters[_poster++].textContent if /##/.test(posters[_poster]?textContent)
+			# only applicable on forced anon boards
+			if uids[n] and uids[n].textContent is not '(ID: Heaven)'
+				uids[n].textContent.match /\(ID: ([^)]+)\)/ .1
+		n++
+		return p
 
 	# ########################################################
 	time "preprocess"
@@ -58,7 +66,7 @@ parse4chan = (context) ->
 		
 		# classify op and crossthread links
 		time "classify links"
-		for link of context.getElementsByClassName 'quotelink'
+		for link of context.getElementsByClassName \quotelink
 			unless />>>/.test link.textContent # skip crossboard links
 				if opHash is link.hash
 					link.className += ' oplink'
@@ -67,7 +75,7 @@ parse4chan = (context) ->
 						link.className += ' crossthread'
 		timeEnd "classify links"
 	else # board page
-		omittedposts = Array::slice.call context.getElementsByClassName('omittedposts')
+		omittedposts = Array::slice.call context.getElementsByClassName \omittedposts
 		
 		# redo the board pages all nice
 		current = parseInt(document.location.pathname.split('/')?[2], 10) or 0
@@ -75,6 +83,7 @@ parse4chan = (context) ->
 			{ num: i, current: current is i }
 		next = if current < 15 then current + 1
 		previous = if current > 0 then current - 1
+
 	time "label elements"
 	numThreads = 0
 	for el of context.children # our wonderful parent element
@@ -85,8 +94,8 @@ parse4chan = (context) ->
 		el.threadNum = numThreads # oh so horrible
 	timeEnd "label elements"
 	
-	fileinfos = context.getElementsByClassName 'filesize'
-	imageEls = Array::slice.call context.querySelectorAll('img[md5]')
+	fileinfos = context.getElementsByClassName \filesize
+	imageEls = Array::slice.call context.querySelectorAll 'img[md5]'
 	images = for thumb,i of imageEls
 		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
 		new Image do		
@@ -105,12 +114,17 @@ parse4chan = (context) ->
 			
 			spoiler: /^Spoiler Image/.test thumb.alt
 	
-	ids = (el.name for el of context.querySelectorAll('input[value="delete"]'))
+	ids = context.querySelectorAll 'input[value="delete"]'
+	times = context.getElementsByClassName \posttime
+
+	uids = context.getElementsByClassName \posteruid # /b/'s forced anon
+
 	emails = Array::slice.call context.getElementsByClassName('linkmail')
 	tripcodes = Array::slice.call context.getElementsByClassName('postertrip')
 	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
+
 	time "clean comments"
-	comments = for el of context.getElementsByTagName 'blockquote'
+	comments = for el of context.getElementsByTagName \blockquote
 		el.innerHTML
 			.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
 			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
@@ -119,30 +133,25 @@ parse4chan = (context) ->
 			.replace(/([^"']|^)(https?:\/\/[\w\.\-_\/=&;?#%:~!]+)/g,'$1<a href="$2" target="_blank">$2</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 
 	timeEnd "clean comments"
-	_op =
-		times: (parse4ChanDate el.textContent for el of context.getElementsByClassName 'posttime')
-		posters: (el.textContent for el of context.getElementsByClassName('postername'))
-		titles: (el.textContent for el of context.getElementsByClassName('filetitle'))
 	
-	replyEls = context.getElementsByClassName('reply')
-	
-	_reply =
-		posters: (el.textContent for el of context.getElementsByClassName('commentpostername'))
-		times: (parse4ChanDate el.textContent for el of replyEls) # no wrapper ;_;
-		titles: (el.textContent for el of context.getElementsByClassName('replytitle'))
+	posters = context.querySelectorAll '.postername, .commentpostername'
+
+	titles = context.querySelectorAll '.filetitle, .replytitle'
+
+	replyEls = context.getElementsByClassName \reply
+
 	# stickies are at the top, so we just need the number of them
 	stickies = context.querySelectorAll('img[alt="sticky"]').length
 	# we could probably assume locked threads are too, but we'll be safe
 	closedThreads = Array::slice.call context.querySelectorAll('img[alt="closed"]')
 	timeEnd "preprocess"
-	
 	# ########################################################
 	time "create objects"
 	# ########################################################
 	threads = for i til numThreads
-		thread = new Thread ids[0], !isThread
-		thread.op = parsePost thread, true, _op, "threadNum", i
-		thread.replies = (parsePost(thread,false,_reply,"parentNode", el) if el.parentNode.parentNode.parentNode.threadNum is i for el of replyEls) # walk to table from td
+		thread = new Thread ids[n].name, !isThread
+		thread.op = parsePost thread, true, "threadNum", i
+		thread.replies = (parsePost(thread,false,"parentNode", el) if el.parentNode.parentNode.parentNode.threadNum is i for el of replyEls) # walk to table from td
 		if closedThreads[0]?.parentNode.threadNum is i
 			closedThreads.shift()
 			thread.locked = true
@@ -151,10 +160,10 @@ parse4chan = (context) ->
 			thread.sticky = true
 		if !isThread and omittedposts[0]?.threadNum is i
 			omitted = omittedposts.shift().textContent
-			thread.omitted = {}
-			thread.omitted.replies = parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
-			thread.omitted.imageReplies = parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
-			thread.omitted.shown = thread.replies.length # weird wording, i know, but for rendering
+			thread.omitted =
+				replies: parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
+				imageReplies: parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+				shown: thread.replies.length # weird wording, i know, but for rendering
 		
 		thread # return thread to threads
 	timeEnd "create objects"

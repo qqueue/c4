@@ -41,3 +41,16 @@ $.fn.extend do
 		unless window.scrollY is window.scrollMaxY
 			window.scrollBy after.left - before.left, after.top - before.top
 		return this
+
+# special prefixed getters and setters
+# though honestly, I think greasemonkey wraps storage
+# so there's no chance of collisions anyway
+sset = -> sessionStorage.setItem "html5chan-#key", val for key, val in it
+sget = -> sessionStorage.getItem "html5chan-#it"
+set = -> localStorage.setItem "html5chan-#key" val for key, val in it
+get = -> localStorage.getItem "html5chan-#it"
+
+create = (tag, fn) -> # helper method to avoid temporary variables with createElement
+	el = document.createElement tag
+	fn.call el
+	el

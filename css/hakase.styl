@@ -16,9 +16,9 @@ body.sfw
 		border-color #b7c5d9
 	.post:target
 		background-color #d6bad0
-	.reply,
-	.post.tripcoded > .comment > .post.inline:not(.tripcoded),
-	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded) 
+	.reply:not(.tripcoded):not(.uid),
+	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
+	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid)
 		background #d6daf0
 		border-color #b7c5d9
 	.reply:before 
@@ -39,9 +39,9 @@ body.nsfw
 		border-color #808080
 	.post:target
 		background-color #f0c0b0
-	.reply,
-	.post.tripcoded .post.inline:not(.tripcoded),
-	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded) 
+	.reply:not(.tripcoded):not(.uid),
+	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
+	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid)
 		background-color #f0e0d6
 		border-color #d9bfb7
 	.reply:before 
@@ -123,7 +123,6 @@ body > header
 	font-size 10pt
 
 .post h1 
-	display inline
 	margin 0
 	padding 0
 	font-size 100%
@@ -184,11 +183,16 @@ button.report
 .post.hidden 
 	opacity 0.6
 
-	.fileinfo,
-	.file,
-	.comment,
-	footer 
+	.image, .comment, .backlinks
 		display none
+
+.thread.hidden
+	opacity 0.6
+	.replies, .omitted-replies
+		display none
+	.op
+		.image, .comment, .backlinks
+			display: none
 
 a.quotelink.hiddenlink 
 	text-decoration line-through
