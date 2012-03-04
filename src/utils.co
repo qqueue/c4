@@ -1,5 +1,4 @@
-
-$.fn.extend
+$.fn.extend do
 	immediateText: -> 
 		@parent().clone().children().remove().end().text()
 	
@@ -22,7 +21,7 @@ $.fn.extend
 		if top < screentop
 			top = screentop + margin
 			
-		@css
+		@css do
 			left: left
 			top: top
 			position: "absolute"

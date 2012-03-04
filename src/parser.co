@@ -1,6 +1,6 @@
 if document.title is "4chan - 404"
 	# fail almost elegantly
-	throw "404 page detected, exiting" 
+	throw "404 page detected, exiting"
 # ########################################################
 # general page info
 # ########################################################
@@ -20,8 +20,8 @@ board.threadurl = "#{board.url}res/"
 # ########################################################
 # our cool data structures
 # ########################################################
-class Post 
-	constructor: (@id,@op,@thread,@time,@title,@poster,@comment,email,@image,@deletedImage,@tripcode,@capcode) -> 
+class Post
+	(@id,@op,@thread,@time,@title,@poster,@comment,email,@image,@deletedImage,@tripcode,@capcode) ->
 		@email = email?.substring(7) # strip mailto:
 		@url = if op then thread.url else thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
@@ -31,14 +31,14 @@ class Post
 		
 		# backlinker
 		if quotelinks = @comment.match /&gt;&gt;\d+/g
-			for link in quotelinks
-				(Post.backlinks[link.substring(8)] ?= {})[@id] = true
+			for link of quotelinks
+				Post.backlinks@[link.substring(8)][@id] = true
 	
 	backlinks: ->
 		html = ""
 		if backlinks = Post.backlinks[@id]
-			for post of backlinks
-				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&lt;&lt;#{post}</a> ";
+			for post in backlinks
+				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&lt;&lt;#{post}</a> "
 		return html
 	
 	className: -> # generates the correct classes to use
@@ -53,8 +53,8 @@ class Post
 	Post.backlinks = {} # using object as a hashset 
 	Post.tripcodes = {}
 	
-class Thread 
-	constructor: (@id, @preview) ->
+class Thread
+	(@id, @preview) ->
 		@url = board.threadurl+@id
 	
 	className: ->
@@ -72,7 +72,7 @@ class Thread
 # ########################################################
 parse4ChanDate = (date) ->
 		unless match = date.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
-			throw "Couldn't parse date: #{date}" 
+			throw "Couldn't parse date: #{date}"
 		new Date Date.UTC(
 			parseInt(match[3],10) + 2000
 			parseInt(match[1],10) - 1,
@@ -80,7 +80,9 @@ parse4ChanDate = (date) ->
 			(parseInt(match[4],10) + 4 + DSTOffset)%24, # 4chan is EST
 			parseInt(match[5],10)
 		)
-		
+
+console.log new Post(\1 false \3 \4 \5 \6 \7 \8 \9 \1 \2)
+
 # ########################################################
 # comment cleaner
 # ########################################################
@@ -95,7 +97,7 @@ cleanComment = (comment) ->
 # in the context of given element
 parse4chan = (context) ->
 	parsePost = (thread, op, data, testAttr, testObj) ->
-		post = new Post(
+		new Post(
 			ids.shift(),
 			op,
 			thread,
@@ -125,12 +127,12 @@ parse4chan = (context) ->
 		
 		# classify op and crossthread links
 		time "classify links"
-		for link in context.getElementsByClassName 'quotelink'
+		for link of context.getElementsByClassName 'quotelink'
 			unless />>>/.test link.textContent # skip crossboard links
 				if opHash is link.hash
 					link.className += ' oplink'
 				else 
-					if threadPath isnt link.pathname
+					if threadPath is not link.pathname
 						link.className += ' crossthread'
 		timeEnd "classify links"
 	else # board page
@@ -138,13 +140,13 @@ parse4chan = (context) ->
 		
 		# redo the board pages all nice
 		current = parseInt(document.location.pathname.split('/')?[2], 10) or 0
-		pages = for i in [0..15] # let's assume they all have 15 pages
+		pages = for i to 15 # let's assume they all have 15 pages
 			{ num: i, current: current is i }
 		next = if current < 15 then current + 1
 		previous = if current > 0 then current - 1
 	time "label elements"
 	numThreads = 0
-	for el in context.children # our wonderful parent element
+	for el of context.children # our wonderful parent element
 		break if el.tagName is "CENTER" # the ad at the end of the threads
 		if el.tagName is "HR"
 			numThreads++
@@ -154,7 +156,7 @@ parse4chan = (context) ->
 	
 	fileinfos = context.getElementsByClassName 'filesize'
 	imageEls = Array::slice.call context.querySelectorAll('img[md5]')
-	images = for thumb,i in imageEls
+	images = for thumb,i of imageEls
 		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
 		
 		thumb:
@@ -173,24 +175,24 @@ parse4chan = (context) ->
 		
 		spoiler: /^Spoiler Image/.test thumb.alt
 	
-	ids = (el.name for el in context.querySelectorAll('input[value="delete"]'))
+	ids = (el.name for el of context.querySelectorAll('input[value="delete"]'))
 	emails = Array::slice.call context.getElementsByClassName('linkmail')
 	tripcodes = Array::slice.call context.getElementsByClassName('postertrip')
 	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
 	time "clean comments"
-	comments = (cleanComment el.innerHTML for el in context.getElementsByTagName 'blockquote')
+	comments = (cleanComment el.innerHTML for el of context.getElementsByTagName 'blockquote')
 	timeEnd "clean comments"
-	_op = 
-		times: (parse4ChanDate el.textContent for el in context.getElementsByClassName 'posttime')
-		posters: (el.textContent for el in context.getElementsByClassName('postername'))
-		titles: (el.textContent for el in context.getElementsByClassName('filetitle'))
+	_op =
+		times: (parse4ChanDate el.textContent for el of context.getElementsByClassName 'posttime')
+		posters: (el.textContent for el of context.getElementsByClassName('postername'))
+		titles: (el.textContent for el of context.getElementsByClassName('filetitle'))
 	
 	replyEls = context.getElementsByClassName('reply')
 	
-	_reply = 
-		posters: (el.textContent for el in context.getElementsByClassName('commentpostername'))
-		times: (parse4ChanDate el.textContent for el in replyEls) # no wrapper ;_;
-		titles: (el.textContent for el in context.getElementsByClassName('replytitle'))
+	_reply =
+		posters: (el.textContent for el of context.getElementsByClassName('commentpostername'))
+		times: (parse4ChanDate el.textContent for el of replyEls) # no wrapper ;_;
+		titles: (el.textContent for el of context.getElementsByClassName('replytitle'))
 	# stickies are at the top, so we just need the number of them
 	stickies = context.querySelectorAll('img[alt="sticky"]').length
 	# we could probably assume locked threads are too, but we'll be safe
@@ -200,10 +202,10 @@ parse4chan = (context) ->
 	# ########################################################
 	time "create objects"
 	# ########################################################
-	threads = for i in [0...numThreads]
+	threads = for i til numThreads
 		thread = new Thread ids[0], !isThread
 		thread.op = parsePost thread, true, _op, "threadNum", i
-		thread.replies = (parsePost(thread,false,_reply,"parentNode", el) for el in replyEls when el.parentNode.parentNode.parentNode.threadNum is i) # walk to table from td
+		thread.replies = (parsePost(thread,false,_reply,"parentNode", el) if el.parentNode.parentNode.parentNode.threadNum is i for el of replyEls) # walk to table from td
 		if closedThreads[0]?.parentNode.threadNum is i
 			closedThreads.shift()
 			thread.locked = true
@@ -218,7 +220,7 @@ parse4chan = (context) ->
 			thread.omitted.shown = thread.replies.length # weird wording, i know, but for rendering
 		
 		thread # return thread to threads
-	timeEnd "create objects"	
+	timeEnd "create objects"
 	# ########################################################
 	# return 
 	# ########################################################

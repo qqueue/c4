@@ -1,4 +1,4 @@
-###
+/*
 if( data.thread )
 	# let's try some ajax
 	refresh = ->
@@ -7,7 +7,7 @@ if( data.thread )
 				div = document.createElement 'div'
 				div.innerHTML = html
 				{thread: {replies}} = parse4chan div.querySelector 'form[name="delform"]'	
-				for i in [0...data.thread.replies.length] # remove probably old posts
+				for i til data.thread.replies.length # remove probably old posts
 					replies.shift()
 				console.dir replies
 				$("#thread-#{data.thread.id}").append(
@@ -19,5 +19,5 @@ if( data.thread )
 				alert(status)
 			)
 	setTimeout refresh, 30000
+*/
 
-###
