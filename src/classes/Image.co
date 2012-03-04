@@ -1,0 +1,18 @@
+class Image
+	({@thumb, @url, @width, @height, @size, @filename, @md5, @spoiler}) ->
+	
+	render: ->
+		"""
+		<figure class="image">
+			<figcaption class="fileinfo">
+				<span class="dimensions>#{@width}x#{@height}</span>
+				<span class="size">#{@size}</span>
+				<span class="filename">#{@filename or ''}</span>
+				<a class="saucelink" href="http://iqdb.org/?url=#{@url}" target="_blank">iqdb</a>
+				<a class="saucelink" href="http://google.com/searchbyimage?image_url=#{@url}" target="_blank">google</a>
+			</figcaption>
+			<a class="file" target="_blank" href="#{@url}">
+				<img class="thumb" src="#{@thumb.url}" width="#{@thumb.width}" height="#{@thumb.height}">
+			</a>
+		</figure>
+		"""

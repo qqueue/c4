@@ -1,0 +1,336 @@
+html 
+	min-height 100%
+	font-family sans-serif
+	font-size 10pt
+
+gradient()
+	background-image linear-gradient(arguments)
+	background-image -moz-linear-gradient(arguments)
+body.sfw
+	gradient #d1d5ee, #eef2ff 200px
+	header a, footer a
+		color #34345c
+	.boardlinks
+		color #89a
+	.thread
+		border-color #b7c5d9
+	.post:target
+		background-color #d6bad0
+	.reply,
+	.post.tripcoded > .comment > .post.inline:not(.tripcoded),
+	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded) 
+		background #d6daf0
+		border-color #b7c5d9
+	.reply:before 
+		color #b7c5d9
+	#postpreview.op 
+		background-color #eef2ff
+	.quotelink 
+		color #d00
+
+body.nsfw 
+	gradient #fed7af, #ffe 200px
+	color #800000
+	header a, footer a
+		color #800
+	.boardlinks
+		color #b86
+	.thread
+		border-color #808080
+	.post:target
+		background-color #f0c0b0
+	.reply,
+	.post.tripcoded .post.inline:not(.tripcoded),
+	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded) 
+		background-color #f0e0d6
+		border-color #d9bfb7
+	.reply:before 
+		color #d9bfb7
+	#postpreview.op 
+		background-color #ffe
+	.quotelink 
+		color #000080
+
+selection = #29df75
+::selection 
+	background selection
+	color #000
+
+::-moz-selection
+	background selection
+	color #000
+
+body > header
+	text-align center
+	color #af0a0f
+	h1
+		font-family "Tahoma"
+		font-size 24pt
+		margin 0
+		a
+			color #af0a0f !important
+			text-decoration none
+			&:hover
+				text-decoration underline
+	h2
+		font-size 10px
+		font-weight normal
+
+.boardlinks
+	font-size 9pt
+
+#banner
+	margin 1em 0
+
+#boards a
+	font-weight normal
+	padding 1px
+	text-decoration none
+
+#motd 
+	margin 1em 0
+
+.thread
+	padding-bottom 5px
+	border-style solid
+	border-width 0
+	border-bottom-width 1px
+
+	&:first-child
+		border-top-width 1px
+
+.omitted-replies
+	clear left
+	text-align right
+
+.post 
+	margin-top 3px
+
+.reply 
+	padding 2px
+	margin-left 1.5em
+	border-style solid
+	border-width 0 1px 1px 0
+
+.sage > h1 > .poster:after 
+	content " (sage)"
+
+.reply:before 
+	content ">>"
+	display block
+	height 0
+	margin-left -1.5em
+	font-size 10pt
+
+.post h1 
+	display inline
+	margin 0
+	padding 0
+	font-size 100%
+	font-weight normal
+
+.op > h1 
+	font-size 130%
+
+.post .title 
+	color #0f0c5d
+	font-weight 800
+
+.poster 
+	color #117743
+	font-weight 800
+	&:link
+		color #34345c
+		text-decoration underline
+
+.tripcode 
+	color #228854
+
+.image
+	margin 0
+.fileinfo
+	margin-left 20px
+.file 
+	display block
+	float left
+	margin 3px 20px
+	position relative
+
+.file.expanded 
+	float none
+
+img.full 
+	max-width 100%
+
+.capcode 
+	font-weight 800
+
+.admin 
+	.poster, .capcode, .tripcode
+		color #f00
+
+.mod
+	.poster, .capcode
+		color 800080
+
+button.hide,
+button.report 
+	cursor pointer
+	float right
+	margin 0 0 0 2px
+	padding 0 1px
+	line-height 1em
+
+.post.hidden 
+	opacity 0.6
+
+	.fileinfo,
+	.file,
+	.comment,
+	footer 
+		display none
+
+a.quotelink.hiddenlink 
+	text-decoration line-through
+
+.oplink:after 
+	content " (OP)"
+
+.crossthread:after 
+	content " (Crossthread)"
+
+a,strong
+	&.quotelink.inlinedlink
+		font-weight bold
+		color #000
+
+a.permalink 
+	text-decoration none
+	color inherit
+	float right
+
+a.saucelink 
+	color inherit
+	text-decoration none
+
+a.permalink .id, a.saucelink
+	&:hover
+		text-decoration underline
+
+.recursivelink
+	color: black !important
+	
+.comment 
+	margin 1em 0 1em 40px
+
+.greentext 
+	font-weight normal
+	color #789922
+
+.spoiler 
+	text-decoration none
+	color #000
+	background #000
+	.greentext, a
+		color #000
+	&:hover
+		color #fff
+		.greentext, a
+			color: #fff
+
+.backlinks 
+	clear both
+
+.backlink 
+	margin-right 1em
+
+#postpreview 
+	outline 3px dashed #00f
+	margin 0
+
+#postpreview:before,
+.reply.inline:before 
+	display none
+
+.post.inline 
+	margin-left 0
+	border 1px solid #666
+	border-left-width 0
+	padding-left 0
+	clear left
+	.comment
+		padding-left 1em
+		margin-left 0
+
+.post:not(.tripcoded) > .comment > .post.inline:not(.tripcoded),
+.post:not(.tripcoded) > .backlinks > .post.inline:not(.tripcoded) 
+	background-color rgba(255,255,255,0.25)
+
+.backlink+.post.inline > .comment 
+	margin 1em 40px
+	padding 0 1em
+
+.inline .backlinks > .recursivelink 
+	opacity 0
+
+.hovered 
+	outline 3px dashed #00f
+
+#pages 
+	text-align center
+
+	ul 
+		display inline
+		margin 0pt
+		padding 0pt
+
+	li 
+		display inline
+
+	a 
+		border-color #aaa
+		border-style solid
+		border-width 1px 0
+		color #000
+		display inline-block
+		margin 0.25em
+		padding 0.5em 1em
+		text-decoration none
+		&#current, &:hover 
+			background-color rgba(200,200,200,0.70)
+
+#postform 
+	display table
+	border-spacing 1px
+	margin 1em auto
+
+	& > div 
+		display table-row
+		padding 5px 0
+
+		& > * 
+			display table-cell
+
+		& > label 
+			vertical-align middle
+			padding 0 5px
+			font-weight 800
+			border 1px solid
+			background #98e
+
+#rules 
+	font-size 10px
+	width 0
+	overflow visible
+	li 
+		width 30em
+
+#postform 
+	input[type="text"], textarea
+		margin 0 2px 0 0
+		width 100%
+		padding 2px 0 3px 0
+
+body > footer 
+	text-align center
+

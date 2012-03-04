@@ -1,66 +1,51 @@
-fs = require 'fs'
-coco = require 'coco'
-handlebars = require 'handlebars'
-_ = require 'underscore'
+fs = require \fs
+coco = require \coco
+stylus = require \stylus
+_ = require \underscore
 
-read = (file) -> 
-	fs.readFileSync file, "utf8"
-read_and_escape = (file) ->
-	read(file).replace /\s+/g, " "
-
-
-outfile = "html5chan@httpsgithubcomqueue-html5chan.user.js"
-parts =  ['utils', 'parser', 'renderer']
-metadata = 'metadata.txt'
-templates = ['page', 'thread', 'post']
-
-task 'build', 'build userscript', (options) ->
-	includes = 
-		css: read_and_escape "hakase.css"
+ls = -> # appends relative path to readdir paths, and skip .swp files
+	"#it/#file" unless /.swp$/.test file for file of fs.readdirSync it
+join = -> Array::join.call @@ \\n
+read = -> fs.readFileSync it, \utf8
+compile = -> coco.compile it, bare: true
+check = -> # make sure scripts can compile before joining
 	try
-		main = (read "src/#{file}.co" for file of parts).join("\n")
-		features = (read("src/features/#{name}") for name of fs.readdirSync('src/features')).join("\n")
-		code = coco.compile [read('src/intro.co'), main, features, read('src/outro.co')].join("\n"), bare: true
-		compiledTemplates = (for name of templates
-			"Handlebars.template.#{name} = Handlebars.template(#{handlebars.precompile read("templates/"+name+".handlebars.html"), knownHelpersOnly: true})"
-		).join("\n") + "\n"
-		html5chan = 
-			read(metadata) + compiledTemplates + code
-		fs.writeFileSync outfile, handlebars.compile(html5chan)(includes)
-		console.log "compiled script to #{outfile}"
-	catch error
-		# find out in which file the error occured
-		for name of fs.readdirSync('src/features')
-			try
-				coco.compile read("src/features/#{name}"), bare: true
-			catch e
-				console.error "Error compiling #{name}: "
-				console.error e
-		for name of parts
-			try
-				coco.compile read("src/#{name}.co"), bare: true
-			catch e
-				console.error "Error compiling #{name}: "
-				console.error e
-		for name of ['intro', 'outro']
-			try
-				coco.compile read("src/#{name}.co"), bare: true
-			catch e
-				console.error "Error compiling #{name}: "
-				console.error e
-		
+		script if compile (script = read it)
+	catch e
+		throw new Error "Error compiling #it:\n\t#e"
+
+check_and_join = -> 
+	join.apply null, (check name for name of it) 
+
+outfile = \html5chan@httpsgithubcomqueue-html5chan.user.js
+metadata = read \metadata.txt
+
+task \build 'build userscript' ->
+	stylus.render read(\css/hakase.styl), (err,css) -> # stupid async API
+		try
+			throw err if err
+			fs.writeFileSync do
+				outfile
+				join do
+					metadata
+					compile join do 
+						check \src/intro.co
+						check \src/utils.co
+						check_and_join ls \src/classes
+						check \src/parser.co
+						check \src/renderer.co .replace /%hakase\.css%/ css 
+						check_and_join ls \src/features
+						check \src/outro.co
+			console.log "compiled script to #{outfile}"
+		catch e
+			console.error e
 				
-task 'watch', 'watch for changes and rebuild automatically', (options) ->
-	invoke "build"
-	rebuild = _.debounce((event, filename) ->
-		unless filename
-			console.log "filename not given... exiting"
-			return
-		if event is "change" and filename is not outfile
-			console.log "change detected in #{filename}. rebuilding..."
-			invoke "build"
-	, 1000)
-	fs.watch ".", interval: 1000, rebuild
-	fs.watch "src/", interval: 1000, rebuild
-	fs.watch "src/features", interval: 1000, rebuild
-	fs.watch "templates/", interval: 1000, rebuild
+task \watch 'watch for changes and rebuild automatically' ->
+	invoke \build
+	<[css src]>.forEach ->
+		fs.watch it, interval: 1000, _.debounce do
+			(event, filename) ->
+				unless /.swp$/.test filename # goddamn vi
+					console.log "#event event detected on #filename. rebuilding..."
+					invoke \build
+			1000

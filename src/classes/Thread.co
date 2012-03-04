@@ -1,0 +1,27 @@
+class Thread
+	(@id, @preview) ->
+		@url = board.threadurl+@id
+	
+	className: ->
+		c = 'thread '
+		c += 'sticky ' if @sticky
+		c += ' locked' if @locked
+		c += ' preview' if @preview
+		return c
+
+	render: ->
+		rendered_replies = ''
+		for reply of @replies
+			rendered_replies += "<article id=\"#{reply.id}\" class=\"#{reply.className!}\"> #{reply.render!}</article>"
+		"""
+		<div class="#{@op.className!}" id="#{@op.id}">#{@op.render!}</div>
+		#{
+			if @omitted
+				"<div class=\"omitted-replies\">#{@omitted.replies} replies #{if @omitted.imageReplies then "and #{@omitted.imageReplies} image replies" else ''} omitted. Latest #{@replies.length} shown.</div>"
+			else ''
+		}
+		<div class="replies">#rendered_replies</div>
+		"""
+	
+	# for rendering
+	Thread::board = board

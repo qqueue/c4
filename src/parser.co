@@ -1,6 +1,3 @@
-if document.title is "4chan - 404"
-	# fail almost elegantly
-	throw "404 page detected, exiting"
 # ########################################################
 # general page info
 # ########################################################
@@ -17,105 +14,39 @@ board.motd = centerEls[2].innerHTML if centerEls.length > 4 # the captcha, 2 ads
 board.url = "http://boards.4chan.org/#{board.name}/"
 board.threadurl = "#{board.url}res/"
 
-# ########################################################
-# our cool data structures
-# ########################################################
-class Post
-	(@id,@op,@thread,@time,@title,@poster,@comment,email,@image,@deletedImage,@tripcode,@capcode) ->
-		@email = email?.substring(7) # strip mailto:
-		@url = if op then thread.url else thread.url+'#'+@id
-		@sage = /^sage$/i.test @email
-		
-		# tripcode collection
-		Post.tripcodes[@tripcode] = true if @tripcode
-		
-		# backlinker
-		if quotelinks = @comment.match /&gt;&gt;\d+/g
-			for link of quotelinks
-				Post.backlinks@[link.substring(8)][@id] = true
-	
-	backlinks: ->
-		html = ""
-		if backlinks = Post.backlinks[@id]
-			for post in backlinks
-				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&lt;&lt;#{post}</a> "
-		return html
-	
-	className: -> # generates the correct classes to use
-		c = 'post ' + if @op then 'op ' else 'reply '
-		c += 'imagepost ' if @image
-		c += 'sage ' if @sage
-		c += 'tripcoded ' + @tripcode + ' ' if @tripcode
-		if @capcode
-			c += if @capcode is "## Admin" then 'admin' else 'mod'
-		return c
-	
-	Post.backlinks = {} # using object as a hashset 
-	Post.tripcodes = {}
-	
-class Thread
-	(@id, @preview) ->
-		@url = board.threadurl+@id
-	
-	className: ->
-		c = 'thread '
-		c += 'sticky ' if @sticky
-		c += ' locked' if @locked
-		c += ' preview' if @preview
-		return c
-	
-	# for rendering
-	Thread::board = board
-
-# ########################################################
-# our wonderful date processor
-# ########################################################
-parse4ChanDate = (date) ->
-		unless match = date.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
+parse4ChanDate = do ->
+	(july = new Date()).setMonth(6)
+	DSTOffset = 4 + (new Date().getTimezoneOffset() - july.getTimezoneOffset()) / 60
+	->
+		unless match = it.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
 			throw "Couldn't parse date: #{date}"
-		new Date Date.UTC(
+		new Date Date.UTC do
 			parseInt(match[3],10) + 2000
-			parseInt(match[1],10) - 1,
-			parseInt(match[2],10),
-			(parseInt(match[4],10) + 4 + DSTOffset)%24, # 4chan is EST
+			parseInt(match[1],10) - 1
+			parseInt(match[2],10)
+			(parseInt(match[4],10) + DSTOffset) % 24 # 4chan is EST
 			parseInt(match[5],10)
-		)
-
-console.log new Post(\1 false \3 \4 \5 \6 \7 \8 \9 \1 \2)
-
-# ########################################################
-# comment cleaner
-# ########################################################
-cleanComment = (comment) ->
-		comment
-			.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
-			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
-			.replace(/<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
-			.replace(/<font class="unkfunc">/g, '<font class="greentext">') # unkfunc?
-			.replace(/([^"']|^)(https?:\/\/[\w\.\-_\/=&;?#%:~!]+)/g,'$1<a href="$2" target="_blank">$2</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 
 # in the context of given element
 parse4chan = (context) ->
-	parsePost = (thread, op, data, testAttr, testObj) ->
-		new Post(
-			ids.shift(),
-			op,
-			thread,
-			data.times.shift(),
-			data.titles.shift(),
-			data.posters.shift(),
-			comments.shift(),
-			(email = true) and emails.shift().href if emails[0]?.parentNode[testAttr] is testObj,
-			imageEls.shift() and images.shift() if imageEls[0]?.parentNode[testAttr] is testObj,
-			!!deletedImages.shift() if deletedImages[0]?[testAttr] is testObj,
+	parsePost = (thread, op, data, testAttr, testObj) -> new Post do
+			ids.shift()
+			op
+			thread
+			data.times.shift()
+			data.titles.shift()
+			data.posters.shift()
+			comments.shift()
+			(email = true) and emails.shift().href.substring(7) if emails[0]?.parentNode[testAttr] is testObj
+			imageEls.shift() and images.shift() if imageEls[0]?.parentNode[testAttr] is testObj
+			!!deletedImages.shift() if deletedImages[0]?[testAttr] is testObj
 			# tripcode gets wrapped in the email anchor if present
 			(if tripcodes[0] and (if email? then tripcodes[0].parentNode else tripcodes[0])[testAttr] is testObj
 				emails.shift() if emails[0]?[testAttr] is testObj # clear extra linkmail element
 				tripcodes.shift().textContent
-			),
+			)
 			# capcodes are hidden within reply posters, even for ops
 			_reply.posters.shift() if /##/.test _reply.posters[0]
-		)
 
 	# ########################################################
 	time "preprocess"
@@ -158,29 +89,35 @@ parse4chan = (context) ->
 	imageEls = Array::slice.call context.querySelectorAll('img[md5]')
 	images = for thumb,i of imageEls
 		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
-		
-		thumb:
-			url: thumb.src
-			width: thumb.width
-			height: thumb.height
-		
-		url: thumb.parentNode.href
-		
-		width: parseInt dimensions[1], 10
-		height: parseInt dimensions[2], 10
-		
-		size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-		filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
-		md5: thumb.getAttribute 'md5'
-		
-		spoiler: /^Spoiler Image/.test thumb.alt
+		new Image do		
+			thumb:
+				url: thumb.src
+				width: thumb.width
+				height: thumb.height
+			url: thumb.parentNode.href
+			
+			width: parseInt dimensions[1], 10
+			height: parseInt dimensions[2], 10
+			
+			size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+			filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
+			md5: thumb.getAttribute 'md5'
+			
+			spoiler: /^Spoiler Image/.test thumb.alt
 	
 	ids = (el.name for el of context.querySelectorAll('input[value="delete"]'))
 	emails = Array::slice.call context.getElementsByClassName('linkmail')
 	tripcodes = Array::slice.call context.getElementsByClassName('postertrip')
 	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
 	time "clean comments"
-	comments = (cleanComment el.innerHTML for el of context.getElementsByTagName 'blockquote')
+	comments = for el of context.getElementsByTagName 'blockquote'
+		el.innerHTML
+			.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
+			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
+			.replace(/<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
+			.replace(/<font class="unkfunc">/g, '<font class="greentext">') # unkfunc?
+			.replace(/([^"']|^)(https?:\/\/[\w\.\-_\/=&;?#%:~!]+)/g,'$1<a href="$2" target="_blank">$2</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
+
 	timeEnd "clean comments"
 	_op =
 		times: (parse4ChanDate el.textContent for el of context.getElementsByClassName 'posttime')

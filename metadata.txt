@@ -7,5 +7,4 @@
 // @exclude     http://boards.4chan.org/f/*
 //
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js
-// @require http://cloud.github.com/downloads/wycats/handlebars.js/handlebars-1.0.0.beta.6.js
 // ==/UserScript==

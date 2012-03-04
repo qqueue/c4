@@ -41,6 +41,3 @@ $.fn.extend do
 		unless window.scrollY is window.scrollMaxY
 			window.scrollBy after.left - before.left, after.top - before.top
 		return this
-
-# Assuming DST in may
-DSTOffset = (new Date().getTimezoneOffset() - new Date((new Date()).setMonth(6)).getTimezoneOffset())/60

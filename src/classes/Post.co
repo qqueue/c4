@@ -1,0 +1,67 @@
+class Post
+	(	
+		@id
+		@op
+		@thread
+		@time
+		@title
+		@poster
+		@comment
+		@email
+		@image
+		@deletedImage
+		@tripcode
+		@capcode 
+	) ->
+		@url = if op then thread.url else thread.url+'#'+@id
+		@sage = /^sage$/i.test @email
+		
+		# tripcode collection
+		Post.tripcodes[@tripcode] = true if @tripcode
+		
+		# backlinker
+		if quotelinks = @comment.match /&gt;&gt;\d+/g
+			for link of quotelinks
+				# link.substring strips &gt;&gt;
+				Post.backlinks@[link.substring(8)][@id] = true
+	
+	backlinks: -> # renders backlinks
+		html = ""
+		if backlinks = Post.backlinks[@id]
+			for post in backlinks
+				html += "<a href=\"##{post}\" class=\"backlink quotelink\">&lt;&lt;#{post}</a> "
+		return html
+	
+	className: -> # generates the correct classes to use
+		c = 'post ' + if @op then 'op ' else 'reply '
+		c += 'imagepost ' if @image
+		c += 'sage ' if @sage
+		c += 'tripcoded ' + @tripcode + ' ' if @tripcode
+		if @capcode
+			c += if @capcode is "## Admin" then 'admin' else 'mod'
+		return c
+
+	render: ->
+		"""
+		<h1>
+			<input type="checkbox" value="delete" name="#{@id}" form="delform">
+			<button type="button" class="hide" value="#{@id}">&times;</button>
+			<button type="submit" form="reportform" class="report" name="no" value="#{@id}">!</button>
+			<span class="title">#{@title or ''}</span>
+			<a class="poster" #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
+			<span class="tripcode">#{@tripcode or ''}</span>
+			<span class="capcode">#{@capcode or ''}</span>
+			<time pubdate datetime="#{@time.toISOString!}">#{@time.prettyPrint!}</time>
+			#{if @op and @thread.sticky then '<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">' else ''}
+			#{if @op and @thread.closed then '<img alt="closed" src="http://static.4chan.org/image/closed.gif">' else ''}
+			#{if @op and @thread.preview then "<a href=\"#{@url}\" class=\"replylink\">[Reply]</a>" else ''}
+			<a href="#{@url}" class="permalink">No.<span class="id">#{@id}</span></a>
+		</h1>
+		#{if @image then @image.render! else ''}
+		#{if @deletedImage then '<img class="deleted-image" alt="File deleted." src="http://static.4chan.org/image/filedeleted.gif">' else ''}
+		<div class="comment">#{@comment}</div>
+		<footer class="backlinks">#{@backlinks!}</footer>
+		"""
+	
+	Post.backlinks = {} 
+	Post.tripcodes = {}
