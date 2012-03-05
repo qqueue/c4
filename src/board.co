@@ -1,0 +1,12 @@
+logoEl = document.getElementsByClassName('logo')[0]
+centerEls = document.getElementsByTagName 'center'
+board =
+	name: document.title.match(/\/(\w+)\//)[1] # easiest way to get it 
+	title: logoEl.children[2].children[0].children[0].textContent
+	subtitle: logoEl.children[4]?.innerHTML
+	nsfw: document.styleSheets[0].ownerNode.href is 'http://static.4chan.org/css/yotsuba.9.css' # the yellow theme
+	nav: document.getElementById('navtop').innerHTML # I could hard code it, but then I'd miss updates
+	banner: document.getElementsByTagName('img')[0].src
+board.motd = centerEls[2].innerHTML if centerEls.length > 4 # the captcha, 2 ads, and footer tag are also in center tags
+board.url = "http://boards.4chan.org/#{board.name}/"
+board.threadurl = "#{board.url}res/"

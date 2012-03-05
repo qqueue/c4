@@ -31,6 +31,7 @@ task \build 'build userscript' ->
 					compile join do 
 						check \src/intro.co
 						check \src/utils.co
+						check \src/board.co
 						check_and_join ls \src/classes
 						check \src/parser.co
 						check \src/renderer.co .replace /%hakase\.css%/ css 

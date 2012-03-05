@@ -1,0 +1,7 @@
+# embed youtube links on click
+$ \#threads
+	.on \click.youtube.html5chan \a.youtube (e) ->
+		unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+			$ this .replaceWith do
+				"<iframe width=\"560\" height=\"315\" src=\"http://www.youtube-nocookie.com/embed/#{@dataset.id}?#{@dataset.params}&amp;autoplay=1\" frameborder=\"0\" allowfullscreen></iframe>"
+			return false
