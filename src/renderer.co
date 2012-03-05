@@ -180,7 +180,8 @@ if data.isThread
 		if @title
 			document.title = truncate that
 		else
-			document.title = that + " - " if @poster is not \Anonymous
+			document.title = ''
+			document.title += "#that - " if @poster is not \Anonymous
 			if (op = document.getElementById(@id).querySelector('.comment').textContent).length > 0
 				document.title += truncate op
 			else if @image

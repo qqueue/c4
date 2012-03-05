@@ -126,11 +126,19 @@ parse4chan = (context) ->
 	time "clean comments"
 	comments = for el of context.getElementsByTagName \blockquote
 		el.innerHTML
-			.replace(/onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g, "") # annoying spoiler tags
-			.replace(/onclick="replyhl\('\d+'\);"/g, "") # do not want
-			.replace(/<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g, "$1") # unwrap single quote links
-			.replace(/<font class="unkfunc">/g, '<font class="greentext">') # unkfunc?
-			.replace(/([^"']|^)(https?:\/\/[\w\.\-_\/=&;?#%:~!]+)/g,'$1<a href="$2" target="_blank">$2</a>') # linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
+			# strip 4chan's old js-based spoilers and reply target highlighting
+			.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"|onclick="replyh1\('\d+'\);"/g ""
+			 # unwrap single quote links (so inline replies aren't in greentext)
+			.replace /<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g "$1"
+			.replace /<font class="unkfunc">/g '<font class="greentext">' # unkfunc?
+			.replace /([\w\.\-_\/=&;?#%:~!]{100})<br>/g '$1' # unsplits urls (probably) split at 100 characters
+			# specialcase linkify urls without internal parenthesis surrounded by
+			# parenthesis
+			.replace /\((https?:\/\/)([\w\-\._~:\/#\[\]@!$'+,;]+)([\w\-\._~:\/?#\[\]@!$&'*+,;=]*)\)/g ' <a class="external" href="$1$2$3" title="$1$2$3" target="_blank">[$2]</a> '
+			# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
+			.replace /([^"']|^)(https?:\/\/)([\w\-\._~:\/#\[\]\(\)@!$'+,;]+)([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=]*)/g '$1<a class="external" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
+			# specialcase linkify urls without a protocol but with a common tld
+			.replace /(^| )([\w\.\-]+\.(?:com|net|org)[\/\w\.\-]*)/g '$1<a class="external" href="http://$2" title="$2" target="_blank">[$2]</a>'
 
 	timeEnd "clean comments"
 	

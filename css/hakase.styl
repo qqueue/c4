@@ -20,6 +20,7 @@ body.sfw
 	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
 	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid)
 		background #d6daf0
+	.reply
 		border-color #b7c5d9
 	.reply:before 
 		color #b7c5d9
@@ -43,6 +44,7 @@ body.nsfw
 	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
 	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid)
 		background-color #f0e0d6
+	.reply
 		border-color #d9bfb7
 	.reply:before 
 		color #d9bfb7
@@ -270,9 +272,11 @@ a.permalink .id, a.saucelink
 .post:not(.tripcoded) > .backlinks > .post.inline:not(.tripcoded) 
 	background-color rgba(255,255,255,0.25)
 
-.backlink+.post.inline > .comment 
-	margin 1em 40px
-	padding 0 1em
+.backlink+.post.inline 
+	margin-left 20px
+	& > .comment 
+		margin 1em 40px 1em 0
+		padding 0 1em
 
 .inline .backlinks > .recursivelink 
 	opacity 0
