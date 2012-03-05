@@ -4,7 +4,7 @@ for el of document.querySelectorAll 'link[rel*="stylesheet"], style'
 # disable 4chan's onload functions
 # we can do this because onload has to wait
 # for all the images, which obstensibly takes longer
-# than it doest to load this script
+# than it does to load this script
 window.onload = window.onunload = undefined
 
 do ->
@@ -32,7 +32,7 @@ document.body.removeAttribute 'link'
 document.body.removeAttribute 'bgcolor'
 document.body.id = board.name
 document.body.className += if board.nsfw then ' nsfw' else ' sfw'
-document.body.className += if data.thread then ' threadpage' else ' boardpage'
+document.body.className += if board.isThread then ' threadpage' else ' boardpage'
 document.body.innerHTML = do ->
 	rendered_threads = ''
 	for thread of data.threads
@@ -48,33 +48,33 @@ document.body.innerHTML = do ->
 		#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
 	</header>
 	<div id="threads">#rendered_threads</div>
-	#{if data.isThread then "<a href=\"http://boards.4chan.org/#{board.name}/\">[Return]</a>" else ''}
+	#{if board.isThread then "<a href=\"http://boards.4chan.org/#{board.name}/\">[Return]</a>" else ''}
 	#{
-		if data.pages
+		if board.pages
 			"""
 			<nav id="pages">
-				#{if data.previous then "<a href=\"#that\" id=\"previous\">previous</a>" else ''}
+				#{if board.previous then "<a href=\"#that\" id=\"previous\">previous</a>" else ''}
 				<ul>
 					#{
-						(for page of data.pages
+						(for page of board.pages
 							"<li><a href=\"#{page.num}\" #{if page.current then 'id="current"' else ''}>#{page.num}</a></li>"
 						).join ' '
 					}
 				</ul>
-				#{if data.next then "<a href=\"#that\" id=\"next\">next</a>" else ''}
+				#{if board.next then "<a href=\"#that\" id=\"next\">next</a>" else ''}
 			</nav>
 			"""
 		else
 			''
 	}
 	#{
-		if data.locked
+		if board.locked
 			'<p>Thread closed. You may not reply at this time</p>'
 		else
 			"""
 			<form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/#{board.name}/post">
 				<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
-				#{if data.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
+				#{if board.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
 				<input type="hidden" value="regist" name="mode">
 				<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
 				<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
@@ -174,7 +174,7 @@ if window.location.hash and not sget document.URL
 	
 timeEnd "render"
 
-if data.isThread
+if board.isThread
 	with data.thread.op
 		truncate = -> if it.length > 20 then "#{it.substring 0 20}..." else it
 		if @title

@@ -18,7 +18,6 @@ do ->
 	for post of $ \.post
 		hide post.id if sget post.id
 	for thread of $ \.thread
-		console.log thread.id
 		hide thread.id if sget thread.id
 		
 			

@@ -1,6 +1,15 @@
 class Thread
-	(@id, @preview) ->
+	(@id, @preview, fn) ->
+		fn.call this # additional constructing in parser
 		@url = board.threadurl+@id
+		if Thread[@id] # if this thread has been parsed before
+			@new = []
+			@deleted = []
+			for reply of Thread[@id].replies # old replies
+				@new.push reply if not @replies[reply.id]
+			for reply of @replies
+				@deleted.push reply if not Thread[@id].replies[reply.id]
+		
 		Thread[@id] = this
 	
 	className: ->

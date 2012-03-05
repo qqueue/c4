@@ -1,14 +1,15 @@
 parse4ChanDate = do ->
+	now = new Date()
 	(july = new Date()).setMonth(6)
-	DSTOffset = 4 + (new Date().getTimezoneOffset() - july.getTimezoneOffset()) / 60
+	DSTOffset = (now.getTimezoneOffset() - july.getTimezoneOffset()) / 60
 	->
 		unless match = it.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
 			throw "Couldn't parse date: #{date}"
-		new Date Date.UTC do
+		new Date do
 			parseInt(match[3],10) + 2000
 			parseInt(match[1],10) - 1
 			parseInt(match[2],10)
-			(parseInt(match[4],10) + DSTOffset) % 24 # 4chan is EST
+			(parseInt(match[4],10) + 4 - (now.getTimezoneOffset() / 60) + DSTOffset) % 24 # 4chan is EST offset 4
 			parseInt(match[5],10)
 
 # in the context of given element
@@ -43,10 +44,8 @@ parse4chan = (context) ->
 	# ########################################################
 	time "preprocess"
 	# ########################################################
-	if isThread = document.location.pathname.match /res\/(\d+)/ # also match for thread id
-		threadId = isThread[1]
-		threadPath = "/#{board.name}/res/"+threadId
-		opHash = '#'+threadId
+	if board.isThread
+		opHash = '#'+board.threadId
 		
 		# classify op and crossthread links
 		time "classify links"
@@ -54,20 +53,12 @@ parse4chan = (context) ->
 			unless />>>/.test link.textContent # skip crossboard links
 				if opHash is link.hash
 					link.className += ' oplink'
-				else 
-					if threadPath is not link.pathname
-						link.className += ' crossthread'
+				else if link.pathname is not board.threadPath
+					link.className += ' crossthread'
 		timeEnd "classify links"
 	else # board page
 		omittedposts = Array::slice.call context.getElementsByClassName \omittedposts
 		
-		# redo the board pages all nice
-		current = parseInt(document.location.pathname.split('/')?[2], 10) or 0
-		pages = for i to 15 # let's assume they all have 15 pages
-			{ num: i, current: current is i }
-		next = if current < 15 then current + 1
-		previous = if current > 0 then current - 1
-
 	time "label elements"
 	numThreads = 0
 	for el of context.children # our wonderful parent element
@@ -110,8 +101,9 @@ parse4chan = (context) ->
 	time "clean comments"
 	comments = for el of context.getElementsByTagName \blockquote
 		el.innerHTML
-			# strip 4chan's old js-based spoilers and reply target highlighting
-			.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"|onclick="replyh1\('\d+'\);"/g ""
+			# strip 4chan's old js-based
+			.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g ''
+			.replace /onclick="replyh1\('\d+'\);"/g ''
 			 # unwrap single quote links (so inline replies aren't in greentext)
 			.replace /<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g "$1"
 			.replace /<font class="unkfunc">/g '<font class="greentext">' # unkfunc?
@@ -137,9 +129,7 @@ parse4chan = (context) ->
 	timeEnd "clean comments"
 	
 	posters = context.querySelectorAll '.postername, .commentpostername'
-
 	titles = context.querySelectorAll '.filetitle, .replytitle'
-
 	replyEls = context.getElementsByClassName \reply
 
 	# stickies are at the top, so we just need the number of them
@@ -151,40 +141,27 @@ parse4chan = (context) ->
 	time "create objects"
 	# ########################################################
 	threads = for i til numThreads
-		thread = new Thread ids[n].name, !isThread
-		thread.op = parsePost thread, true, "threadNum", i
-		thread.replies = (parsePost(thread,false,"parentNode", el) if el.parentNode.parentNode.parentNode.threadNum is i for el of replyEls) # walk to table from td
-		if closedThreads[0]?.parentNode.threadNum is i
-			closedThreads.shift()
-			thread.locked = true
-		if stickies > 0
-			stickies--
-			thread.sticky = true
-		if !isThread and omittedposts[0]?.threadNum is i
-			omitted = omittedposts.shift().textContent
-			thread.omitted =
-				replies: parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
-				imageReplies: parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
-				shown: thread.replies.length # weird wording, i know, but for rendering
+		new Thread ids[n].name, !board.isThread, ->
+			@op = parsePost this, true, \threadNum, i
+			@replies = for el of replyEls 
+				if el.parentNode.parentNode.parentNode.threadNum is i # walk to table from td
+					parsePost this, false, \parentNode, el 
+			if closedThreads[0]?parentNode.threadNum is i
+				@locked = !!closedThreads.shift()
+			@sticky = !!stickies-- if stickies > 0
+
+			if not board.isThread and omittedposts[0]?.threadNum is i
+				omitted = omittedposts.shift().textContent
+				@omitted =
+					replies: parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
+					imageReplies: parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 		
-		thread # return thread to threads
 	timeEnd "create objects"
 	# ########################################################
 	# return 
 	# ########################################################
-	board: board
-	
-	isThread: !!isThread
-	isBoard: !isThread
-	threadId: threadId
-	locked: if isThread then threads[0].locked
-	
-	thread: threads[0] if isThread
+	thread: threads[0] if board.isThread
 	threads: threads
-	
-	pages: pages
-	previous: previous
-	next: next
 
 time "parse"
 data = parse4chan document.querySelector('form[name="delform"]')
