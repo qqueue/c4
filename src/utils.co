@@ -54,3 +54,6 @@ create = (tag, fn) -> # helper method to avoid temporary variables with createEl
 	el = document.createElement tag
 	fn.call el
 	el
+
+render_all = (objects, ...options) ->
+	(obj.render.apply obj, options for obj of objects).join \\n

@@ -5,7 +5,7 @@ class Image
 		"""
 		<figure class="image">
 			<figcaption class="fileinfo">
-				<span class="dimensions>#{@width}x#{@height}</span>
+				<span class="dimensions">#{@width}x#{@height}</span>
 				<span class="size">#{@size}</span>
 				<span class="filename">#{@filename or ''}</span>
 				<a class="saucelink" href="http://iqdb.org/?url=#{@url}" target="_blank">iqdb</a>

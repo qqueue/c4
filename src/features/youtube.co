@@ -5,3 +5,11 @@ $ \#threads
 			$ this .replaceWith do
 				"<iframe width=\"560\" height=\"315\" src=\"http://www.youtube-nocookie.com/embed/#{@dataset.id}?#{@dataset.params}&amp;autoplay=1\" frameborder=\"0\" allowfullscreen></iframe>"
 			return false
+	# attempt to fetch title with youtube api
+	.on \mouseenter.youtube.html5chan \a.youtube (e) ->
+		unless @title
+			$.ajax "https://gdata.youtube.com/feeds/api/videos/#{@dataset.id}?v=2&alt=json" dataType: \json
+				.done (data) ~>
+					@title = data.entry.title.\$t
+				.fail ~>
+					@title = "Youtube [#{@dataset.id}]"

@@ -22,10 +22,10 @@ board = new
 		@threadPath = "/#{@name}/res/#{@threadId}"
 	else
 		@isThread = false
-		page = parseInt(document.location.pathname.split('/')?[2], 10) or 0
-		pages = for i to 15 # let's assume they all have 15 pages
-			num: i, current: i is page
-		next = if current < 15 then current + 1
-		previous = if current > 0 then current - 1
+		@page = parseInt document.location.pathname.split('/')?2, 10 or 0
+		@pages = for i to 15 # let's assume they all have 15 pages
+			num: i, current: i is @page
+		@next = if @current < 15 then @current + 1
+		@previous = if @current > 0 then @current - 1
 	@isBoard = !@isThread
 	@locked = document.forms.length is 1 # delform, without postform

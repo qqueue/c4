@@ -8,17 +8,18 @@ gradient()
 	background-image -moz-linear-gradient(arguments)
 body.sfw
 	gradient #d1d5ee, #eef2ff 200px
-	header a, footer a
+	& > header a, & > footer a
 		color #34345c
 	.boardlinks
 		color #89a
 	.thread
 		border-color #b7c5d9
 	.post:target
-		background-color #d6bad0
+		background-color #d6bad0 !important
 	.reply:not(.tripcoded):not(.uid),
 	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
-	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid)
+	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid),
+	#postpreview
 		background #d6daf0
 	.reply
 		border-color #b7c5d9
@@ -32,17 +33,18 @@ body.sfw
 body.nsfw 
 	gradient #fed7af, #ffe 200px
 	color #800000
-	header a, footer a
+	& > header a, & > footer a
 		color #800
 	.boardlinks
 		color #b86
 	.thread
 		border-color #808080
 	.post:target
-		background-color #f0c0b0
+		background-color #f0c0b0 !important
 	.reply:not(.tripcoded):not(.uid),
 	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
-	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid)
+	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid),
+	#postpreview
 		background-color #f0e0d6
 	.reply
 		border-color #d9bfb7
@@ -245,6 +247,10 @@ a.permalink .id, a.saucelink
 		.greentext, a
 			color: #fff
 
+.youtube img
+	border 3px solid #C6312B 
+	border-radius 10px
+
 .backlinks 
 	clear both
 
@@ -254,10 +260,6 @@ a.permalink .id, a.saucelink
 #postpreview 
 	outline 3px dashed #00f
 	margin 0
-
-#postpreview:before,
-.reply.inline:before 
-	display none
 
 .post.inline 
 	margin-left 0

@@ -1,23 +1,23 @@
-/*
-if( data.thread )
-	# let's try some ajax
-	refresh = ->
-		$.get(document.URL)
-			.success( (html,status,xhr) ->
-				div = document.createElement 'div'
-				div.innerHTML = html
-				{thread: {replies}} = parse4chan div.querySelector 'form[name="delform"]'	
-				for i til data.thread.replies.length # remove probably old posts
-					replies.shift()
-				console.dir replies
-				$("#thread-#{data.thread.id}").append(
-					(reply.render() for reply in replies).join('')
-				)
-				setTimeout(refresh, 30000)
-			)
-			.error( (data,status) ->
-				alert(status)
-			)
-	setTimeout refresh, 30000
-*/
-
+if board.isThread
+	setTimeout do
+		function refresh
+			$.ajax do
+				document.URL 
+				ifModified: true
+				success: (html,status,xhr) ->
+					div = create \div ->
+						@innerHTML = html
+					{thread} = parse4chan div.querySelector 'form[name="delform"]'	
+					if thread.new.length > 0
+						$ '#thread-' + thread.id + ' .replies' .append do
+							render_all thread.new, \article, 'new reply'
+						# refresh backlinks
+						$ '.thread .backlinks' .append ->
+							Post[@parentNode.id.split \- .pop!].backlinks true
+						# redo rainbows
+						rainbowize!
+					setTimeout refresh, 30000
+				error: (data,status,xhr) ->
+					alert(status)
+					console.log xhr
+		30000

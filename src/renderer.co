@@ -34,9 +34,6 @@ document.body.id = board.name
 document.body.className += if board.nsfw then ' nsfw' else ' sfw'
 document.body.className += if board.isThread then ' threadpage' else ' boardpage'
 document.body.innerHTML = do ->
-	rendered_threads = ''
-	for thread of data.threads
-		rendered_threads += "<article class=\"#{thread.className!}\" id=\"thread-#{thread.id}\">#{thread.render!}</article>"
 	"""
 	<header>
 		<nav class="boardlinks">#{board.nav}</nav>
@@ -47,7 +44,7 @@ document.body.innerHTML = do ->
 		</hgroup>
 		#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
 	</header>
-	<div id="threads">#rendered_threads</div>
+	<div id="threads">#{render_all data.threads, \article}</div>
 	#{if board.isThread then "<a href=\"http://boards.4chan.org/#{board.name}/\">[Return]</a>" else ''}
 	#{
 		if board.pages

@@ -107,19 +107,19 @@ parse4chan = (context) ->
 			 # unwrap single quote links (so inline replies aren't in greentext)
 			.replace /<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g "$1"
 			.replace /<font class="unkfunc">/g '<font class="greentext">' # unkfunc?
-			.replace /([\w\.\-_\/=&;?#%:~!]{100})<br>/g '$1' # unsplits urls (probably) split at 100 characters
+			.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1' # unsplits urls (probably) split at 100 characters
 			# youtube thumbnails
 			.replace do
-				/http:\/\/(?:youtu.be\/|www.youtube.com\/watch\?v=)(\w+)([&=\w;]*)/g
+				/(?:http:\/\/)?(?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;]*)/g
 				'<a href="$&" class="youtube" data-id="$1" data-params="$2" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$1/2.jpg"></a>'
 			# specialcase linkify urls without internal parenthesis surrounded by
 			# parenthesis
 			.replace do
-				/\((https?:\/\/)([\w\-\._~:\/#\[\]@!$'+,;]+)([\w\-\._~:\/?#\[\]@!$&'*+,;=]*)\)/g ' 
+				/\((https?:\/\/)([\w\-\._~:\/#\[\]@!$'+,;%]+)([\w\-\._~:\/?#\[\]@!$&'*+,;=%]*)\)/g ' 
 				<a class="external" href="$1$2$3" title="$1$2$3" target="_blank">[$2]</a> '
 			# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 			.replace do
-				/([^"']|^)(https?:\/\/)([\w\-\._~:\/#\[\]\(\)@!$'+,;]+)([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=]*)/g
+				/([^"']|^)(https?:\/\/)([\w\-\._~:\/#\[\]\(\)@!$'+,;%]+)([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
 				'$1<a class="external" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
 			# specialcase linkify urls without a protocol but with a common tld
 			.replace do

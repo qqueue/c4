@@ -1,14 +1,23 @@
 class Thread
 	(@id, @preview, fn) ->
-		fn.call this # additional constructing in parser
 		@url = board.threadurl+@id
+		fn.call this # additional constructing in parser
+		
+		#convenience array including op
+		@posts = [@op].concat @replies
+
+		# build reply hash
+		@reply = {}
+		for reply of @replies
+			@reply[reply.id] = reply
+
 		if Thread[@id] # if this thread has been parsed before
 			@new = []
 			@deleted = []
 			for reply of Thread[@id].replies # old replies
-				@new.push reply if not @replies[reply.id]
+				@deleted.push reply if not @reply[reply.id]
 			for reply of @replies
-				@deleted.push reply if not Thread[@id].replies[reply.id]
+				@new.push reply if not Thread[@id].reply[reply.id]
 		
 		Thread[@id] = this
 	
@@ -19,16 +28,15 @@ class Thread
 		c += ' preview' if @preview
 		return c
 
-	render: ->
-		rendered_replies = ''
-		for reply of @replies
-			rendered_replies += "<article id=\"#{reply.id}\" class=\"#{reply.className!}\"> #{reply.render!}</article>"
+	render: (container, classes = '', id) ->
 		"""
-		<div class="#{@op.className!}" id="#{@op.id}">#{@op.render!}</div>
-		#{
-			if @omitted
-				"<div class=\"omitted-replies\">#{@omitted.replies} replies #{if @omitted.imageReplies then "and #{@omitted.imageReplies} image replies" else ''} omitted. Latest #{@replies.length} shown.</div>"
-			else ''
-		}
-		<div class="replies">#rendered_replies</div>
+		<#container id="#{id or "thread-#{@id}"}" class="#classes #{@className!}">
+			#{@op.render \div \op}
+			#{
+				if @omitted
+					"<div class=\"omitted-replies\">#{@omitted.replies} replies #{if @omitted.imageReplies then "and #{@omitted.imageReplies} image replies" else ''} omitted. Latest #{@replies.length} shown.</div>"
+				else ''
+			}
+			<div class="replies">#{render_all @replies, \article \reply}</div>
+		</#container>
 		"""
