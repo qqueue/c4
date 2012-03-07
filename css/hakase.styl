@@ -64,6 +64,11 @@ selection = #29df75
 	background selection
 	color #000
 
+a:link
+	text-decoration none
+	&:hover
+		text-decoration underline
+	
 body > header
 	text-align center
 	color #af0a0f
@@ -225,6 +230,11 @@ a.permalink .id, a.saucelink
 	&:hover
 		text-decoration underline
 
+.archivelink
+	color gray
+	&:after
+		content " (archive)"
+
 .recursivelink
 	color: black !important
 	
@@ -247,9 +257,24 @@ a.permalink .id, a.saucelink
 		.greentext, a
 			color: #fff
 
-.youtube img
-	border 3px solid #C6312B 
-	border-radius 10px
+.youtube 
+	position relative
+	text-decoration none
+	&:hover:after
+		content "\u25B6"
+		display block
+		left 50px
+		bottom 30px
+		position absolute
+		font-size 32px
+		color #C6312B
+		text-shadow 0 0 10px white
+	img
+		border 3px solid 
+		border-color #C6312B 
+		border-radius 10px
+	&:hover img
+			border-color #FFA200
 
 .backlinks 
 	clear both

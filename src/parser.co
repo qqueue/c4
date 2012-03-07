@@ -99,11 +99,22 @@ parse4chan = (context) ->
 	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
 
 	time "clean comments"
+	archivelink = (url) -> ( ,id) -> """<a href="#url/#id" class="archivelink">&gt;&gt;#id</a>"""
+	archive = switch board.name
+		case \a \jp \m \tg \u \tv \v \vg # foolz
+			archivelink "http://archive.foolz.us/#that/thread"
+		case \lit
+			archivelink "http://fuuka.warosu.org/#that/thread"
+		case \diy \g \sci
+			archivelink "http://archive.installgentoo.net/#that/thread"
+		case \3 \adv \an \ck \co \fa \fit \int \k \mu \n \o \p \po \pol \r9k \soc \sp \toy \trv \vp \x
+			archivelink "http://archive.no-ip.org/#that/thread"
+		default "$&" # don't replace
 	comments = for el of context.getElementsByTagName \blockquote
 		el.innerHTML
-			# strip 4chan's old js-based
+			# strip 4chan's old js-based spoilers
 			.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g ''
-			.replace /onclick="replyh1\('\d+'\);"/g ''
+			.replace /onclick="replyhl\('\d+'\);"/g '' # old reply highlighting
 			 # unwrap single quote links (so inline replies aren't in greentext)
 			.replace /<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g "$1"
 			.replace /<font class="unkfunc">/g '<font class="greentext">' # unkfunc?
@@ -125,6 +136,10 @@ parse4chan = (context) ->
 			.replace do
 				/(^| )([\w\.\-]+\.(?:com|net|org)[\/\w\.\-]*)/g
 				'$1<a class="external" href="http://$2" title="$2" target="_blank">[$2]</a>'
+			# attempt to redirect broken post links to the archive
+			# uses ultra clever atomic group mimickry with lookahead
+			# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
+			.replace /&gt;&gt;(?=(\d+))\1(?!<\/a>)/g archive 
 
 	timeEnd "clean comments"
 	

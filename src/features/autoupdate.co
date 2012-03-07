@@ -16,8 +16,9 @@ if board.isThread
 							Post[@parentNode.id.split \- .pop!].backlinks true
 						# redo rainbows
 						rainbowize!
-					setTimeout refresh, 30000
 				error: (data,status,xhr) ->
 					alert(status)
 					console.log xhr
+				complete: (xhr, status) ->
+					setTimeout refresh, 30000 unless status is \error
 		30000
