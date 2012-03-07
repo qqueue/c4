@@ -21,25 +21,25 @@ outfile = \html5chan@httpsgithubcomqueue-html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-	stylus.render read(\css/hakase.styl), (err,css) -> # stupid async API
-		try
-			throw err if err
-			fs.writeFileSync do
-				outfile
-				join do
-					metadata
-					compile join do 
-						check \src/intro.co
-						check \src/utils.co
-						check \src/board.co
-						check_and_join ls \src/classes
-						check \src/parser.co
-						check \src/renderer.co .replace /%hakase\.css%/ css 
-						check_and_join ls \src/features
-						check \src/outro.co
-			console.log "compiled script to #{outfile}"
-		catch e
-			console.error e
+	err, css <- stylus.render read(\css/hakase.styl) # sexy coco flattened callback
+	try
+		throw err if err
+		fs.writeFileSync do
+			outfile
+			join do
+				metadata
+				compile join do 
+					check \src/intro.co
+					check \src/utils.co
+					check \src/board.co
+					check_and_join ls \src/classes
+					check \src/parser.co
+					check \src/renderer.co .replace /%hakase\.css%/ css 
+					check_and_join ls \src/features
+					check \src/outro.co
+		console.log "compiled script to #{outfile}"
+	catch e
+		console.error e
 				
 task \watch 'watch for changes and rebuild automatically' ->
 	invoke \build

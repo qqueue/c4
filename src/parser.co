@@ -14,7 +14,7 @@ parse4ChanDate = do ->
 
 # in the context of given element
 parse4chan = (context) ->
-	n = 0 # counter for elements that always exist, starts at -1 for pre-incrementing
+	n = 0 # counter for elements that always exist
 	_poster = 0 # need separate counter since capcodes are hidden in this selector
 	parsePost = (thread, op, testAttr, testObj) -> 
 		p = new Post do
@@ -121,21 +121,21 @@ parse4chan = (context) ->
 			.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1' # unsplits urls (probably) split at 100 characters
 			# youtube thumbnails
 			.replace do
-				/(?:http:\/\/)?(?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;]*)/g
+				/(?:https?:\/\/)?(?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;]*)/g
 				'<a href="$&" class="youtube" data-id="$1" data-params="$2" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$1/2.jpg"></a>'
 			# specialcase linkify urls without internal parenthesis surrounded by
 			# parenthesis
 			.replace do
 				/\((https?:\/\/)([\w\-\._~:\/#\[\]@!$'+,;%]+)([\w\-\._~:\/?#\[\]@!$&'*+,;=%]*)\)/g ' 
-				<a class="external" href="$1$2$3" title="$1$2$3" target="_blank">[$2]</a> '
+				<a class="external" rel="noreferrer" href="$1$2$3" title="$1$2$3" target="_blank">[$2]</a> '
 			# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 			.replace do
 				/([^"']|^)(https?:\/\/)([\w\-\._~:\/#\[\]\(\)@!$'+,;%]+)([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
-				'$1<a class="external" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
+				'$1<a class="external" rel="noreferrer" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
 			# specialcase linkify urls without a protocol but with a common tld
 			.replace do
-				/(^| )([\w\.\-]+\.(?:com|net|org)[\/\w\.\-]*)/g
-				'$1<a class="external" href="http://$2" title="$2" target="_blank">[$2]</a>'
+				/(^|[ >])([\w\.\-]+\.(?:com|net|org|jp)[\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
+				'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
 			# attempt to redirect broken post links to the archive
 			# uses ultra clever atomic group mimickry with lookahead
 			# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
