@@ -1,7 +1,7 @@
 
 # inline replies
-$ \#threads
-	.on \click.html5chan.inlinereplies 'a.quotelink:not(.hiddenlink)' (e) ->
+listen document.getElementById \threads
+	.on \click 'a.quotelink:not(.hiddenlink)' (e) ->
 		if post = Post[id = @hash.substring 1]
 			$this = $ this
 			host = $this.closest \.post .attr \id
@@ -26,5 +26,5 @@ $ \#threads
 					.addClass \inlinedlink
 					.trigger \mouseleave.html5chan.postpreview # since we're previewing it now
 			return false
-	.on \dblclick.html5chan.inlinereplies \a.quotelink -> # bypass inline replies on dblclick
+	.on \dblclick \a.quotelink -> # bypass inline replies on dblclick
 		window.location.hash = that if @hash  # actually follow link

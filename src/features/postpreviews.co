@@ -1,6 +1,6 @@
 # post hover previews
-$ \#threads
-	.on \mouseenter.html5chan.postpreview  'a.quotelink:not(.inlinedlink, .hiddenlink)' (e) ->
+listen document.getElementById \threads
+	.on \mouseenter 'a.quotelink:not(.inlinedlink):not(.hiddenlink)' (e) ->
 		$ \#postpreview .remove! # just in case
 		$ \.hovered .removeClass \hovered # clear highlights
 		$this = $ this
@@ -15,22 +15,30 @@ $ \#threads
 						.addClass @className
 				.end!
 				.appendTo('body')
-			$this.trigger \mousemove.html5chan.postpreview e.pageX, e.pageY
-	.on \mousemove.html5chan.postpreview \a.quotelink (e, x = e.pageX, y = e.pageY) ->
+			height = preview.height()
+			width = preview.width()
+			left = e.pageX + 10
+			if left + width > $(window).width! 
+				left = Math.max 10, e.pageX - 10 - width
+			preview.css do
+					position: \absolute
+					left: left
+					top: e.pageY + if $(this).is \.backlink then 10 else -30 - height
+	.on \mousemove \a.quotelink (e) ->
 		preview = $ \#postpreview
 		height = preview.height()
 		width = preview.width()
-		left = x + 10
+		left = e.pageX + 10
 		if left + width > $(window).width! 
-			left = Math.max 10, x - 10 - width
+			left = Math.max 10, e.pageX - 10 - width
 		preview.css do
 				position: \absolute
 				left: left
 				top: e.pageY + if $(this).is \.backlink then 10 else -30 - height
-	.on \mouseleave.html5chan.postpreview \a.quotelink (e) ->
+	.on \mouseleave \a.quotelink (e) ->
 		$ \#postpreview .remove!
 	# highlight hovered reply
-	.on 'mouseenter.html5chan.posthighlight mouseleave.html5chan.posthighlight' \a.quotelink (e) ->
+	.on 'mouseenter mouseleave' \a.quotelink (e) ->
 		$this = $ this
 		$ if $this.is \.inlinedlink then "##{$this.closest \.post .attr \id}-#{this.hash.substring 1}"
 			.add this.hash 

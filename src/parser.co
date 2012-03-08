@@ -121,7 +121,7 @@ parse4chan = (context) ->
 			.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1' # unsplits urls (probably) split at 100 characters
 			# youtube thumbnails
 			.replace do
-				/(?:https?:\/\/)?(?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;]*)/g
+				/(?:https?:\/\/)?(?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;\?#]*)/g
 				'<a href="$&" class="youtube" data-id="$1" data-params="$2" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$1/2.jpg"></a>'
 			# specialcase linkify urls without internal parenthesis surrounded by
 			# parenthesis
@@ -134,7 +134,7 @@ parse4chan = (context) ->
 				'$1<a class="external" rel="noreferrer" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
 			# specialcase linkify urls without a protocol but with a common tld
 			.replace do
-				/(^|[ >])([\w\.\-]+\.(?:com|net|org|jp)[\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
+				/(^|[ >])([\w\.\-]+\.(?:com|net|org|jp(?!g))[\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
 				'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
 			# attempt to redirect broken post links to the archive
 			# uses ultra clever atomic group mimickry with lookahead

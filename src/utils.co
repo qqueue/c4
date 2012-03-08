@@ -56,4 +56,39 @@ create = (tag, fn) -> # helper method to avoid temporary variables with createEl
 	el
 
 render_all = (objects, ...options) ->
-	(obj.render.apply obj, options for obj of objects).join \\n
+	(obj.render.apply obj, options for obj of objects).join ''
+
+
+listen = do ->
+	(element) -> new # chainable wrapper for addEventListener
+		@on = (event, selector, handler) ->
+			if (events = event.split ' ').length > 1 # handle space separated events
+				@on e, selector, handler for e of events
+				return
+			if typeof selector is \function
+				handler = selector
+				selector = null
+			switch event
+			case <[mouseenter mouseleave]>
+				useCapture = true # since they don't bubble
+				exact_match = true # since children will fire mouseenter too
+			element.addEventListener do
+				event
+				if selector then !({target}: event) ->
+					do # walk up tree to find matches
+						if target.mozMatchesSelector selector
+							if handler.call(target, event) is false
+								event.stopPropagation!
+								event.preventDefault!
+							return 
+						target.=parentElement 
+					until target is element or exact_match
+				else handler # just plain callback
+				useCapture
+			return this
+
+
+
+		
+
+
