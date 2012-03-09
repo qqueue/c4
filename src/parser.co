@@ -121,8 +121,8 @@ parse4chan = (context) ->
 			.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1' # unsplits urls (probably) split at 100 characters
 			# youtube thumbnails
 			.replace do
-				/(?:https?:\/\/)?(?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;\?#]*)/g
-				'<a href="$&" class="youtube" data-id="$1" data-params="$2" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$1/2.jpg"></a>'
+				/(?:https?:\/\/)?((?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;\?#]*))/g
+				'<a href="http://$1" class="youtube" data-id="$2" data-params="$3" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$2/2.jpg"></a>'
 			# specialcase linkify urls without internal parenthesis surrounded by
 			# parenthesis
 			.replace do
