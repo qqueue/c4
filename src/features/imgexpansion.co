@@ -1,17 +1,15 @@
-$('#threads')
-	.on 'click.html5chan.imgexpand', 'a.file', (e) ->
+listen document.getElementById \threads
+	.on \click \a.file (e) ->
 		unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-			if $(this).hasClass 'expanded'
-				$(this)
-					.find('img.full').remove().end()
-					.find('img.thumb').show().end()
-					.removeClass 'expanded'
-				if (top = $(this).offset().top) < window.scrollY
-					window.scrollTo window.scrollX, top
+			if @classList.contains 'expanded' # toggle off
+				remove @querySelector \img.full
+				@querySelector \img.thumb .hidden = false
+				@classList.remove \expanded
+				if (top = @getBoundingClientRect!.top) < 0 # top of thumb is above scroll
+					window.scrollBy 0, top # scroll so it is visible
 			else
-				$(this)
-					.find('img.thumb').hide().end()
-					.append($('<img>', src: this.href, class: 'full'))
-					.addClass('expanded')
-				$('#imgpreview').remove()
+				@querySelector 'img.thumb' .hidden = true
+				@insertAdjacentHTML \beforeend """<img src="#{@href}" class="full">"""
+				@classList.add \expanded
+				remove document.getElementById \imgpreview
 			return false

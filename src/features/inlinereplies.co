@@ -1,30 +1,23 @@
-
 # inline replies
 listen document.getElementById \threads
 	.on \click 'a.quotelink:not(.hiddenlink)' (e) ->
 		if post = Post[id = @hash.substring 1]
-			$this = $ this
-			host = $this.closest \.post .attr \id
+			host = closest \.post, this .id
 			hostid = host.split \- .pop! # grab last (if nested inline post)
 			inlined_id = "#host-#id" # id is unique to hosting post and inlined post
-			if (inlined = $ "##inlined_id").exists! # toggle off
-				inlined.removeAndScroll $this
-				$this.removeClass \inlinedlink
+			if inlined = document.getElementById inlined_id # toggle off
+				removeAndScroll inlined, this
+				@classList.remove \inlinedlink
 			else
-				inlined = $ post.render \article 'inline hovered' inlined_id
-					.find "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
-					.replaceWith ->
-						$ \<strong> class: \recursivelink
-							.html $(this).html!
-							.addClass @className
-					.end!
-				if $this.is \.backlink
-					$this.after inlined
+				inlined = post.element \article 'inline hovered' inlined_id
+				for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
+					link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
+				if @classList.contains \backlink
+					@parentElement.insertBefore inlined, this.nextSibling
 				else
-					$this.beforeAndScroll inlined
-				$this
-					.addClass \inlinedlink
-					.trigger \mouseleave.html5chan.postpreview # since we're previewing it now
+					insertAndScroll inlined, this
+				@classList.add \inlinedlink
+				remove document.getElementById \postpreview
 			return false
 	.on \dblclick \a.quotelink -> # bypass inline replies on dblclick
 		window.location.hash = that if @hash  # actually follow link

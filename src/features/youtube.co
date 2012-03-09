@@ -2,15 +2,18 @@
 listen document.getElementById \threads
 	.on \click \a.youtube (e) ->
 		unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-			$ this .replaceWith do
+			@outerHTML = 
 				"""<iframe width="560" height="315" src="http://www.youtube-nocookie.com/embed/#{@dataset.id}#{@dataset.params or \?}&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>"""
 			return false
 	# attempt to fetch title with youtube api
-	.on \mouseenter \a.youtube (e) ->
+	.on \mouseenter \a.youtube ->
+		link = this
 		unless @title
 			@title = 'Loading video title...'
-			$.ajax "https://gdata.youtube.com/feeds/api/videos/#{@dataset.id}?v=2&alt=json" dataType: \json
-				.done (data) ~>
-					@title = data.entry.title.\$t
-				.fail ~>
-					@title = "Youtube [#{@dataset.id}]"
+			with new XMLHttpRequest
+				@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
+				@responseType = \json
+				listen this
+					.on \load -> link.title = @response.entry.title.\$t
+					.on \error -> link.title = "Youtube [#{link.dataset.id}]"
+				@send!

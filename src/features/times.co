@@ -1,6 +1,6 @@
 setTimeout do
 	function updateTimes
-		for el of $ \time 
+		for el of document.getElementsByTagName \time 
 			el.textContent = new Date el.getAttribute \datetime .prettyRelative!
 		setTimeout updateTimes, 60000
 	60000

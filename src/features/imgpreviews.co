@@ -1,26 +1,42 @@
+constrain = (el, e) ->
+	height = el.naturalHeight
+	width = el.naturalWidth
+	docheight = window.innerHeight - 20
+	availableheight = docheight - e.clientY
+	docwidth = window.innerWidth - 20
+	availablewidth = docwidth - e.clientX
+	
+	ratio = Math.min 1, docheight/height, availablewidth/width
+
+	el.style.width = width * ratio
+	el.style.height = height * ratio
+
+	el.style.left = e.clientX + 10
+	if (height * ratio ) > availableheight
+		el.style.bottom = 10
+		el.style.removeProperty \top
+	else
+		el.style.top = e.clientY + 10
+
 # image hover previews
-$('#threads')
-	.on('mouseenter.html5chan.imgpreview', 'a.file:not(.expanded)', (e) ->
-		$ \#imgpreview .remove! # just in case
-		$('<img>', id: 'imgpreview', src: this.href, alt: "Loading...")
-			.load(->
-				$(this)
-					.removeAttr('alt')
-					.css(opacity: '1')
-			)
-			.error(-> $(this).attr alt: "Unable to load image.")
-			.constrainY(left: e.pageX+10, top: e.pageY+10, 10)
-			.css(
-				maxWidth: $(document).width() - e.pageX - 20
-				opacity: '.7'
-			)
-			.appendTo 'body'
-	)
-	.on('mousemove.html5chan.imgpreview', 'a.file:not(.expanded)', (e) ->
-		$('#imgpreview')
-			.constrainY(left: e.pageX+10, top: e.pageY+10, 10)
-			.css(maxWidth: $(document).width() - e.pageX - 20)
-	)
-	.on('mouseleave.html5chan.imgpreview', 'a.file:not(.expanded)', (e) ->
-		$ \#imgpreview .remove!
-	)
+listen document.getElementById \threads
+	.on \mouseenter 'a.file:not(.expanded)' (e) ->
+		src = @href
+		remove document.getElementById \imgpreview
+		create \img ->
+			@id = \imgpreview
+			@src = src
+			@alt = "Loading..."
+			listen this
+				.on \load ->
+					@removeAttribute \alt
+					@style.opacity = 1
+				.on \error -> @alt = "Unable to load image."
+			constrain this, e
+			@style.opacity = 0.7
+			@style.position = \fixed
+			document.body.appendChild this
+	.on \mousemove 'a.file:not(.expanded)', (e) ->
+		constrain document.getElementById(\imgpreview), e
+	.on \mouseleave 'a.file:not(.expanded)' ->
+		remove document.getElementById \imgpreview

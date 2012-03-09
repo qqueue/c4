@@ -76,6 +76,10 @@ class Post
 			<footer class="backlinks">#{@backlinks!}</footer>
 		</#container>
 		"""
+	element: (container, classes = '', id) ->
+		wrapper = document.createElement \div
+		wrapper.innerHTML = @render container, classes, id
+		return wrapper.firstElementChild
 	
 	Post.backlinks = {} 
 	Post.new_backlinks = {}

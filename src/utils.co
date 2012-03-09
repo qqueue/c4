@@ -1,47 +1,3 @@
-$.fn.extend do
-	immediateText: -> 
-		@parent().clone().children().remove().end().text()
-	
-	exists: (selector) -> 
-		( if selector then @find selector else this ).length > 0
-	
-	changeTo: (replacement, options) -> 
-		@replaceWith ->
-			$(replacement,options).html($(this).html())
-
-	constrainY: ({left, top}, margin = 0) ->
-		height = @height() 
-		bottom = top + height
-		screentop = $(window).scrollTop()
-		screenbottom = screentop + $(window).height()
-		
-		if bottom > screenbottom
-			top = screenbottom - margin - height
-			
-		if top < screentop
-			top = screentop + margin
-			
-		@css do
-			left: left
-			top: top
-			position: "absolute"
-			
-	beforeAndScroll: (content) ->
-		before = @offset()
-		@before content
-		after = @offset()
-		window.scrollBy after.left - before.left, after.top - before.top 
-		return this
-		
-	removeAndScroll: (relativeTo) ->
-		before = relativeTo.offset()
-		@remove()
-		after = relativeTo.offset()
-		# unless the scrollbar is already at the bottom (which autocorrects position)
-		unless window.scrollY is window.scrollMaxY
-			window.scrollBy after.left - before.left, after.top - before.top
-		return this
-
 # special prefixed getters and setters
 # though honestly, I think greasemonkey wraps storage
 # so there's no chance of collisions anyway
@@ -58,7 +14,11 @@ create = (tag, fn) -> # helper method to avoid temporary variables with createEl
 render_all = (objects, ...options) ->
 	(obj.render.apply obj, options for obj of objects).join ''
 
-
+# TODO compact delegated listeners
+# by checking some sort of list of listeners
+# on the same parent with the same event type
+# so when walking up the tree, we can check all
+# selectors
 listen = do ->
 	(element) -> new # chainable wrapper for addEventListener
 		@on = (event, selector, handler) ->
@@ -75,6 +35,7 @@ listen = do ->
 			element.addEventListener do
 				event
 				if selector then !({target}: event) ->
+					return unless target # sometimes target disappears, weird
 					do # walk up tree to find matches
 						if target.mozMatchesSelector selector
 							if handler.call(target, event) is false
@@ -82,13 +43,26 @@ listen = do ->
 								event.preventDefault!
 							return 
 						target.=parentElement 
-					until target is element or exact_match
+					until target is null or target is element or exact_match
 				else handler # just plain callback
 				useCapture
 			return this
 
+closest = (selector, el) ->
+	return false unless el
+	until el!?, el.=parentElement
+		return el if el.mozMatchesSelector selector
+remove = -> it.parentElement.removeChild it if it and it.parentElement
 
+removeAndScroll = (removed, relativeTo) ->
+	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	remove removed
+	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	unless window.scrollY is window.scrollMaxY
+		window.scrollBy newx-oldx, newy-oldy
 
-		
-
-
+insertAndScroll = (inserted, relativeTo) ->
+	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	relativeTo.parentElement.insertBefore inserted, relativeTo
+	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	window.scrollBy newx-oldx, newy-oldy

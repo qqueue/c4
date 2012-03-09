@@ -9,21 +9,21 @@ rainbowize = do ->
 		it.replace /[!+\/\.]/g '\\$&' .replace /^\d/ '\\3$& '
 	->
 		time "rainbow tripcodes and uids"
-		$ \#rainbowtripcodes .remove!
-		$ \#rainbowuids .remove!
+		remove document.getElementById \rainbowtripcodes
+		remove document.getElementById \rainbowuids
 
-		$ '<style>', id: 'rainbowtripcodes'
-			.text do
+		document.head.appendChild create \style ->
+			@id = \rainbowtripcodes
+			@textContent =
 				(for tripcode in Post.tripcodes
 					".tripcoded.#{escape tripcode}:not(.op) { background-color: #{color(tripcode)}; }"
 				).join("\n")
-			.appendTo 'head'
-		$ '<style>', id: 'rainbowuids'
-			.text do
+		document.head.appendChild create \style ->
+			@id = \rainbowuids
+			@textContent = 
 				(for uid in Post.uids
 					".uid.#{escape uid} { background-color: #{color(uid)}; }"
 				).join("\n")
-			.appendTo 'head'
 		timeEnd "rainbow tripcodes and uids"
 
 rainbowize!

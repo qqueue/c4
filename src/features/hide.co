@@ -1,23 +1,24 @@
 # hide posts
 do ->
 	hide = ->
-		$ "a.quotelink[href=\"##it\"]" .toggleClass \hiddenlink
-		$ \# + it .toggleClass \hidden
+		for link of document.querySelectorAll "a.quotelink[href=\"##it\"]" 
+			link.classList.toggle \hiddenlink
+		document.getElementById it .classList.toggle \hidden
 
-	$ \#threads
-		.on \click.html5chan.hide '.reply > h1 > button.hide' ->
+	listen document.getElementById \threads
+		.on \click '.reply > h1 > button.hide' ->
 			hide @value
 			# persist with session storage
 			sset (@value): if sget @value then '' else 'hidden'
-		.on \click.html5.hide '.op > h1 > button.hide' ->
+		.on \click '.op > h1 > button.hide' ->
 			thread = "thread-#{@value}"
 			hide thread
 			sset (thread): if sget thread then '' else 'hidden'
 	
 	# hide all previously hidden posts and threads
-	for post of $ \.post
+	for post of document.getElementsByClassName \post
 		hide post.id if sget post.id
-	for thread of $ \.thread
+	for thread of document.getElementsByClassName \thread
 		hide thread.id if sget thread.id
 		
 			
