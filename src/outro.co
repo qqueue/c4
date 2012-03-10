@@ -1,3 +1,4 @@
+<-! document.addEventListener \load
+
 log "finished"
 console.log log.all()
-console.dir(data)

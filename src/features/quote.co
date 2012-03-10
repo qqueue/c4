@@ -1,6 +1,13 @@
-listen document.getElementById \threads
-	.on \click '.permalink .id' ->
-		selection = window.getSelection!toString!trim!
-		selection = ">#selection\n" if(selection) 
-		document.getElementById \comment .value += ">>#{@textContent}\n#selection"
-		return false
+quote = ->
+	selection = window.getSelection!toString!trim!
+	selection = ">#selection\n" if(selection) 
+	document.getElementById \comment .value += ">>#{@textContent}\n#selection"
+	return false
+
+features.quote =
+	on: ->
+		listen document.getElementById \threads
+			.on \click '.permalink .id' quote
+	off: ->
+		listen document.getElementById \threads
+			.off \click quote

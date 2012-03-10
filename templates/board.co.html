@@ -1,0 +1,92 @@
+﻿<header>
+	<nav class="boardlinks">#{board.nav}</nav>
+	<img src="#{board.banner}" alt="4chan::" id="banner"/>
+	<hgroup>
+		<h1><a href="http://boards.4chan.org/#{board.name}/">#{board.title}</a></h1>
+		<h2>#{board.subtitle}</h2>
+	</hgroup>
+	#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
+</header>
+<div id="threads">#{render_all data.threads, \article}</div>
+#{if board.isThread then "<a href=\"http://boards.4chan.org/#{board.name}/\">[Return]</a>" else ''}
+#{
+	if board.pages
+		"""
+		<nav id="pages">
+			#{if board.previous then "<a href=\"#that\" id=\"previous\">previous</a>" else ''}
+			<ul>
+				#{
+					(for page of board.pages
+						"<li><a href=\"#{page.num}\" #{if page.current then 'id="current"' else ''}>#{page.num}</a></li>"
+					).join ' '
+				}
+			</ul>
+			#{if board.next then "<a href=\"#that\" id=\"next\">next</a>" else ''}
+		</nav>
+		"""
+	else
+		''
+}
+#{
+	if board.locked
+		'<p>Thread closed. You may not reply at this time</p>'
+	else
+		"""
+		<form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/#{board.name}/post">
+			<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
+			#{if board.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
+			<input type="hidden" value="regist" name="mode">
+			<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
+			<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
+			<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
+			<div  id="comment-field"><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4" tabindex="10" ></textarea></div>
+			<div id="captcha-field">
+				<label>Verification: </label>
+				<div id="captcha"></div>
+			</div>
+			<div id="file-field">
+				<label for="file">Image: </label>
+				<div>
+					<input type="file" id="file" name="upfile" tabindex="10" />
+					<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler Image?</label>
+				</div>
+			</div>
+			<div title="for file deletion" id="password-field">
+				<label for="password">Password: </label>
+				<input id="password" type="password" maxlength="8" name="pwd" tabindex="10" >
+			</div>
+			<div id="buttons-wrapper">
+				<label>Submit: </label>
+				<div id="buttons">
+					<button type="submit" tabindex="10" id="post" value="Submit">Post</button>
+					<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
+					<button type="submit" name="email" value="noko" tabindex="10" id="noko">Noko</button>
+				</div>
+			</div>
+			<ul id="rules">
+				<li>Supported file types are: GIF, JPG, PNG </li>
+				<li>Maximum file size allowed is 3072 KB. </li>
+				<li>Images greater than 250x250 pixels will be thumbnailed. </li>
+				<li>Read the <a href="http://www.4chan.org/rules##{board.name}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
+				<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">ã“ã®ã‚µã‚¤ãƒˆã«ã¤ã„ã¦</a> - <a href="http://www.nifty.com/globalgate/">ç¿»è¨³</a></li>
+			</ul>
+		</form>
+		"""
+}
+<form id="delform" method="POST" action="http://sys.4chan.org/#{board.name}/imgboard.php">
+	<input name="mode" value="usrdel" type="hidden">
+	<label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20" id="delpassword"></label>
+	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
+	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
+</form>
+<form id="reportform" method="GET" action="http://sys.4chan.org/#{board.name}/imgboard.php" target="_blank">
+	<input type="hidden" name="mode" value="report"/>
+</form>
+<footer>
+	<nav class="boardlinks">#{board.nav}</nav>
+	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
+	<p>
+		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster.</small>
+	</p>
+</footer>
+

@@ -1,44 +1,54 @@
 # post hover previews
-listen document.getElementById \threads
-	.on \mouseenter 'a.quotelink:not(.inlinedlink):not(.hiddenlink)' (e) ->
-		return if @classList.contains \inlinedlink # don't need to preview if it's right there.
-		remove document.getElementById \postpreview
-		post.classList.remove \hovered for post of document.getElementsByClassName \hovered # clear highlights
-		hostid = closest \.post this .id.split \- .pop!
-		if post = Post[id = @hash.substring 1]
-			preview = post.element \article, , \postpreview
-			for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
-				link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
-			document.body.appendChild preview
-			height = preview.offsetHeight
-			width = preview.offsetWidth
-			left = e.pageX + 10
-			if e.pageX > (window.innerWidth / 2)
-				left = 10
-				preview.style.minWidth = e.pageX
-			preview.style.position = \absolute
-			preview.style.left = left
-			preview.style.top= e.pageY + if @classList.contains \backlink then 10 else -30 - height
-	.on \mousemove \a.quotelink (e) ->
-		return unless preview = document.getElementById \postpreview
-		height = preview.offsetHeight
-		width = preview.offsetWidth
-		left = e.pageX + 10
-		if e.pageX > (window.innerWidth / 2)
-			left = 10
-			preview.style.minWidth = e.pageX
-		preview.style.position = \absolute
-		preview.style.left = left
-		preview.style.top= e.pageY + if @classList.contains \backlink then 10 else -30 - height
-	.on \mouseleave \a.quotelink (e) ->
-		remove document.getElementById \postpreview
-	# highlight hovered reply
-	.on 'mouseenter mouseleave' \a.quotelink (e) ->
-		if @classList.contains \inlinedlink
-			document.getElementById do
-				"#{closest \.post .id}-#{this.hash.substring 1}"
-			?.classList.toggle \hovered
+
+position = (preview, e) ->
+	height = preview.offsetHeight
+	width = preview.offsetWidth
+	left = e.pageX + 10
+	if e.pageX > (window.innerWidth / 2)
+		left = 10
+		preview.style.minWidth = e.pageX
+	preview.style.position = \absolute
+	preview.style.left = left
+	preview.style.top= e.pageY + if @classList.contains \backlink then 10 else -30 - height
+
+make = (e) ->
+	remove document.getElementById \postpreview
+	return if @classList.contains \inlinedlink # don't need to preview if it's right there.
+	hostid = closest \.post this .id.split \- .pop!
+	if post = Post[id = @hash.substring 1]
+		preview = post.element \article, , \postpreview
+		for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
+			link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
+		document.body.appendChild preview
+		position.call this, preview, e
+
+move = (e) ->
+	return unless preview = document.getElementById \postpreview
+	position.call this, preview, e
+
+destroy = (e) ->
+	remove document.getElementById \postpreview
+
+highlight = -> # highlight hovered reply
+	if @classList.contains \inlinedlink
 		document.getElementById do
-			this.hash.substring 1 
+			"#{closest \.post this .id}-#{@hash.substring 1}"
 		?.classList.toggle \hovered
+	document.getElementById do
+		@hash.substring 1 
+	?.classList.toggle \hovered
+
+features.postpreviews =
+	on: ->
+		listen document.getElementById \threads
+			.on \mouseenter 'a.quotelink:not(.inlinedlink):not(.hiddenlink)' make
+			.on \mousemove \a.quotelink move
+			.on \mouseleave \a.quotelink destroy
+			.on 'mouseenter mouseleave' \a.quotelink highlight
+	off: ->
+		listen document.getElementById \threads
+			.off \mouseenter make
+			.off \mousemove move
+			.off \mouseleave destroy
+			.off 'mouseenter mouseleave' highlight
 	

@@ -1,15 +1,21 @@
-listen document.getElementById \threads
-	.on \click \a.file (e) ->
-		unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-			if @classList.contains 'expanded' # toggle off
-				remove @querySelector \img.full
-				@querySelector \img.thumb .hidden = false
-				@classList.remove \expanded
-				if (top = @getBoundingClientRect!.top) < 0 # top of thumb is above scroll
-					window.scrollBy 0, top # scroll so it is visible
-			else
-				@querySelector 'img.thumb' .hidden = true
-				@insertAdjacentHTML \beforeend """<img src="#{@href}" class="full">"""
-				@classList.add \expanded
-				remove document.getElementById \imgpreview
-			return false
+toggleExpand = (e) ->
+	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+		if @classList.contains 'expanded' # toggle off
+			remove @querySelector \img.full
+			@querySelector \img.thumb .hidden = false
+			@classList.remove \expanded
+			if (top = @getBoundingClientRect!.top) < 0 # top of thumb is above scroll
+				window.scrollBy 0, top # scroll so it is visible
+		else
+			@querySelector 'img.thumb' .hidden = true
+			@insertAdjacentHTML \beforeend """<img src="#{@href}" class="full">"""
+			@classList.add \expanded
+			remove document.getElementById \imgpreview
+		return false
+features.imgexpansion =
+	on: ->
+		listen document.getElementById \threads
+			.on \click \a.file toggleExpand
+	off: ->
+		listen document.getElementById \threads
+			.off \click toggleExpand

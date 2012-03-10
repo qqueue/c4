@@ -1,19 +1,25 @@
-parse4ChanDate = do ->
-	now = new Date()
-	(july = new Date()).setMonth(6)
-	DSTOffset = (now.getTimezoneOffset() - july.getTimezoneOffset()) / 60
+parser.date = do ->
+	# convert from EST (4chan time) to local time
+	# using explicitly set date in july, to ensure
+	# no daylight savings, which EST offset = 4 assumes
+	timezone = 4 - new Date( new Date!.setMonth(6) ).getTimezoneOffset! / 60
 	->
 		unless match = it.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
 			throw "Couldn't parse date: #{date}"
 		new Date do
-			parseInt(match[3],10) + 2000
-			parseInt(match[1],10) - 1
-			parseInt(match[2],10)
-			(parseInt(match[4],10) + 4 - (now.getTimezoneOffset() / 60) + DSTOffset) % 24 # 4chan is EST offset 4
-			parseInt(match[5],10)
+			parseInt( match.3, 10 ) + 2000
+			parseInt( match.1, 10 ) - 1
+			parseInt( match.2, 10 )
+			( parseInt( match.4, 10 ) + timezone ) % 24
+			parseInt( match.5, 10 )
 
-# in the context of given element
-parse4chan = (context) ->
+# in the context of given document
+parser.yotsuba = (document) ->
+	# TODO this is a hack to avoid reparsing 
+	# if last-modified on the ajax call is less than this
+	parser.last_parse = Date.now!
+
+	context = document.querySelector 'form[name="delform"]'
 	n = 0 # counter for elements that always exist
 	_poster = 0 # need separate counter since capcodes are hidden in this selector
 	parsePost = (thread, op, testAttr, testObj) -> 
@@ -21,7 +27,7 @@ parse4chan = (context) ->
 			ids[n].name
 			op
 			thread
-			parse4ChanDate times[n].textContent
+			parser.date times[n].textContent
 			titles[n].textContent
 			posters[_poster++].textContent
 			comments[n]
@@ -99,48 +105,9 @@ parse4chan = (context) ->
 	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
 
 	time "clean comments"
-	archivelink = (url) -> ( ,id) -> """<a href="#url/#id" class="archivelink">&gt;&gt;#id</a>"""
-	archive = switch board.name
-		case \a \jp \m \tg \u \tv \v \vg # foolz
-			archivelink "http://archive.foolz.us/#that/thread"
-		case \lit
-			archivelink "http://fuuka.warosu.org/#that/thread"
-		case \diy \g \sci
-			archivelink "http://archive.installgentoo.net/#that/thread"
-		case \3 \adv \an \ck \co \fa \fit \int \k \mu \n \o \p \po \pol \r9k \soc \sp \toy \trv \vp \x
-			archivelink "http://archive.no-ip.org/#that/thread"
-		default "$&" # don't replace
 	comments = for el of context.getElementsByTagName \blockquote
-		el.innerHTML
-			# strip 4chan's old js-based spoilers
-			.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"/g ''
-			.replace /onclick="replyhl\('\d+'\);"/g '' # old reply highlighting
-			 # unwrap single quote links (so inline replies aren't in greentext)
-			.replace /<font class="unkfunc">(<a[^q]+quotelink[^>]+>&gt;&gt;\d+<\/a>[^<]*)<\/font>/g "$1"
-			.replace /<font class="unkfunc">/g '<font class="greentext">' # unkfunc?
-			.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1' # unsplits urls (probably) split at 100 characters
-			# youtube thumbnails
-			.replace do
-				/(?:https?:\/\/)?((?:youtu.be\/|youtube.com\/watch\?v=|www.youtube.com\/watch\?v=)([\w\-_]+)([&=\w\-_;\?#]*))/g
-				'<a href="http://$1" class="youtube" data-id="$2" data-params="$3" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$2/2.jpg"></a>'
-			# specialcase linkify urls without internal parenthesis surrounded by
-			# parenthesis
-			.replace do
-				/\((https?:\/\/)([\w\-\._~:\/#\[\]@!$'+,;%]+)([\w\-\._~:\/?#\[\]@!$&'*+,;=%]*)\)/g ' 
-				<a class="external" rel="noreferrer" href="$1$2$3" title="$1$2$3" target="_blank">[$2]</a> '
-			# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
-			.replace do
-				/([^"']|^)(https?:\/\/)([\w\-\._~:\/#\[\]\(\)@!$'+,;%]+)([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
-				'$1<a class="external" rel="noreferrer" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
-			# specialcase linkify urls without a protocol but with a common tld
-			.replace do
-				/(^|[ >])([\w\.\-]+\.(?:com|net|org|jp(?!g))[\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
-				'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
-			# attempt to redirect broken post links to the archive
-			# uses ultra clever atomic group mimickry with lookahead
-			# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
-			.replace /&gt;&gt;(?=(\d+))\1(?!<\/a>)/g archive 
-
+		parser.enhance el
+		
 	timeEnd "clean comments"
 	
 	posters = context.querySelectorAll '.postername, .commentpostername'
@@ -172,12 +139,7 @@ parse4chan = (context) ->
 					imageReplies: parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 		
 	timeEnd "create objects"
-	# ########################################################
-	# return 
-	# ########################################################
+
 	thread: threads[0] if board.isThread
 	threads: threads
 
-time "parse"
-data = parse4chan document.querySelector('form[name="delform"]')
-timeEnd "parse"

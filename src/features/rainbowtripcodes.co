@@ -1,29 +1,35 @@
 # rainbow tripcodes
 # because I can
-rainbowize = do ->
-	color = -> # generate colored hash
-		hue = (((c.charCodeAt(0) for c of it).reduce((x,y) -> x + y)) * 3413 ) % 360
-		hue += 180 if Math.abs(hue - 231) < 15 # avoid close colors to standard blue
-		"hsl(#hue, 36%, 89%)" # lightness and saturation of original yotsuba
-	escape = -> #css escape classnames
-		it.replace /[!+\/\.]/g '\\$&' .replace /^\d/ '\\3$& '
-	->
-		time "rainbow tripcodes and uids"
+color = -> # generate colored hash
+	hue = (((c.charCodeAt(0) for c of it).reduce((x,y) -> x + y)) * 3413 ) % 360
+	hue += 180 if Math.abs(hue - 231) < 15 # avoid close colors to standard blue
+	"hsl(#hue, 36%, 89%)" # lightness and saturation of original yotsuba
+
+escape = -> #css escape classnames
+	it.replace /[!+\/\.]/g '\\$&' .replace /^\d/ '\\3$& '
+
+rainbowize = ->
+	time "rainbow tripcodes and uids"
+	remove document.getElementById \rainbowtripcodes
+	remove document.getElementById \rainbowuids
+
+	document.head.appendChild create \style ->
+		@id = \rainbowtripcodes
+		@textContent =
+			(for tripcode in Post.tripcodes
+				".tripcoded.#{escape tripcode}:not(.op) { background-color: #{color(tripcode)}; }"
+			).join("\n")
+	document.head.appendChild create \style ->
+		@id = \rainbowuids
+		@textContent = 
+			(for uid in Post.uids
+				".uid.#{escape uid} { background-color: #{color(uid)}; }"
+			).join("\n")
+	timeEnd "rainbow tripcodes and uids"
+
+features.rainbowize = 
+	on: rainbowize
+	off: ->
 		remove document.getElementById \rainbowtripcodes
 		remove document.getElementById \rainbowuids
 
-		document.head.appendChild create \style ->
-			@id = \rainbowtripcodes
-			@textContent =
-				(for tripcode in Post.tripcodes
-					".tripcoded.#{escape tripcode}:not(.op) { background-color: #{color(tripcode)}; }"
-				).join("\n")
-		document.head.appendChild create \style ->
-			@id = \rainbowuids
-			@textContent = 
-				(for uid in Post.uids
-					".uid.#{escape uid} { background-color: #{color(uid)}; }"
-				).join("\n")
-		timeEnd "rainbow tripcodes and uids"
-
-rainbowize!

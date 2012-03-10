@@ -18,25 +18,36 @@ constrain = (el, e) ->
 	else
 		el.style.top = e.clientY + 10
 
+make = (e) ->
+	src = @href
+	remove document.getElementById \imgpreview
+	create \img ->
+		@id = \imgpreview
+		@src = src
+		@alt = "Loading..."
+		listen this
+			.on \load ->
+				@removeAttribute \alt
+				@style.opacity = 1
+			.on \error -> @alt = "Unable to load image."
+		constrain this, e
+		@style.opacity = 0.7
+		@style.position = \fixed
+		document.body.appendChild this
+
+move = (e) -> constrain document.getElementById(\imgpreview), e
+
+destroy = (e) -> remove document.getElementById \imgpreview
+
 # image hover previews
-listen document.getElementById \threads
-	.on \mouseenter 'a.file:not(.expanded)' (e) ->
-		src = @href
-		remove document.getElementById \imgpreview
-		create \img ->
-			@id = \imgpreview
-			@src = src
-			@alt = "Loading..."
-			listen this
-				.on \load ->
-					@removeAttribute \alt
-					@style.opacity = 1
-				.on \error -> @alt = "Unable to load image."
-			constrain this, e
-			@style.opacity = 0.7
-			@style.position = \fixed
-			document.body.appendChild this
-	.on \mousemove 'a.file:not(.expanded)', (e) ->
-		constrain document.getElementById(\imgpreview), e
-	.on \mouseleave 'a.file:not(.expanded)' ->
-		remove document.getElementById \imgpreview
+features.imgpreviews = 
+	on: ->
+		listen document.getElementById \threads
+			.on \mouseenter 'a.file:not(.expanded)' make
+			.on \mousemove 'a.file:not(.expanded)' move
+			.on \mouseleave 'a.file:not(.expanded)' destroy
+	off: ->
+		listen document.getElementById \threads
+			.off \mouseenter make
+			.off \mousemove move
+			.off \mouseleave destroy

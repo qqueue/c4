@@ -1,19 +1,29 @@
 # embed youtube links on click
-listen document.getElementById \threads
-	.on \click \a.youtube (e) ->
-		unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-			@outerHTML = 
-				"""<iframe width="560" height="315" src="http://www.youtube-nocookie.com/embed/#{@dataset.id}#{if @dataset.params then "?#that" else \?}&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>"""
-			return false
-	# attempt to fetch title with youtube api
-	.on \mouseenter \a.youtube ->
-		link = this
-		unless @title
-			@title = 'Loading video title...'
-			with new XMLHttpRequest
-				@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
-				@responseType = \json
-				listen this
-					.on \load -> link.title = @response.entry.title.\$t
-					.on \error -> link.title = "Youtube [#{link.dataset.id}]"
-				@send!
+embed = (e) ->
+	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+		@outerHTML = 
+			"""<iframe width="560" height="315" src="http://www.youtube-nocookie.com/embed/#{@dataset.id}#{if @dataset.params then "?#that" else \?}&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>"""
+		return false
+
+# attempt to fetch title with youtube api
+load_title = ->
+	link = this
+	unless @title
+		@title = 'Loading video title...'
+		with new XMLHttpRequest
+			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
+			@responseType = \json
+			listen this
+				.on \load -> link.title = @response.entry.title.\$t
+				.on \error -> link.title = "Youtube [#{link.dataset.id}]"
+			@send!
+
+features.youtube =
+	on: ->
+		listen document.getElementById \threads
+			.on \click \a.youtube embed
+			.on \mouseenter \a.youtube load_title
+	off: ->
+		listen document.getElementById \threads
+			.off \click embed
+			.off \mouseenter load_title

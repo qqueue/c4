@@ -1,23 +1,38 @@
 # inline replies
-listen document.getElementById \threads
-	.on \click 'a.quotelink:not(.hiddenlink)' (e) ->
-		if post = Post[id = @hash.substring 1]
-			host = closest \.post, this .id
-			hostid = host.split \- .pop! # grab last (if nested inline post)
-			inlined_id = "#host-#id" # id is unique to hosting post and inlined post
-			if inlined = document.getElementById inlined_id # toggle off
-				removeAndScroll inlined, this
-				@classList.remove \inlinedlink
+toggle = (e) ->
+	if post = Post[id = @hash.substring 1]
+		host = closest \.post, this .id
+		hostid = host.split \- .pop! # grab last (if nested inline post)
+		inlined_id = "#host-#id" # id is unique to hosting post and inlined post
+		if inlined = document.getElementById inlined_id # toggle off
+			removeAndScroll inlined, this
+			@classList.remove \inlinedlink
+		else
+			inlined = post.element \article 'inline hovered' inlined_id
+			for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
+				link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
+			# TODO
+			# this code makes sure the inline post isn't wrapped by a text-level element
+			# but it's not very clean
+			wrapper = this
+			wrapper.=parentElement while wrapper.parentElement.mozMatchesSelector 'a,font,span'
+			if @classList.contains \backlink
+				@parentElement.insertBefore inlined, wrapper.nextSibling
 			else
-				inlined = post.element \article 'inline hovered' inlined_id
-				for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
-					link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
-				if @classList.contains \backlink
-					@parentElement.insertBefore inlined, this.nextSibling
-				else
-					insertAndScroll inlined, this
-				@classList.add \inlinedlink
-				remove document.getElementById \postpreview
-			return false
-	.on \dblclick \a.quotelink -> # bypass inline replies on dblclick
-		window.location.hash = that if @hash  # actually follow link
+				insertAndScroll inlined, wrapper
+			@classList.add \inlinedlink
+			remove document.getElementById \postpreview
+		return false
+
+bypass = -> # bypass inline replies on dblclick
+	window.location.hash = that if @hash  # actually follow link
+
+features.inlinereplies =
+	on: ->
+		listen document.getElementById \threads
+			.on \click 'a.quotelink:not(.hiddenlink)' toggle
+			.on \dblclick \a.quotelink bypass
+	off: ->
+		listen document.getElementById \threads
+			.off \click toggle
+			.off \dblclick bypass

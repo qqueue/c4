@@ -1,28 +1,29 @@
 # hide posts
-do ->
-	hide = ->
-		for link of document.querySelectorAll "a.quotelink[href=\"##it\"]" 
-			link.classList.toggle \hiddenlink
-		document.getElementById it .classList.toggle \hidden
+features.hide =
+	on: ->
+		hide = ->
+			for link of document.querySelectorAll "a.quotelink[href=\"##it\"]" 
+				link.classList.toggle \hiddenlink
+			document.getElementById it .classList.toggle \hidden
 
-	listen document.getElementById \threads
-		.on \click '.reply > h1 > button.hide' ->
-			hide @value
-			# persist with session storage
-			sset (@value): if sget @value then '' else 'hidden'
-		.on \click '.op > h1 > button.hide' ->
-			thread = "thread-#{@value}"
-			hide thread
-			sset (thread): if sget thread then '' else 'hidden'
-	
-	# hide all previously hidden posts and threads
-	for post of document.getElementsByClassName \post
-		hide post.id if sget post.id
-	for thread of document.getElementsByClassName \thread
-		hide thread.id if sget thread.id
+		listen document.getElementById \threads
+			.on \click '.reply > h1 > button.hide' ->
+				hide @value
+				# persist with session storage
+				sset (@value): if sget @value then '' else 'hidden'
+			.on \click '.op > h1 > button.hide' ->
+				thread = "thread-#{@value}"
+				hide thread
+				sset (thread): if sget thread then '' else 'hidden'
 		
-			
-
-
-
+		# hide all previously hidden posts and threads
+		for post of document.getElementsByClassName \post
+			hide post.id if sget post.id
+		for thread of document.getElementsByClassName \thread
+			hide thread.id if sget thread.id
+	off: ->
+		for el of document.getElementsByClassName \hidden
+			el.classList.remove \hidden
+		for el of document.getElementsByClassName \hiddenlink
+			el.classList.remove \hiddenlink
 

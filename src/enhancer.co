@@ -1,0 +1,60 @@
+# adds features at the comment html level
+
+archivelink = (url) -> """$1<a href="#url/$2" class="archivelink">&gt;&gt;$2</a>"""
+archive = switch board.name
+	case \a \jp \m \tg \u \tv \v \vg # foolz
+		archivelink "http://archive.foolz.us/#that/thread"
+	case \lit
+		archivelink "http://fuuka.warosu.org/#that/thread"
+	case \diy \g \sci
+		archivelink "http://archive.installgentoo.net/#that/thread"
+	case \3 \adv \an \ck \co \fa \fit \int \k \mu \n \o \p \po \pol \r9k \soc \sp \toy \trv \vp \x
+		archivelink "http://archive.no-ip.org/#that/thread"
+	default "$&" # don't replace
+		
+# taking the regex approach with innerHTML
+# because I believe that cloning the element and working with the DOM
+# before taking the HTML would be slower
+parser.enhance = ->
+	it.innerHTML 
+		# strip 4chan's old js-based spoilers and old reply highlights
+		.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"|onclick="replyhl\('\d+'\);"/g ''
+		
+		# unsplits urls (probably) split at 100 characters
+		.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
+
+		#youtube thumbnails
+		.replace do 
+			//
+				(?:https?:\/\/)? # optional protocol
+				(
+					youtu\.be\/([\w\-_]+)(\?[&=\w\-_;\#]*) | # short links
+					(?:www\.)youtube\.com\/watch\?
+						([&=\w\-_;\?\#]*) # pre video id options (annoying, since this will have to give up matches)
+						v=([\w\-_]+) # video id
+						([&=\w\-_;\?\#]*) # post vieo id options
+				)
+			//g
+			'<a href="http://$1" class="youtube" data-id="$2$5" data-params="$3$4$6" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$2$5/2.jpg"></a>'
+
+		# specialcase linkify urls without internal parenthesis surrounded by
+		# parenthesis like (http://google.com)
+		.replace do
+			/\((https?:\/\/)([\w\-\._~:\/#\[\]@!$'+,;%]+)([\w\-\._~:\/?#\[\]@!$&'*+,;=%]*)\)/g ' 
+			<a class="external" rel="noreferrer" href="$1$2$3" title="$1$2$3" target="_blank">[$2]</a> '
+
+		# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
+		.replace do
+			/([^"']|^)(https?:\/\/)([\w\-\._~:\/#\[\]\(\)@!$'+,;%]+)([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
+			'$1<a class="external" rel="noreferrer" href="$2$3$4" title="$2$3$4" target="_blank">[$3]</a>'
+
+		# specialcase linkify urls without a protocol but with a common tld
+		.replace do
+			/(^|[ >])([\w\.\-]+\.(?:com|net|org|jp(?=\/))[\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]*)/g
+			'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
+
+		# attempt to redirect broken post links to the archive
+		# uses ultra clever atomic group mimickry with lookahead
+		# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
+		# not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
+		.replace /([^|[^;])&gt;&gt;(?=(\d+))\1(?!<\/a>)/g archive 

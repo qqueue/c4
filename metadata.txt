@@ -6,4 +6,5 @@
 // @include     http://boards.4chan.org/*
 // @exclude     http://boards.4chan.org/f/*
 //
+// @run-at      document-start
 // ==/UserScript==
