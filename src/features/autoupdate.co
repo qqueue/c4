@@ -9,6 +9,7 @@ features.autoupdate =
 					with new XMLHttpRequest
 						@open \get document.URL 
 						@responseType = \document
+						@timeout = 10000ms
 						listen this 
 							.on \load ->
 								last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
@@ -29,6 +30,9 @@ features.autoupdate =
 										# TODO think up better way to call dependant functions
 										# have some sort of after_update hook
 										features.rainbowize.on!
+								timeout := setTimeout refresh, features.autoupdate.interval || 30000ms
+							.on \timeout ->
+								console.log "request timed out..."
 								timeout := setTimeout refresh, features.autoupdate.interval || 30000ms
 							.on \error ->
 								alert "couldn't refresh page!"

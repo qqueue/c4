@@ -1,16 +1,4 @@
 # adds features at the comment html level
-
-archivelink = (url) -> """$1<a href="#url/$2" class="archivelink">&gt;&gt;$2</a>"""
-archive = switch board.name
-	case \a \jp \m \tg \u \tv \v \vg # foolz
-		archivelink "http://archive.foolz.us/#that/thread"
-	case \lit
-		archivelink "http://fuuka.warosu.org/#that/thread"
-	case \diy \g \sci
-		archivelink "http://archive.installgentoo.net/#that/thread"
-	case \3 \adv \an \ck \co \fa \fit \int \k \mu \n \o \p \po \pol \r9k \soc \sp \toy \trv \vp \x
-		archivelink "http://archive.no-ip.org/#that/thread"
-	default "$&" # don't replace
 		
 # taking the regex approach with innerHTML
 # because I believe that cloning the element and working with the DOM
@@ -57,4 +45,4 @@ parser.enhance = ->
 		# uses ultra clever atomic group mimickry with lookahead
 		# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
 		# not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
-		.replace /([^|[^;])&gt;&gt;(?=(\d+))\1(?!<\/a>)/g archive 
+		.replace /(^|[^;])&gt;&gt;(?=(\d+))\2(?!<\/a>)/g board.archive 

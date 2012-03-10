@@ -33,6 +33,20 @@ with board
 	@isBoard = !@isThread
 	@locked = document.forms.length is 1 # delform, without postform
 
+# FIXME 
+# this should go somewhere better
+archivelink = (url) -> """$1<a href="#url/$2" class="archivelink">&gt;&gt;$2</a>"""
+board.archive = switch board.name
+	case \a \jp \m \tg \u \tv \v \vg # foolz
+		archivelink "http://archive.foolz.us/#that/thread"
+	case \lit
+		archivelink "http://fuuka.warosu.org/#that/thread"
+	case \diy \g \sci
+		archivelink "http://archive.installgentoo.net/#that/thread"
+	case \3 \adv \an \ck \co \fa \fit \int \k \mu \n \o \p \po \pol \r9k \soc \sp \toy \trv \vp \x
+		archivelink "http://archive.no-ip.org/#that/thread"
+	default "$&" # don't replace
+
 # disable 4chan styles
 remove el for el of document.querySelectorAll 'link[rel*="stylesheet"], style'
 # disable 4chan's onload functions
