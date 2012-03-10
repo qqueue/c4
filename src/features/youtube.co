@@ -12,6 +12,7 @@ load_title = ->
 		@title = 'Loading video title...'
 		with new XMLHttpRequest
 			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
+			# FIXME doesn't work in chrome. can't tell why ;_;
 			@responseType = \json
 			listen this
 				.on \load -> link.title = @response.entry.title.\$t

@@ -15,7 +15,7 @@ toggle = (e) ->
 			# this code makes sure the inline post isn't wrapped by a text-level element
 			# but it's not very clean
 			wrapper = this
-			wrapper.=parentElement while wrapper.parentElement.mozMatchesSelector 'a,font,span'
+			wrapper.=parentElement while wrapper.parentElement[matchesSelector] 'a,font,span'
 			if @classList.contains \backlink
 				@parentElement.insertBefore inlined, wrapper.nextSibling
 			else

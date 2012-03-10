@@ -2,7 +2,14 @@
 # these aren't wrapped, so they are available
 # everywhere else
 
+# TODO I feel like there's a better way to write this
+matchesSelector = if document?head?mozMatchesSelector
+	"mozMatchesSelector"
+else
+	"webkitMatchesSelector"
+
 # special prefixed getters and setters
+
 # though honestly, I think greasemonkey wraps storage
 # so there's no chance of collisions anyway
 sset = -> sessionStorage.setItem "html5chan-#key", val for key, val in it
@@ -23,6 +30,7 @@ render_all = (objects, ...options) ->
 # on the same parent with the same event type
 # so when walking up the tree, we can check all
 # selectors
+mouse = mouseenter: \mouseover, mouseleave: \mouseout
 listen = (element) -> new # chainable wrapper for addEventListener
 		@on = (event, selector, handler) ->
 			return this unless element
@@ -34,14 +42,15 @@ listen = (element) -> new # chainable wrapper for addEventListener
 				selector = null
 			switch event
 			case <[mouseenter mouseleave]>
-				useCapture = true # since they don't bubble
 				exact_match = true # since children will fire mouseenter too
+				useCapture = true
+			event = that if mouse[event] # shitty chrome without mouseenter/leave support
 			element.addEventListener do
 				event
 				if selector then !({target}: event) ->
 					return unless target # sometimes target disappears, weird
 					do # walk up tree to find matches
-						if target.mozMatchesSelector selector
+						if target[matchesSelector] selector
 							if handler.call(target, event) is false
 								event.stopPropagation!
 								event.preventDefault!
@@ -49,7 +58,7 @@ listen = (element) -> new # chainable wrapper for addEventListener
 						target.=parentElement 
 					until target is null or target is element or exact_match
 				else handler # just plain callback
-				useCapture
+				true
 			return this
 		@off = (event, handler) ->
 			return this unless element
@@ -64,7 +73,7 @@ listen = (element) -> new # chainable wrapper for addEventListener
 closest = (selector, el) ->
 	return false unless el
 	until el!?, el.=parentElement
-		return el if el.mozMatchesSelector selector
+		return el if el[matchesSelector] selector
 remove = -> it.parentElement.removeChild it if it and it.parentElement
 
 removeAndScroll = (removed, relativeTo) ->

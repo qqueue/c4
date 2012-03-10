@@ -1,4 +1,5 @@
 constrain = (el, e) ->
+	return unless el and e
 	height = el.naturalHeight
 	width = el.naturalWidth
 	docheight = window.innerHeight - 20
@@ -19,7 +20,7 @@ constrain = (el, e) ->
 		el.style.top = e.clientY + 10
 
 make = (e) ->
-	src = @href
+	src = @parentElement.href
 	remove document.getElementById \imgpreview
 	create \img ->
 		@id = \imgpreview
@@ -43,9 +44,9 @@ destroy = (e) -> remove document.getElementById \imgpreview
 features.imgpreviews = 
 	on: ->
 		listen document.getElementById \threads
-			.on \mouseenter 'a.file:not(.expanded)' make
-			.on \mousemove 'a.file:not(.expanded)' move
-			.on \mouseleave 'a.file:not(.expanded)' destroy
+			.on \mouseenter 'img.thumb' make
+			.on \mousemove 'img.thumb' move
+			.on \mouseleave 'img.thumb' destroy
 	off: ->
 		listen document.getElementById \threads
 			.off \mouseenter make
