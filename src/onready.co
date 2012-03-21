@@ -60,18 +60,23 @@ data = parser.yotsuba document
 timeEnd "parse"
 
 time "render"
-with document.body
-	@removeAttribute \vlink
-	@removeAttribute \text
-	@removeAttribute \link
-	@removeAttribute \bgcolor
+# TODO eventually this should replaced with a less innerHTML-based re-rendering
+# solution, so the attributes won't have to be removed
+# and firefox apparently won't have to spend time clearing out
+# the old elements
+with document.createElement \body
 	@id = board.name
 	@classList.add if board.nsfw then \nsfw else \sfw
 	@classList.add if board.isThread then \threadpage else \boardpage
+	time "parse innerHTML"
 	@innerHTML = 
 		"""
 		%board.co.html%
 		"""
+	timeEnd "parse innerHTML"
+	time "replace body"
+	document.documentElement.replaceChild this, document.body
+	timeEnd "replace body"
 
 document.head.appendChild do
 	create \style ->
@@ -80,6 +85,23 @@ document.head.appendChild do
 			'''
 			%hakase.css%
 			'''
+
+# add baord pages
+# man, pagination logic is stupidly complicated
+# also TODO report that missing parenthesis bug
+if board.isBoard then do ->
+	pages = kup \ul ->
+		if ( page = board.page ) > 0
+			@li -> @a {href: page - 1} \previous
+		for page from 0 to 15
+			@li ->
+				# page board/0 redirects to board/ anyway
+				@a {href: page or board.url} page
+		if ( page = board.page ) < 15
+			@li -> @a {href: page + 1} \next
+	
+	pages.children[if board.page then that + 1 else 0].firstChild.id = \current
+	document.getElementById \pages .appendChild pages
 
 # create or restore delete password 
 do ->
@@ -133,6 +155,11 @@ if board.isThread
 			else
 				document.title = @time.prettyPrint!
 		document.title += " - /#{board.name}/" 
+
+
+# autoupdate threads
+if board.isThread
+	updater.countdown!
 
 # enable all features
 # TODO load settings and selectively load features

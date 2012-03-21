@@ -5,26 +5,34 @@ embed = (e) ->
 			"""<iframe width="560" height="315" src="http://www.youtube-nocookie.com/embed/#{@dataset.id}#{if @dataset.params then "?#that" else \?}&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>"""
 		return false
 
-# attempt to fetch title with youtube api
-load_title = ->
-	link = this
-	unless @title
-		@title = 'Loading video title...'
+fetch_link = ->
+	link = this # called as event handler
+	unless @title # this prevents multiple xhrs from being created
+		@title = 'Loading video title... (re-mouse over preview to refresh)'
 		with new XMLHttpRequest
 			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
-			# FIXME doesn't work in chrome. can't tell why ;_;
-			@responseType = \json
+			# fucking chrome and its problems with supporting html5
+			# @responseType = \json
 			listen this
-				.on \load -> link.title = @response.entry.title.\$t
+				.on \load -> link.title = JSON.parse @responseText .entry.title.\$t
 				.on \error -> link.title = "Youtube [#{link.dataset.id}]"
+				.on \loadend -> listen link .off \mouseenter fetch_link
 			@send!
+
+# grab titles for youtube vids with api
+load_titles = ->
+	for link of document.querySelectorAll \a.youtube
+		unless link.title # skip adding new listener to already fetched vids
+			listen link .on \mouseenter fetch_link
 
 features.youtube =
 	on: ->
 		listen document.getElementById \threads
 			.on \click \a.youtube embed
-			.on \mouseenter \a.youtube load_title
+
+		load_titles!
+		updater.after_update load_titles # grab new video titles
+
 	off: ->
 		listen document.getElementById \threads
 			.off \click embed
-			.off \mouseenter load_title

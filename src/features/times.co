@@ -1,5 +1,6 @@
 timeout = null
 
+# TODO refactor safe setinterval as util function
 features.times =
 	on: ->
 		timeout := setTimeout do

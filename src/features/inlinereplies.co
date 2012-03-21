@@ -1,3 +1,19 @@
+# these two functions keep the mouse in the same
+# relative position on the document when content
+# above the mouse is removed or added
+removeAndScroll = (removed, relativeTo) ->
+	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	remove removed
+	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	unless window.scrollY is window.scrollMaxY
+		window.scrollBy newx-oldx, newy-oldy
+
+insertAndScroll = (inserted, relativeTo) ->
+	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	relativeTo.parentElement.insertBefore inserted, relativeTo
+	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
+	window.scrollBy newx-oldx, newy-oldy
+
 # inline replies
 toggle = (e) ->
 	if post = Post[id = @hash.substring 1]
@@ -11,11 +27,8 @@ toggle = (e) ->
 			inlined = post.element \article 'inline hovered' inlined_id
 			for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
 				link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
-			# TODO
-			# this code makes sure the inline post isn't wrapped by a text-level element
-			# but it's not very clean
-			wrapper = this
-			wrapper.=parentElement while wrapper.parentElement[matchesSelector] 'a,font,span'
+			wrapper = this # walk outside of inline elements like spoilers and greentext
+			wrapper.=parentElement while wrapper.parentElement[matchesSelector] 'a,span,font'
 			if @classList.contains \backlink
 				@parentElement.insertBefore inlined, wrapper.nextSibling
 			else

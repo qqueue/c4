@@ -1,4 +1,4 @@
-<-! window.addEventListener \load
+<-! document.addEventListener \DOMContentLoaded
 
 log "finished"
 console.log log.all()

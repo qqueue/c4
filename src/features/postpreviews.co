@@ -21,6 +21,8 @@ make = (e) ->
 			link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
 		document.body.appendChild preview
 		position.call this, preview, e
+		listen this
+			.on \mousemove move
 
 move = (e) ->
 	return unless preview = document.getElementById \postpreview
@@ -28,6 +30,8 @@ move = (e) ->
 
 destroy = (e) ->
 	remove document.getElementById \postpreview
+	listen this
+		.off \mousemove move
 
 highlight = -> # highlight hovered reply
 	if @classList.contains \inlinedlink
@@ -42,13 +46,11 @@ features.postpreviews =
 	on: ->
 		listen document.getElementById \threads
 			.on \mouseenter 'a.quotelink:not(.inlinedlink):not(.hiddenlink)' make
-			.on \mousemove \a.quotelink move
 			.on \mouseleave \a.quotelink destroy
 			.on 'mouseenter mouseleave' \a.quotelink highlight
 	off: ->
 		listen document.getElementById \threads
 			.off \mouseenter make
-			.off \mousemove move
 			.off \mouseleave destroy
 			.off 'mouseenter mouseleave' highlight
 	

@@ -21,6 +21,7 @@ log = do ->
 parser = {} # holds parsing functions
 features = {}
 board = {}
+updater = {}
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access

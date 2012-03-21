@@ -27,6 +27,10 @@ rainbowize = ->
 			).join("\n")
 	timeEnd "rainbow tripcodes and uids"
 
+# make sure new posts are rainbowized
+updater.after_update rainbowize
+
+
 features.rainbowize = 
 	on: rainbowize
 	off: ->

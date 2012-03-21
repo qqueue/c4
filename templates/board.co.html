@@ -1,4 +1,4 @@
-﻿<header>
+<header>
 	<nav class="boardlinks">#{board.nav}</nav>
 	<img src="#{board.banner}" alt="4chan::" id="banner"/>
 	<hgroup>
@@ -8,25 +8,7 @@
 	#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
 </header>
 <div id="threads">#{render_all data.threads, \article}</div>
-#{if board.isThread then "<a href=\"http://boards.4chan.org/#{board.name}/\">[Return]</a>" else ''}
-#{
-	if board.pages
-		"""
-		<nav id="pages">
-			#{if board.previous then "<a href=\"#that\" id=\"previous\">previous</a>" else ''}
-			<ul>
-				#{
-					(for page of board.pages
-						"<li><a href=\"#{page.num}\" #{if page.current then 'id="current"' else ''}>#{page.num}</a></li>"
-					).join ' '
-				}
-			</ul>
-			#{if board.next then "<a href=\"#that\" id=\"next\">next</a>" else ''}
-		</nav>
-		"""
-	else
-		''
-}
+<nav id="pages"></nav>
 #{
 	if board.locked
 		'<p>Thread closed. You may not reply at this time</p>'
@@ -82,6 +64,11 @@
 <form id="reportform" method="GET" action="http://sys.4chan.org/#{board.name}/imgboard.php" target="_blank">
 	<input type="hidden" name="mode" value="report"/>
 </form>
+
+<div id="controls">
+	<div id="updater"></div>
+</div>
+
 <footer>
 	<nav class="boardlinks">#{board.nav}</nav>
 	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>

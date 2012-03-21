@@ -3,7 +3,7 @@
 // @namespace   https://github.com/queue-/html5chan
 // @description html5... on my 4chan?
 // 
-// @include     http://boards.4chan.org/*
+// @match       http://boards.4chan.org/*
 // @exclude     http://boards.4chan.org/f/*
 //
 // @run-at      document-start

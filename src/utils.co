@@ -1,12 +1,16 @@
 # various utils
 # these aren't wrapped, so they are available
 # everywhere else
+# TODO namespace these to avoid embarrasing collisions
 
-# TODO I feel like there's a better way to write this
-matchesSelector = if document?head?mozMatchesSelector
-	"mozMatchesSelector"
+# had to resort to lame hack
+# I would monkey-patch Element.prototype,
+# but scriptish/Greasemonkey don't expose the real
+# prototype, so DOM patching is impossible ;_;
+matchesSelector = if document.head
+	\mozMatchesSelector
 else
-	"webkitMatchesSelector"
+	\webkitMatchesSelector
 
 # special prefixed getters and setters
 
@@ -40,35 +44,32 @@ listen = (element) -> new # chainable wrapper for addEventListener
 			if typeof selector is \function
 				handler = selector
 				selector = null
-			switch event
-			case <[mouseenter mouseleave]>
-				exact_match = true # since children will fire mouseenter too
-				useCapture = true
-			event = that if mouse[event] # shitty chrome without mouseenter/leave support
+			# replace non-bubbling events with those that do
+			event = that if mouse[event]
 			element.addEventListener do
 				event
 				if selector then !({target}: event) ->
 					return unless target # sometimes target disappears, weird
-					do # walk up tree to find matches
-						if target[matchesSelector] selector
-							if handler.call(target, event) is false
-								event.stopPropagation!
-								event.preventDefault!
-							return 
-						target.=parentElement 
-					until target is null or target is element or exact_match
+					# if actual selector, or child of selector
+					# this offloads the usual strategy of walking up parentElements
+					# to the internal browser query engine
+					if target[matchesSelector] "#selector, #selector *" 
+						# still need to walk up tree to find target context
+						target.=parentElement until target[matchesSelector] selector
+						if handler.call(target, event) is false
+							log "canceling propogation"
+							event.stopPropagation!
+							event.preventDefault!
+						return 
 				else handler # just plain callback
-				true
 			return this
+		# TODO this doesn't handle delegated events very well
 		@off = (event, handler) ->
 			return this unless element
 			if (events = event.split ' ').length > 1 # handle space separated events
 				@off e, handler for e of events
 				return
-			switch event
-			case <[mouseenter mouseleave]>
-				useCapture = true # since they don't bubble
-			element.removeEventListener event, handler, useCapture
+			element.removeEventListener event, handler
 
 closest = (selector, el) ->
 	return false unless el
@@ -76,18 +77,6 @@ closest = (selector, el) ->
 		return el if el[matchesSelector] selector
 remove = -> it.parentElement.removeChild it if it and it.parentElement
 
-removeAndScroll = (removed, relativeTo) ->
-	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	remove removed
-	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	unless window.scrollY is window.scrollMaxY
-		window.scrollBy newx-oldx, newy-oldy
-
-insertAndScroll = (inserted, relativeTo) ->
-	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	relativeTo.parentElement.insertBefore inserted, relativeTo
-	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	window.scrollBy newx-oldx, newy-oldy
 
 do ->
 	pad = (number) ->
@@ -106,4 +95,38 @@ do ->
 			"#{Math.ceil minutes} minutes ago"
 		else
 			"Less than a minute ago"
+
+# coffeekup-like dom builder
+# pretty fuckin magical
+kup = do ->
+	class ElementProxy
+		(parent, tag, attributes, content) ->
+			@dom = document.createElement tag
+			parent.dom.appendChild @dom if parent
+			unless typeof attributes is \object
+				content = attributes
+				attributes = {}
+			@dom <<< attributes
+			if content?
+				if typeof content is \function
+					content.call this
+				else
+					@dom.textContent = content
+		tag: (tag, attributes, content) -> new ElementProxy this, tag, attributes, content
+
+		# proxy common attributes, non-exhaustive
+		for attr of <[id classList src href style width height]>
+			let then Object.defineProperty ElementProxy.prototype, attr,
+					get: -> @dom[attr]
+					set: -> @dom[attr] = it
+
+		# helpers for each kind of element
+		# non-exhaustive, until I need them
+		for tag of <[body div section header footer article hgroup h1 h2 a ol ul li span b i em strong]>
+			let then ElementProxy::[tag] = (attributes, content) ->
+					new ElementProxy this, tag, attributes, content
+	
+	(tag, attributes, content) ->
+		el = new ElementProxy void, tag, attributes, content
+		return el.dom
 

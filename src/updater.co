@@ -1,0 +1,59 @@
+updater.update = ->
+	with new XMLHttpRequest
+		@open \get document.URL 
+		@responseType = \document
+		# FIXME the timeout is here because using responseType document
+		# seems to never complete on some requests in firefox, even though firebug reports
+		# that the request went 200 OK. not sure why
+		@timeout = 10000ms
+		listen this 
+			.on \load ->
+				last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
+				if last_modified > parser.last_parse
+					console.log "update detected, parsing"
+					{thread} = parser.yotsuba @response
+					if thread.new.length > 0
+						document.querySelector '#thread-' + thread.id + ' .replies'
+							.insertAdjacentHTML do
+								\beforeend
+								render_all thread.new, \article, 'new reply'
+						# refresh backlinks
+						# TODO refactor out all the various places backlinks are made
+						# into something less coupled
+						for backlinks of document.querySelectorAll '.thread .backlinks'
+							backlinks.insertAdjacentHTML do
+								\beforeend
+								Post[backlinks.parentNode.id.split \- .pop!].backlinks true
+
+						# call after_update hooks
+						fn thread.new for fn of callbacks
+				updater.countdown!
+			.on \timeout ->
+				console.log "request timed out..."
+				updater.countdown!
+			.on \error ->
+				alert "couldn't refresh page!"
+				# TODO redirect to archive
+				console.log this
+		@send!
+	
+callbacks = []
+
+updater.after_update = -> callbacks.push it
+
+updater.timeout = null
+
+updater.countdown = ->
+	tminus = 30sec
+	setTimeout do
+		function tick
+			if tminus is 0
+				document.getElementById \updater .textContent = "Updating thread..."
+				updater.update!
+			else
+				document.getElementById \updater .textContent = "Updating in #tminus seconds..."
+				tminus--
+				setTimeout tick, 1000ms
+		1000ms
+
+

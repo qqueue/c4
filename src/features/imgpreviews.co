@@ -35,20 +35,23 @@ make = (e) ->
 		@style.opacity = 0.7
 		@style.position = \fixed
 		document.body.appendChild this
+	listen this
+		.on \mousemove move
 
 move = (e) -> constrain document.getElementById(\imgpreview), e
 
-destroy = (e) -> remove document.getElementById \imgpreview
+destroy = (e) ->
+	remove document.getElementById \imgpreview
+	listen this
+		.off \mousemove move
 
 # image hover previews
 features.imgpreviews = 
 	on: ->
 		listen document.getElementById \threads
 			.on \mouseenter 'img.thumb' make
-			.on \mousemove 'img.thumb' move
 			.on \mouseleave 'img.thumb' destroy
 	off: ->
 		listen document.getElementById \threads
 			.off \mouseenter make
-			.off \mousemove move
 			.off \mouseleave destroy

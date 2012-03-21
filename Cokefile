@@ -26,6 +26,7 @@ task \build 'build userscript' ->
 				bare klass for klass of ls \src/classes
 				compile \src/enhancer.co
 				compile \src/parser.co
+				compile \src/updater.co 
 				coco.compile do
 					read \src/onready.co 
 						.replace /%hakase\.css%/ css 
@@ -39,7 +40,7 @@ task \build 'build userscript' ->
 				
 task \watch 'watch for changes and rebuild automatically' ->
 	invoke \build
-	<[css src]>.forEach ->
+	<[css src templates]>.forEach ->
 		fs.watch it, interval: 1000, _.debounce do
 			(event, filename) ->
 				unless /.swp$/.test filename # goddamn vi
