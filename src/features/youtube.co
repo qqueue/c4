@@ -1,3 +1,8 @@
+# TODO fix styling in chrome by switching to 
+# background-image-based approach
+# also makes the > play button easier without weird
+# psuedoelements
+# TODO add close button somehow
 # embed youtube links on click
 embed = (e) ->
 	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
@@ -19,19 +24,11 @@ fetch_link = ->
 				.on \loadend -> listen link .off \mouseenter fetch_link
 			@send!
 
-# grab titles for youtube vids with api
-load_titles = ->
-	for link of document.querySelectorAll \a.youtube
-		unless link.title # skip adding new listener to already fetched vids
-			listen link .on \mouseenter fetch_link
-
 features.youtube =
 	on: ->
 		listen document.getElementById \threads
 			.on \click \a.youtube embed
-
-		load_titles!
-		updater.after_update load_titles # grab new video titles
+			.on \mouseenter \a.youtube fetch_link
 
 	off: ->
 		listen document.getElementById \threads

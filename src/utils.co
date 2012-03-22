@@ -7,7 +7,7 @@
 # I would monkey-patch Element.prototype,
 # but scriptish/Greasemonkey don't expose the real
 # prototype, so DOM patching is impossible ;_;
-matchesSelector = if document.head
+matchesSelector = unless Element.prototype
 	\mozMatchesSelector
 else
 	\webkitMatchesSelector
@@ -61,6 +61,7 @@ listen = (element) -> new # chainable wrapper for addEventListener
 							event.stopPropagation!
 							event.preventDefault!
 						return 
+				# TODO add same wrapper for return false
 				else handler # just plain callback
 			return this
 		# TODO this doesn't handle delegated events very well

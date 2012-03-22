@@ -1,3 +1,5 @@
+# TODO figure out how to constrain the selection to just
+# the post selected, for kicks
 quote = ->
 	selection = window.getSelection!toString!trim!
 	selection = ">#selection\n" if(selection) 

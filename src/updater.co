@@ -1,17 +1,43 @@
+# TODO handle new post highlighting better
+# with CSS, and title changing
+# look into including that fancy icon number libary
+# or because it's not invented here, rewriting it
 updater.update = ->
+	clearTimeout timeout # clear any other running countdowns
 	with new XMLHttpRequest
 		@open \get document.URL 
-		@responseType = \document
+		# shit is weird, if the request is 200 OK, it'll time out every time
+		# until it becomes 304 not modified, which will go through fine,
+		# and trip the last_modified check
+		# back to stupid workaround until this is fixed
+		# @responseType = \document
 		# FIXME the timeout is here because using responseType document
 		# seems to never complete on some requests in firefox, even though firebug reports
-		# that the request went 200 OK. not sure why
+		# that the request went 200 OK. not sure why, report bug maybe?
 		@timeout = 10000ms
 		listen this 
 			.on \load ->
+				# have to check the header instead of the status as 304,
+				# becuase if the browser caches the request (shows up in firebug as
+				# 304), it'll still be show up as 200 OK in here to prevent history
+				# leaking. This is a slightly better solution than 4chanX, which adds a
+				# cache-busting parameter to the URL, forcing a full server response
+				# every time (which along with if-modified-since, allows them to test
+				# for a real 304 response).
 				last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
 				if last_modified > parser.last_parse
 					console.log "update detected, parsing"
-					{thread} = parser.yotsuba @response
+
+					# html5... ;_;
+					# can't use createHTMLDocument because all relative links
+					# have a blank pathname, which screws up the detection of
+					# crossthread links
+					# TODO work around this better
+					# html = document.implementation.createHTMLDocument ''
+					html = document.createElement \div
+					html.innerHTML = @response
+
+					{thread} = parser.yotsuba html
 					if thread.new.length > 0
 						document.querySelector '#thread-' + thread.id + ' .replies'
 							.insertAdjacentHTML do
@@ -27,6 +53,8 @@ updater.update = ->
 
 						# call after_update hooks
 						fn thread.new for fn of callbacks
+
+						updater.status = "Updated successfully!"
 				updater.countdown!
 			.on \timeout ->
 				console.log "request timed out..."
@@ -41,19 +69,23 @@ callbacks = []
 
 updater.after_update = -> callbacks.push it
 
-updater.timeout = null
+timeout = null
+
+Object.defineProperty updater, \status,
+	get: -> document.getElementById \updater .textContent
+	set: -> document.getElementById \updater .textContent = it
 
 updater.countdown = ->
 	tminus = 30sec
-	setTimeout do
+	timeout := setTimeout do
 		function tick
 			if tminus is 0
-				document.getElementById \updater .textContent = "Updating thread..."
+				updater.status = "Updating thread..."
 				updater.update!
 			else
-				document.getElementById \updater .textContent = "Updating in #tminus seconds..."
+				updater.status = "Updating in #tminus seconds..."
 				tminus--
-				setTimeout tick, 1000ms
+				timeout := setTimeout tick, 1000ms
 		1000ms
 
 

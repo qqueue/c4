@@ -1,3 +1,5 @@
+# TODO add feature to menubar to select whether inlined images
+# are full size or not
 toggleExpand = (e) ->
 	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
 		if @classList.contains 'expanded' # toggle off

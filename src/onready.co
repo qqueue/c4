@@ -1,6 +1,20 @@
 <-! document.addEventListener \DOMContentLoaded
 # TODO handle archive redirection here
 
+# sys.4chan.org is where the post happens
+# so to fake a non-reloading ajax
+if window.location.hostname is \sys.4chan.org
+	log "sys.4chan listener"
+	# pass message back to host page
+	window.parent.postMessage document.body.innerHTML, \http://boards.4chan.org
+
+	# switch to about:blank to prevent meta redirect
+	# on 'post successful' from loading the board page
+	# inside the hidden iframe
+	window.location = 'about:blank'
+
+	return # stop processing the rest of the script
+
 with board
 	logoEl = document.getElementsByClassName \logo .0
 	centerEls = document.getElementsByTagName \center
@@ -60,10 +74,6 @@ data = parser.yotsuba document
 timeEnd "parse"
 
 time "render"
-# TODO eventually this should replaced with a less innerHTML-based re-rendering
-# solution, so the attributes won't have to be removed
-# and firefox apparently won't have to spend time clearing out
-# the old elements
 with document.createElement \body
 	@id = board.name
 	@classList.add if board.nsfw then \nsfw else \sfw
@@ -89,6 +99,8 @@ document.head.appendChild do
 # add baord pages
 # man, pagination logic is stupidly complicated
 # also TODO report that missing parenthesis bug
+# TODO inline this into main rendering to avoid
+# rerender
 if board.isBoard then do ->
 	pages = kup \ul ->
 		if ( page = board.page ) > 0
@@ -104,6 +116,7 @@ if board.isBoard then do ->
 	document.getElementById \pages .appendChild pages
 
 # create or restore delete password 
+# TODO inline this to avoid rerendering
 do ->
 	password = get \password or Math.random!.toString!.substr -8
 	document.getElementById \delpassword .value = password
@@ -132,9 +145,9 @@ document.head.appendChild do
 # the first time the page loads (or if window hasn't been scrolled
 if window.location.hash and not sget document.URL 
 	window.location.hash = window.location.hash
-	window.addEventListener 'scroll', function registerPage
+	window.addEventListener \scroll function registerPage
 		sset (document.URL): true
-		window.removeEventListener 'scroll', registerPage
+		window.removeEventListener \scroll registerPage
 	
 timeEnd "render"
 

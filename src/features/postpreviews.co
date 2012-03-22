@@ -1,4 +1,7 @@
 # post hover previews
+# TODO fix previews to link location instead of floating with mouse
+# which would enable nicer styling on the link itself to really
+# look like a preview (box-shadows everywhere)
 
 position = (preview, e) ->
 	height = preview.offsetHeight

@@ -8,6 +8,7 @@
 	#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
 </header>
 <div id="threads">#{render_all data.threads, \article}</div>
+#{if board.isThread then "<a href=\"#{board.url}\">[Return]</a>" else ''}
 <nav id="pages"></nav>
 #{
 	if board.locked

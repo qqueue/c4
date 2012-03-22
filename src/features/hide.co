@@ -1,4 +1,6 @@
 # hide posts
+# TODO refactor stub functionality out of CSS
+# can then add things like 'hide similar' 'hide replies' etc
 features.hide =
 	on: ->
 		hide = ->

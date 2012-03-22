@@ -14,8 +14,12 @@ parser.date = do ->
 			parseInt( match.5, 10 )
 
 # in the context of given document
+# TODO need to split this up into board and thread parsers
+# while still sharing some parts, since a lot of the logic
+# is working around stupid board pages
 parser.yotsuba = (document) ->
 	# TODO this is a hack to avoid reparsing 
+	# move this to updater, or to onready
 	# if last-modified on the ajax call is less than this
 	parser.last_parse = Date.now!
 

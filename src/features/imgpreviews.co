@@ -1,3 +1,5 @@
+# TODO add check to constrain image to the quandrant around the mouse
+# that has the greatest area, so a catalog-like layout is possible
 constrain = (el, e) ->
 	return unless el and e
 	height = el.naturalHeight
