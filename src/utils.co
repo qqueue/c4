@@ -3,6 +3,10 @@
 # everywhere else
 # TODO namespace these to avoid embarrasing collisions
 
+# I'll take the tiny performance hit, except in the parser
+$ = -> document.getElementById it
+$$ = -> document.querySelectorAll it
+
 # had to resort to lame hack
 # I would monkey-patch Element.prototype,
 # but scriptish/Greasemonkey don't expose the real

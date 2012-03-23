@@ -24,10 +24,11 @@ task \build 'build userscript' ->
 				bare \src/intro.co
 				bare \src/utils.co
 				bare klass for klass of ls \src/classes
-				compile \src/titler.co
 				compile \src/enhancer.co
 				compile \src/parser.co
 				compile \src/updater.co 
+				compile \src/titler.co
+				compile \src/poster.co
 				coco.compile do
 					read \src/onready.co 
 						.replace /%hakase\.css%/ css 

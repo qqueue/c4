@@ -200,3 +200,6 @@ do ->
 		! := on
 		document.getElementById \log .hidden = on
 		@textContent = if on then 'Show Log' else 'Hide Log'
+
+# run other onready handlers
+onready.execute!

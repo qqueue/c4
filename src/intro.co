@@ -24,6 +24,13 @@ parser = {} # holds parsing functions
 features = {}
 board = {}
 updater = {}
+titler = {}
+
+# because we want to be able to stop all on DOMContentLoaded
+# handlers with return, we implement a custom callback queue
+onready = -> onready.handlers.push it
+onready.handlers = []
+onready.execute = !-> fn! for fn of onready.handlers
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access
