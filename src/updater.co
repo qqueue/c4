@@ -85,21 +85,23 @@ updater.update = ->
 resetNew = (posts) ->
 	posts.forEach (post) ->
 		post = document.getElementById post.id
+		removeNew = ->
+			post.classList.remove \new
+			titler.number--
+
 		y = post.offsetTop
 		if ( window.innerHeight + window.scrollY ) > y
 			if document.mozVisibilityState is \hidden or document.webkitVisibilityState is \hidden
 				# fade them once the window is focused again
 				listen window .on \focus function fadeNew
-					setTimeout removeNewClass, 1000
-					listen window .off fadeNew
+					setTimeout removeNew, 1000 # immediately seems to break fade animation
+					listen window .off \focus fadeNew
 			else # fade immediately
-				post.classList.remove \new
-				titler.number--
+				removeNew!
 		else # wait till post is scrolled to
 			listen window .on \scroll function reset
 				if ( window.innerHeight + window.scrollY ) > y
-					post.classList.remove \new
-					titler.number--
+					removeNew!
 					listen window .off \scroll reset
 
 
