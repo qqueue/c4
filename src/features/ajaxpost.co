@@ -3,6 +3,9 @@
 # since it also involves the message handler in onready,
 # which is pretty much immoble
 
+postStatus = ->
+	document.getElementById \post-status .textContent = it
+
 features.ajaxpost =
 	on: ->
 		document.body.appendChild create \iframe ->
@@ -47,16 +50,33 @@ features.ajaxpost =
 		listen window .on \message ({data}) ->
 			html = create \div -> @innerHTML = data # reparse innerHTML
 			console.log html
-			# textContent checking
-			if html.textContent is 'Post successful!'
-				# TODO nicer, visible status
-				console.log 'post successful!'
+
+			captcha = document.getElementById \recaptcha_response_field
+			file = document.getElementById \file
+			comment = document.getElementById \comment
+
+			if /Post successful!|uploaded!/.test html.textContent
+				postStatus 'Post successful!'
 				# update and show new post, giving some time for 4chan to process it
 				setTimeout updater.update, 1000
-				document.getElementById \postform .reset!
-			# TODO check for other errors
+			
+				captcha.value = ''
+				# TODO figure out better way to reset captcha field
+				document.getElementById \recaptcha_reload_btn .click!
 
+				comment.value = ''
+
+				# through the value of a file input is always '', you can still reset
+				# the field by re-setting it to ''
+				file.value = ''
+
+
+			# TODO check for other errors
+			else if /mistyped the verification/.test html.textContent
+				postStatus 'You mistyped the verification!' 
+				document.getElementById \recaptcha_reload_btn .click!
+				captcha.value = ''
+				captcha.focus!
 
 	off: ->
-
 
