@@ -78,5 +78,10 @@ features.ajaxpost =
 				captcha.value = ''
 				captcha.focus!
 
+		# not really the best place for this, but oh well
+		listen document.getElementById \name .on \input ->
+			set name: @value
+		document.getElementById \name .value = get \name or ''
+
 	off: ->
 
