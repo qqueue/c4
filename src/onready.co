@@ -1,5 +1,4 @@
 <-! document.addEventListener \DOMContentLoaded
-# TODO handle archive redirection here
 
 # sys.4chan.org is where the post happens
 # so to fake a non-reloading ajax
@@ -15,11 +14,36 @@ if window.location.hostname is \sys.4chan.org
 
 	return # stop processing the rest of the script
 
+board.name = window.location.pathname.split \/ .1
+
+# FIXME 
+# this should go somewhere better
+board.archive = switch board.name
+	case <[a jp m tg u tv v vg]> # foolz
+		"http://archive.foolz.us/#that/thread"
+	case \lit
+		"http://fuuka.warosu.org/#that/thread"
+	case <[diy g sci]>
+		"http://archive.installgentoo.net/#that/thread"
+	case <[3 adv an ck co fa fit int k mu n o p po pol r9k soc sp toy trv vp x]>
+		"http://archive.no-ip.org/#that/thread"
+
+# used in enhancer
+board.archivelink = if board.archive
+	"""$1<a href="#{board.archive}/$2" class="archivelink">&gt;&gt;$2</a>"""
+else \$& # don't replace
+
+# archive redirection
+if /404/.test document.title and board.archive
+	console.log window.location.pathname
+	window.location = "#{board.archive}/#{/\d+/.exec window.location.pathname .0}"
+	return
+
+# get other useful information
 with board
 	logoEl = document.getElementsByClassName \logo .0
 	centerEls = document.getElementsByTagName \center
 
-	@name = document.title.match /\/(\w+)\// .1 # easiest way to get it 
 	@title = logoEl.children.2.children.0.children.0.textContent
 	@subtitle = logoEl.children.4?innerHTML
 
@@ -47,19 +71,6 @@ with board
 	@isBoard = !@isThread
 	@locked = document.forms.length is 1 # delform, without postform
 
-# FIXME 
-# this should go somewhere better
-archivelink = (url) -> """$1<a href="#url/$2" class="archivelink">&gt;&gt;$2</a>"""
-board.archive = switch board.name
-	case \a \jp \m \tg \u \tv \v \vg # foolz
-		archivelink "http://archive.foolz.us/#that/thread"
-	case \lit
-		archivelink "http://fuuka.warosu.org/#that/thread"
-	case \diy \g \sci
-		archivelink "http://archive.installgentoo.net/#that/thread"
-	case \3 \adv \an \ck \co \fa \fit \int \k \mu \n \o \p \po \pol \r9k \soc \sp \toy \trv \vp \x
-		archivelink "http://archive.no-ip.org/#that/thread"
-	default "$&" # don't replace
 
 # disable 4chan styles
 remove el for el of document.querySelectorAll 'link[rel*="stylesheet"], style'

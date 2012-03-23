@@ -45,4 +45,4 @@ parser.enhance = ->
 		# uses ultra clever atomic group mimickry with lookahead
 		# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
 		# not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
-		.replace /(^|[^;])&gt;&gt;(?=(\d+))\2(?!<\/a>)/g board.archive 
+		.replace /(^|[^;])&gt;&gt;(?=(\d+))\2(?!<\/a>)/g board.archivelink

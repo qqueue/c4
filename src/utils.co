@@ -74,7 +74,7 @@ listen = (element) -> new # chainable wrapper for addEventListener
 
 closest = (selector, el) ->
 	return false unless el
-	until el!?, el.=parentElement
+	while el, el.=parentElement
 		return el if el[matchesSelector] selector
 remove = -> it.parentElement.removeChild it if it and it.parentElement
 
@@ -83,6 +83,7 @@ do ->
 	pad = (number) ->
 		str = number.toString()
 		return if str.length < 2 then "0"+str else str; # pad to 2 digits
+	# TODO add day of week
 	Date::prettyPrint = ->
 		return @getFullYear()+"-"+pad(@getMonth()+1)+"-"+pad(@getDate())+" "+pad(@getHours())+":"+pad(@getMinutes())
 	Date::prettyRelative = ->
