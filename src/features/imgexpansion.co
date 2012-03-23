@@ -3,21 +3,82 @@
 toggleExpand = (e) ->
 	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
 		if @classList.contains 'expanded' # toggle off
-			remove @querySelector \img.full
-			@querySelector \img.thumb .hidden = false
-			@classList.remove \expanded
-			if (top = @getBoundingClientRect!.top) < 0 # top of thumb is above scroll
-				window.scrollBy 0, top # scroll so it is visible
+			collapse this
 		else
-			@querySelector 'img.thumb' .hidden = true
-			@insertAdjacentHTML \beforeend """<img src="#{@href}" class="full">"""
-			@classList.add \expanded
-			remove document.getElementById \imgpreview
+			expand this
 		return false
+
+expand = ->
+	it.querySelector \img.thumb .hidden = true
+	if it.querySelector \img.full
+		that.hidden = false
+	else
+		it.insertAdjacentHTML \beforeend """<img src="#{it.href}" class="full">"""
+	it.classList.add \expanded
+	remove document.getElementById \imgpreview
+
+collapse = ->
+	it.querySelector \img.full ?.hidden = true
+	it.querySelector \img.thumb .hidden = false
+	it.classList.remove \expanded
+	if (top = it.getBoundingClientRect!.top) < 0 # top of thumb is above scroll
+		window.scrollBy 0, top # scroll so it is visible
+
+preloading = false
+
+preloadAll = -> 
+	# TODO delay between loads to avoid massive server hit and possible ban
+	for img of document.querySelectorAll \a.file
+		unless img.querySelector \img.full
+			img.insertAdjacentHTML \beforeend """<img src="#{img.href}" class="full" hidden>"""
+
+expanding = false
+expandAll = -> expand img for img of document.querySelectorAll \a.file
+
+
+collapseAll = -> 
+	collapse img for img of document.querySelectorAll \a.file
+
+changeDisplay = ->
+	set \img-display @value
+	document.getElementById \img-style .textContent = switch @value
+		case \full then ""
+		case \fit then "img.full { max-width: 100%; }"
+
 features.imgexpansion =
 	on: ->
+		document.head.appendChild create \style ->
+			@id = \img-style
+			@textContent = switch get \img-display
+				case \full then ""
+				case \fit then "img.full { max-width: 100%; }"
+				default then "img.full { max-width: 100%; }"
+
 		listen document.getElementById \threads
 			.on \click \a.file toggleExpand
+		listen document.getElementById \preload-all .on \click ->
+			! := preloading
+			if preloading
+				preloadAll!
+				@textContent = "Stop Preloading"
+			else
+				@textContent = "Preload all images"
+		listen document.getElementById \collapse-all .on \click collapseAll
+		listen document.getElementById \expand-all .on \click ->
+			! := expanding
+			if expanding
+				expandAll!
+				preloading = false
+				@textContent = "Stop expanding images"
+			else
+				@textContent = "Expand all images"
+		listen document.getElementById \img-display .on \change changeDisplay
+
+		updater.after_update ->
+			preloadAll! if preloading
+			expandAll! if expanding
+
 	off: ->
 		listen document.getElementById \threads
 			.off \click toggleExpand
+		# TODO off stuff

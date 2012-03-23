@@ -67,8 +67,19 @@
 </form>
 
 <div id="controls">
-	<div id="updater"></div>
-	<div id="post-status"></div>
+	<span id="updater"></span>
+	<span id="post-status"></span>
+	<div id="imgexpansion">
+		<button type="button" id="preload-all" />Preload all images</button>
+		<button type="button" id="expand-all" />Expand all images</button>
+		<button type="button" id="collapse-all" />Collapse all images</button>
+		<label>Expanded image display:
+			<select id="img-display">
+				<option value="fit">Fit width</option>
+				<option value="full">Full size</option>
+			</select>
+		</label>
+	</div>
 </div>
 
 <footer>

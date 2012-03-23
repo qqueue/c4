@@ -11,7 +11,7 @@ class Image
 				<a class="saucelink" href="http://iqdb.org/?url=#{@url}" target="_blank">iqdb</a>
 				<a class="saucelink" href="http://google.com/searchbyimage?image_url=#{@url}" target="_blank">google</a>
 			</figcaption>
-			<a class="file" target="_blank" href="#{@url}">
+			<a class="file" target="_blank" href="#{@url}" style="max-width: #{@width}">
 				<img class="thumb" src="#{@thumb.url}" width="#{@thumb.width}" height="#{@thumb.height}">
 			</a>
 		</figure>

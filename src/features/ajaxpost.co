@@ -58,7 +58,7 @@ features.ajaxpost =
 			if /Post successful!|uploaded!/.test html.textContent
 				postStatus 'Post successful!'
 				# update and show new post, giving some time for 4chan to process it
-				setTimeout updater.update, 1000
+				setTimeout updater.update, 3000
 			
 				captcha.value = ''
 				# TODO figure out better way to reset captcha field
