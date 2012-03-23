@@ -6,7 +6,10 @@ constrain = (el, e) ->
 	width = el.naturalWidth
 	docheight = window.innerHeight - 20
 	availableheight = docheight - e.clientY
-	docwidth = window.innerWidth - 20
+	# using clientWidth to account for scrollbars
+	# can't use it for height because it would be the entire
+	# document height
+	docwidth = document.documentElement.clientWidth - 20
 	availablewidth = docwidth - e.clientX
 	
 	ratio = Math.min 1, docheight/height, availablewidth/width
