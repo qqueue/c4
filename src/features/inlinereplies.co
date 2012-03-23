@@ -39,7 +39,7 @@ removeInlined = (inlined) ->
 	for post of inlined.querySelectorAll \.inline
 		# to see if we should restore their original post if this nested post is
 		# the only inlined version of it
-		id = post.getUserData \postid
+		id = post.getAttribute \data-post
 		if document.querySelectorAll ".inline.post#id" .length is 1
 			restorePost document.getElementById "#id-inlined-stub"
 
@@ -66,7 +66,7 @@ toggle = (e) ->
 
 		else
 			inlined = post.element \article "inline hovered post#{post.id}" inlined_id
-			inlined.setUserData \postid post.id, void
+			inlined.setAttribute \data-post post.id
 
 			for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
 				link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
@@ -90,8 +90,8 @@ toggle = (e) ->
 
 			# hide real post and replace with stub,
 			# unless it is we're inside of the original post (cyclic quotelinks)
-			# or the post is already stubbed
-			unless isParentOf this, post or document.getElementById stub_id
+			# or the post is already stubbed, or it's OP (which looks funny)
+			unless post.classList.contains \op or isParentOf this, post or document.getElementById stub_id
 				post.hidden = true
 				insertBefore post, kup \div {id: stub_id, className: "stub post#{post.id} hovered"} ->
 					@span "post #{post.id} inlined in #hostid "
