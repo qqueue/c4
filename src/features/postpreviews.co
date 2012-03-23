@@ -21,7 +21,7 @@ make = (e) ->
 
 	# don't show a preview if the real post is right next to us and is on screen
 	realpost = document.getElementById @hash.substring 1
-	if host.previousSibling is realpost or host.nextSibling is realpost
+	if realpost and ( host.previousSibling is realpost or host.nextSibling is realpost )
 		rect = realpost.getBoundingClientRect!
 		return unless rect.left < 0 or rect.right < 0 or rect.top < 0 or rect.bottom < 0
 

@@ -20,6 +20,7 @@ isParentOf = (el, parent) ->
 	false
 
 restorePost = (stub) ->
+	return unless stub
 	post = stub.nextSibling
 	post.hidden = false
 	remove stub
