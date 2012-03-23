@@ -171,7 +171,7 @@ if board.isThread
 			title = truncate that
 		else
 			title = ''
-			title += "#that - " if @poster is not \Anonymous
+			title += "#{@poster} - " if @poster is not \Anonymous
 			if (op = document.getElementById(@id).querySelector('.comment').textContent).length > 0
 				title += truncate op
 			else if @image
