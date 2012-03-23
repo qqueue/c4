@@ -119,10 +119,11 @@ kup = do ->
 				@el <<< attributes
 			else
 				content = attributes
-			if typeof content is \function
-				content.call this
-			else if typeof content is \string
-				@el.textContent = content
+			if content?
+				if typeof content is \function
+					content.call this
+				else 
+					@el.textContent = content
 
 		
 		tag: (tag, attributes, content) -> new ElementProxy this, tag, attributes, content
