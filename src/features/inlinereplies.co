@@ -1,40 +1,108 @@
-# these two functions keep the mouse in the same
-# relative position on the document when content
-# above the mouse is removed or added
-removeAndScroll = (removed, relativeTo) ->
-	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	remove removed
-	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	unless window.scrollY is window.scrollMaxY
-		window.scrollBy newx-oldx, newy-oldy
-
-insertAndScroll = (inserted, relativeTo) ->
-	[oldx,oldy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	relativeTo.parentElement.insertBefore inserted, relativeTo
-	[newx,newy] = [relativeTo.offsetLeft, relativeTo.offsetTop]
-	window.scrollBy newx-oldx, newy-oldy
-
 # inline replies
+# with lots of delicious messy logic to ensure
+# mouse position is maintained
+# and post stubs are generated and correctly removed
+
+# scroll! returns to the scroll position when
+# markScroll! was last called
+{markScroll, scroll} = do ->
+	el = null
+	last = {}
+	markScroll: -> 
+		el := it
+		last{offsetLeft, offsetTop} = el
+	scroll: -> window.scrollBy el.offsetLeft - last.offsetLeft, el.offsetTop - last.offsetTop
+
+# if any of el's parent elements are parent
+isParentOf = (el, parent) ->
+	while el.=parentElement
+		return true if el is parent
+	false
+
+restorePost = (stub) ->
+	post = stub.nextSibling
+	post.hidden = false
+	remove stub
+
+	# removed inlined versions of the post
+	# have to escape numeric class name ;_;
+	for p of document.querySelectorAll ".inline.post#{post.id}"
+		removeInlined p
+	# remove inlined class from referencing links
+	for link of document.querySelectorAll ".inlinedlink[href$=\"#{post.id}\"]"
+		link.classList.remove \inlinedlink
+
+
+removeInlined = (inlined) ->
+	# check nested inlined posts 
+	for post of inlined.querySelectorAll \.inline
+		# to see if we should restore their original post if this nested post is
+		# the only inlined version of it
+		id = post.getUserData \postid
+		if document.querySelectorAll ".inline.post#id" .length is 1
+			restorePost document.getElementById "#id-inlined-stub"
+
+	remove inlined
+
 toggle = (e) ->
 	if post = Post[id = @hash.substring 1]
 		host = closest \.post, this .id
 		hostid = host.split \- .pop! # grab last (if nested inline post)
 		inlined_id = "#host-#id" # id is unique to hosting post and inlined post
+		stub_id = "#{post.id}-inlined-stub"
 		if inlined = document.getElementById inlined_id # toggle off
-			removeAndScroll inlined, this
+
+			markScroll this
 			@classList.remove \inlinedlink
+			
+			# if this is the only reference, restore post
+			if document.querySelectorAll ".inline.post#{post.id}" .length is 1
+				restorePost document.getElementById stub_id
+
+			removeInlined inlined
+
+			scroll!
+
 		else
-			inlined = post.element \article 'inline hovered' inlined_id
+			inlined = post.element \article "inline hovered post#{post.id}" inlined_id
+			inlined.setUserData \postid post.id, void
+
 			for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
 				link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
+
 			wrapper = this # walk outside of inline elements like spoilers and greentext
 			wrapper.=parentElement while wrapper.parentElement[matchesSelector] 'a,span,font'
+
+			markScroll this
+
 			if @classList.contains \backlink
-				@parentElement.insertBefore inlined, wrapper.nextSibling
+				insertAfter wrapper, inlined
 			else
-				insertAndScroll inlined, wrapper
+				insertBefore wrapper, inlined
 			@classList.add \inlinedlink
+
 			remove document.getElementById \postpreview
+
+			post = document.getElementById post.id
+			
+			post.classList.add \inlined
+
+			# hide real post and replace with stub,
+			# unless it is we're inside of the original post (cyclic quotelinks)
+			# or the post is already stubbed
+			unless isParentOf this, post or document.getElementById stub_id
+				post.hidden = true
+				insertBefore post, kup \div {id: stub_id, className: "stub post#{post.id} hovered"} ->
+					@span "post #{post.id} inlined in #hostid "
+					@a "show" ->
+						@href = 'javascript:void 0'
+						@on \click -> 
+							markScroll this.parentElement.previousSibling
+							restorePost this.parentElement
+							scroll!
+
+			scroll!
+						
 		return false
 
 bypass = -> # bypass inline replies on dblclick

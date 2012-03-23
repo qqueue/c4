@@ -17,7 +17,13 @@ position = (preview, e) ->
 make = (e) ->
 	remove document.getElementById \postpreview
 	return if @classList.contains \inlinedlink # don't need to preview if it's right there.
-	hostid = closest \.post this .id.split \- .pop!
+	host = closest \.post this
+
+	# don't show a preview if the real post is right next to us
+	realpost = document.getElementById @hash.substring 1
+	return if host.previousSibling is realpost or host.nextSibling is realpost
+
+	hostid = host.id.split \- .pop!
 	if post = Post[id = @hash.substring 1]
 		preview = post.element \article, , \postpreview
 		for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
@@ -37,13 +43,9 @@ destroy = (e) ->
 		.off \mousemove move
 
 highlight = -> # highlight hovered reply
-	if @classList.contains \inlinedlink
-		document.getElementById do
-			"#{closest \.post this .id}-#{@hash.substring 1}"
-		?.classList.toggle \hovered
-	document.getElementById do
-		@hash.substring 1 
-	?.classList.toggle \hovered
+	if @hash
+		for post of document.getElementsByClassName	"post#{@hash.substring 1}"
+			post.classList.toggle \hovered
 
 features.postpreviews =
 	on: ->

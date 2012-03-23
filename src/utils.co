@@ -102,32 +102,54 @@ do ->
 kup = do ->
 	class ElementProxy
 		(parent, tag, attributes, content) ->
-			@dom = document.createElement tag
-			parent.dom.appendChild @dom if parent
-			unless typeof attributes is \object
+			# lots of fancy optional argument logic, thanks javascript
+			# TODO document this shit
+			@el = if typeof tag is \string
+				document.createElement tag
+			else # no tag specified, so shift arguments backwards
+				attributes = tag
 				content = attributes
-				attributes = {}
-			@dom <<< attributes
-			if content?
-				if typeof content is \function
-					content.call this
-				else
-					@dom.textContent = content
+				document.createDocumentFragment!
+			parent.el.appendChild @el if parent
+			# handle either extended attributes,
+			# or a string of text
+			if typeof attributes is \string
+				@el.textContent = attributes
+			else if typeof attributes is \object
+				@el <<< attributes
+			else
+				content = attributes
+			if typeof content is \function
+				content.call this
+			else if typeof content is \string
+				@el.textContent = content
+
+		
 		tag: (tag, attributes, content) -> new ElementProxy this, tag, attributes, content
 
+		# delegated to listen()
+		on: (event, selector, handler) -> listen @el .on event, selector, handler
+		off: (event, selector, handler) -> listen @el .off event, selector, handler
+
 		# proxy common attributes, non-exhaustive
-		for attr of <[id classList src href style width height]>
-			let then Object.defineProperty ElementProxy.prototype, attr,
-					get: -> @dom[attr]
-					set: -> @dom[attr] = it
+		<[id classList src href style width height textContent]>.forEach (attr) ->
+			Object.defineProperty ElementProxy.prototype, attr,
+				get: -> @el[attr]
+				set: -> @el[attr] = it
 
 		# helpers for each kind of element
 		# non-exhaustive, until I need them
-		for tag of <[body div section header footer article hgroup h1 h2 a ol ul li span b i em strong]>
-			let then ElementProxy::[tag] = (attributes, content) ->
-					new ElementProxy this, tag, attributes, content
+		<[body div section header footer article hgroup h1 h2 a ol ul li span b i em strong]>.forEach (tag) ->
+			ElementProxy::[tag] = (attributes, content) ->
+				new ElementProxy this, tag, attributes, content
 	
 	(tag, attributes, content) ->
-		el = new ElementProxy void, tag, attributes, content
-		return el.dom
+		new ElementProxy void, tag, attributes, content .el
+
+# note that the syntax of reference, then new element is backwards
+# from Node.insertBefore. I think my syntax is more readable
+insertBefore = (ref, el) -> ref.parentNode.insertBefore el, ref
+insertAfter = (ref, el) -> insertBefore ref.nextSibling, el
+
+# sha1 hasher, used for e{x|-}hentai sauce
 

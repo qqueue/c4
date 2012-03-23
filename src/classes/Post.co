@@ -41,7 +41,7 @@ class Post
 		return html
 	
 	className: -> # generates the correct classes to use
-		c = 'post ' 
+		c = "post post#{@id} " 
 		c += 'imagepost ' if @image
 		c += 'sage ' if @sage
 		c += "tripcoded #that " if @tripcode
