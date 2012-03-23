@@ -168,23 +168,27 @@ if board.isThread
 	with data.thread.op
 		truncate = -> if it.length > 20 then "#{it.substring 0 20}..." else it
 		if @title
-			document.title = truncate that
+			title = truncate that
 		else
-			document.title = ''
-			document.title += "#that - " if @poster is not \Anonymous
+			title = ''
+			title += "#that - " if @poster is not \Anonymous
 			if (op = document.getElementById(@id).querySelector('.comment').textContent).length > 0
-				document.title += truncate op
+				title += truncate op
 			else if @image
-				document.title += truncate that.filename
+				title += truncate that.filename
 			else
-				document.title = @time.prettyPrint!
-		document.title += " - /#{board.name}/" 
+				title = @time.prettyPrint!
+		title += " - /#{board.name}/" 
+		titler.text = title
 
 
 # autoupdate threads
 if board.isThread
 	updater.countdown!
-
+	listen document.getElementById \update-now .on \click ->
+		updater.update!
+else
+	document.getElementById \updater .hidden = true
 # enable all features
 # TODO load settings and selectively load features
 for key, feature in features

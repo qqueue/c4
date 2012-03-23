@@ -6,9 +6,12 @@ class Thread
 		#convenience array including op
 		@posts = [@op].concat @replies
 
-		# build reply hash
+		@imageReplies = []
+
+		# build reply hash and image replies array
 		@reply = {}
 		for reply of @replies
+			@imageReplies.push reply if reply.image
 			@reply[reply.id] = reply
 
 		if Thread[@id] # if this thread has been parsed before
@@ -35,7 +38,8 @@ class Thread
 			#{
 				if @omitted
 					"<div class=\"omitted-replies\">#{@omitted.replies} replies #{if @omitted.imageReplies then "and #{@omitted.imageReplies} image replies" else ''} omitted. Latest #{@replies.length} shown.</div>"
-				else ''
+				else
+					"""<div class="thread-info">#{@replies.length} replies and #{@imageReplies.length} image replies.</div>"""
 			}
 			<div class="replies">#{render_all @replies, \article \reply}</div>
 		</#container>

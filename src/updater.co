@@ -4,6 +4,8 @@
 # or because it's not invented here, rewriting it
 updater.update = ->
 	clearTimeout timeout # clear any other running countdowns
+	updater.status = "Updating thread..."
+	updater.button.disabled = true
 	with new XMLHttpRequest
 		@open \get document.URL 
 		# shit is weird, if the request is 200 OK, it'll time out every time
@@ -14,7 +16,6 @@ updater.update = ->
 		# FIXME the timeout is here because using responseType document
 		# seems to never complete on some requests in firefox, even though firebug reports
 		# that the request went 200 OK. not sure why, report bug maybe?
-		@timeout = 10000ms
 		listen this 
 			.on \load ->
 				# have to check the header instead of the status as 304,
@@ -26,7 +27,7 @@ updater.update = ->
 				# for a real 304 response).
 				last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
 				if last_modified > parser.last_parse
-					console.log "update detected, parsing"
+					updater.status = "update detected, parsing"
 
 					# html5... ;_;
 					# can't use createHTMLDocument because all relative links
@@ -51,20 +52,57 @@ updater.update = ->
 								\beforeend
 								Post[backlinks.parentNode.id.split \- .pop!].backlinks true
 
+						# update title
+						titler.number += thread.new.length
+
+						# add scroll handler to rest number and new posts
+						# when the window scrolls past the end of them
+						resetNew thread.new
+
+
 						# call after_update hooks
 						fn thread.new for fn of callbacks
 
-						updater.status = "Updated successfully!"
+						updater.status = "Updated #{thread.new.length} new posts!"
+				else
+					updater.status = "No new posts..."
 				updater.countdown!
 			.on \timeout ->
-				console.log "request timed out..."
+				updater.status = "request timed out..."
 				updater.countdown!
 			.on \error ->
-				alert "couldn't refresh page!"
+				updater.status = if @status is 404
+					"thread 404'd"
+				else
+					"Couldn't fetch thread page!"
 				# TODO redirect to archive
-				console.log this
+			.on \loadend ->
+				updater.button.disabled = false
 		@send!
-	
+
+# some spaghetti to remove the new class from posts
+# once they are visible to the user
+resetNew = (posts) ->
+	posts.forEach (post) ->
+		post = document.getElementById post.id
+		y = post.offsetTop
+		if ( window.innerHeight + window.scrollY ) > y
+			if document.mozVisibilityState is \hidden or document.webkitVisibilityState is \hidden
+				# fade them once the window is focused again
+				listen window .on \focus function fadeNew
+					setTimeout removeNewClass, 1000
+					listen window .off fadeNew
+			else # fade immediately
+				post.classList.remove \new
+				titler.number--
+		else # wait till post is scrolled to
+			listen window .on \scroll function reset
+				if ( window.innerHeight + window.scrollY ) > y
+					post.classList.remove \new
+					titler.number--
+					listen window .off \scroll reset
+
+
 callbacks = []
 
 updater.after_update = -> callbacks.push it
@@ -72,20 +110,23 @@ updater.after_update = -> callbacks.push it
 timeout = null
 
 Object.defineProperty updater, \status,
-	get: -> document.getElementById \updater .textContent
-	set: -> document.getElementById \updater .textContent = it
+	get: -> document.getElementById \update-status .textContent
+	set: -> document.getElementById \update-status .textContent = it
+Object.defineProperty updater, \count,
+	get: -> document.getElementById \countdown .textContent
+	set: -> document.getElementById \countdown .textContent = it
+Object.defineProperty updater, \button,
+	get: -> document.getElementById \update-now
 
 updater.countdown = ->
 	tminus = 30sec
 	timeout := setTimeout do
 		function tick
+			updater.count = "Updating in #tminus seconds..."
+			tminus--
+			timeout := setTimeout tick, 1000ms
 			if tminus is 0
-				updater.status = "Updating thread..."
 				updater.update!
-			else
-				updater.status = "Updating in #tminus seconds..."
-				tminus--
-				timeout := setTimeout tick, 1000ms
 		1000ms
 
 

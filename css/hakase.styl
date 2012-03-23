@@ -104,7 +104,7 @@ body > header
 	&:first-child
 		border-top-width 1px
 
-.omitted-replies
+.omitted-replies, .thread-info
 	clear left
 	text-align right
 
@@ -116,6 +116,12 @@ body > header
 	margin-left 1.5em
 	border-style solid
 	border-width 0 1px 1px 0
+	// motherfucking yellow fade
+	-moz-transition-property background-color
+	-moz-transition-duration 5s
+
+.reply.new
+	background-color #feffbf !important
 
 .sage > h1 > .poster:after 
 	content " (sage)"

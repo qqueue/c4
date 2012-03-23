@@ -24,6 +24,7 @@ task \build 'build userscript' ->
 				bare \src/intro.co
 				bare \src/utils.co
 				bare klass for klass of ls \src/classes
+				compile \src/titler.co
 				compile \src/enhancer.co
 				compile \src/parser.co
 				compile \src/updater.co 

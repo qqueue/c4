@@ -1,0 +1,18 @@
+number = null
+text = null
+
+setTitle = ->
+	document.title = 
+		if number then "(#number) #text" else text
+
+@titler =
+	number:~ -> number
+	number:~ (it) -> 
+		number := it
+		setTitle!
+	text:~ -> text
+	text:~ (it) -> 
+		text := it
+		setTitle!
+
+
