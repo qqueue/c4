@@ -2,7 +2,9 @@
 log = do ->
 	beginning = Date.now()
 	messages = "[t-0]: html5chan"
-	log = (message) -> messages += "\n[t+#{Date.now() - beginning}] #{message}"
+	log = (message) -> 
+		messages += "\n[t+#{Date.now() - beginning}] #{message}"
+		document.getElementById \log ?.value = messages
 	log.all = -> messages
 	return log
 
