@@ -19,7 +19,16 @@ fetch_link = ->
 			# fucking chrome and its problems with supporting html5
 			# @responseType = \json
 			listen this
-				.on \load -> link.title = JSON.parse @responseText .entry.title.\$t
+				.on \load -> 
+					data = JSON.parse @responseText
+					link.title = 
+						"
+						#{data.entry.title.\$t}
+						\n\n
+						#{data.entry.'yt$statistics'.viewCount} views.
+						\n\n
+						#{data.entry.'media$group'.'media$description'.\$t}
+						"
 				.on \error -> link.title = "Youtube [#{link.dataset.id}]"
 				.on \loadend -> listen link .off \mouseenter fetch_link
 			@send!
