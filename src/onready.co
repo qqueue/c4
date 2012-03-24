@@ -114,13 +114,6 @@ if board.isBoard
 		.querySelector "a[href=\"#{board.page or board.url}\"]" 
 		.id = \current
 
-# create or restore delete password 
-do ->
-	password = get \password or Math.random!.toString!.substr -8
-	document.getElementById \delpassword .value = password
-	document.getElementById \delpassword .title = password
-	document.getElementById \password ?.value = password
-
 # create recaptcha with script already included on page (using 4chan's public key)
 document.head.appendChild do
 	create \script ->
@@ -151,7 +144,6 @@ if window.location.hash and not sget document.URL
 timeEnd "render"
 
 # mess with title
-# TODO add number of posts
 if board.isThread
 	with data.thread.op
 		if @title
@@ -168,7 +160,6 @@ if board.isThread
 		title += " - /#{board.name}/" 
 		titler.text = title
 
-
 # autoupdate threads
 if board.isThread
 	updater.countdown!
@@ -181,9 +172,8 @@ else
 for key, feature in features
 	feature.on! unless key is \postpreview
 
-do ->
-	listen document.getElementById \dump-log .on \click ->
-		console.log log.messages
+listen document.getElementById \dump-log .on \click ->
+	console.log log.messages
 
 # run other onready handlers
 onready.execute!
