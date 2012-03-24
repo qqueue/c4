@@ -16,13 +16,18 @@ parser.enhance = ->
 			//
 				(?:https?:\/\/)? # optional protocol
 				(
-					youtu\.be\/([\w\-_]+)(\?[&=\w\-_;\#]*)? | # short links
+					youtu\.be\/ # short links
+						([\w\-_]+) # video id
+						(\?[&=\w\-_;\#]*)? # options
+					| 
 					(?:www\.)youtube\.com\/watch\?
 						([&=\w\-_;\?\#]*) # pre video id options (annoying, since this will have to give up matches)
 						v=([\w\-_]+) # video id
 						([&=\w\-_;\?\#]*) # post vieo id options
 				)
 			//g
+			# using background-image so browsers will correctly draw rounded corners
+			# and other stuff http://webdesignerwall.com/tutorials/css3-image-styles
 			'<a href="http://$1" class="youtube" data-id="$2$5" data-params="$3$4$6" target="_blank" style="display: inline-block; width: 120px; height: 90px; background-image: url(\'http://img.youtube.com/vi/$2$5/2.jpg\')"></a>'
 
 		# specialcase linkify urls without internal parenthesis surrounded by
@@ -38,11 +43,26 @@ parser.enhance = ->
 
 		# specialcase linkify urls without a protocol but with a common tld
 		.replace do
-			/(^|>|;|\s)([\w\.\-]+\.(?:com|net|org|eu|jp)(?![\w\.])[^<\s]*)/g
+			//
+			(^|>|;|\s) # to avoid linking parts of urls inside hrefs, must start with one of these
+			(
+				[\w\.\-]+\. # domain
+				(?:com|net|org|eu|jp) # non-exhaustive
+				(?![\w\.]) # not immediately followed by more words or periods ( like 'euuugh'
+				[^<\s]* # rest of the url until space or <br>
+			)
+			//g
 			'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
 
 		# attempt to redirect broken post links to the archive
 		# uses ultra clever atomic group mimickry with lookahead
 		# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
 		# not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
-		.replace /(^|[^;])&gt;&gt;(?=(\d+))\2(?!<\/a>)/g board.archivelink
+		.replace do
+			//
+			(^|[^;]) # avoid >>> (the first ';' of '&gt;&gt;&gt;')
+			&gt;&gt; # >>
+			(?=(\d+))\2 # \2 is the post number, which must be entirely matched
+			(?!<\/a>) # avoid already linked posts
+			//g
+			board.archivelink
