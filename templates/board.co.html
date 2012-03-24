@@ -19,30 +19,32 @@
 			<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 			#{if board.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
 			<input type="hidden" value="regist" name="mode">
-			<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
-			<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
-			<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
-			<div  id="comment-field"><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4" tabindex="10" ></textarea></div>
-			<div id="captcha-field">
-				<label>Verification: </label>
-				<div id="captcha"></div>
-			</div>
-			<div id="file-field">
-				<label for="file">Image: </label>
-				<div>
-					<input type="file" id="file" name="upfile" tabindex="10" />
-					<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler Image?</label>
+			<div id="fields">
+				<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
+				<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
+				<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
+				<div  id="comment-field"><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4" tabindex="10" ></textarea></div>
+				<div id="captcha-field">
+					<label>Verification: </label>
+					<div id="captcha"></div>
 				</div>
-			</div>
-			<div title="for file deletion" id="password-field">
-				<label for="password">Password: </label>
-				<input id="password" type="password" maxlength="8" name="pwd" tabindex="10" >
-			</div>
-			<div id="buttons-wrapper">
-				<label>Submit: </label>
-				<div id="buttons">
-					<button type="submit" tabindex="10" id="post" value="Submit">Post</button>
-					<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
+				<div id="file-field">
+					<label for="file">Image: </label>
+					<div>
+						<input type="file" id="file" name="upfile" tabindex="10" />
+						<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler Image?</label>
+					</div>
+				</div>
+				<div title="for file deletion" id="password-field">
+					<label for="password">Password: </label>
+					<input id="password" type="password" maxlength="8" name="pwd" tabindex="10" >
+				</div>
+				<div id="buttons-wrapper">
+					<label>Submit: </label>
+					<div id="buttons">
+						<button type="submit" tabindex="10" id="post" value="Submit">Post</button>
+						<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
+					</div>
 				</div>
 			</div>
 			<ul id="rules">
@@ -50,7 +52,7 @@
 				<li>Maximum file size allowed is 3072 KB. </li>
 				<li>Images greater than 250x250 pixels will be thumbnailed. </li>
 				<li>Read the <a href="http://www.4chan.org/rules##{board.name}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
-				<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">ã“ã®ã‚µã‚¤ãƒˆã«ã¤ã„ã¦</a> - <a href="http://www.nifty.com/globalgate/">ç¿»è¨³</a></li>
+				<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
 			</ul>
 		</form>
 		"""
