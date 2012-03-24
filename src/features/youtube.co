@@ -27,7 +27,7 @@ fetch_link = ->
 						\n\n
 						#{data.entry.'yt$statistics'.viewCount} views.
 						\n\n
-						#{data.entry.'media$group'.'media$description'.\$t}
+						#{truncate data.entry.'media$group'.'media$description'.\$t , 200}
 						"
 				.on \error -> link.title = "Youtube [#{link.dataset.id}]"
 				.on \loadend -> listen link .off \mouseenter fetch_link

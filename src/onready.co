@@ -166,7 +166,6 @@ timeEnd "render"
 # TODO add number of posts
 if board.isThread
 	with data.thread.op
-		truncate = -> if it.length > 20 then "#{it.substring 0 20}..." else it
 		if @title
 			title = truncate that
 		else

@@ -23,7 +23,7 @@ parser.enhance = ->
 						([&=\w\-_;\?\#]*) # post vieo id options
 				)
 			//g
-			'<a href="http://$1" class="youtube" data-id="$2$5" data-params="$3$4$6" target="_blank"><img width="120" height="90" src="http://img.youtube.com/vi/$2$5/2.jpg"></a>'
+			'<a href="http://$1" class="youtube" data-id="$2$5" data-params="$3$4$6" target="_blank" style="display: inline-block; width: 120px; height: 90px; background-image: url(\'http://img.youtube.com/vi/$2$5/2.jpg\')"></a>'
 
 		# specialcase linkify urls without internal parenthesis surrounded by
 		# parenthesis like (http://google.com)
@@ -33,7 +33,7 @@ parser.enhance = ->
 
 		# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 		.replace do
-			/([^"']|^)(https?:\/\/)([^<\s]+)/g
+			/([^"'(]|^)(https?:\/\/)([^<\s]+)/g
 			'$1<a class="external" rel="noreferrer" href="$2$3" title="$2$3" target="_blank">[$3]</a>'
 
 		# specialcase linkify urls without a protocol but with a common tld

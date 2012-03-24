@@ -159,3 +159,6 @@ insertAfter = (ref, el) -> insertBefore ref.nextSibling, el
 
 # sha1 hasher, used for e{x|-}hentai sauce
 
+truncate = (it, length = 20) -> 
+	if it.length > length then "#{it.substring 0 length}..." else it
+

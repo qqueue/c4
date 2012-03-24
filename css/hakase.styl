@@ -259,21 +259,22 @@ a.permalink .id, a.saucelink
 .youtube 
 	position relative
 	text-decoration none
-	&:hover:after
-		content "\u25B6"
-		display block
-		left 50px
-		bottom 30px
-		position absolute
-		font-size 32px
-		color #C6312B
-		text-shadow 0 0 10px white
-	img
-		border 3px solid 
-		border-color #C6312B 
-		border-radius 10px
-	&:hover img
-			border-color #FFA200
+	border 3px solid 
+	border-color #C6312B 
+	border-radius 10px
+	-moz-transition .5s
+
+	&:hover
+		border-color #FFA200
+		&:after
+			content "\u25B6"
+			display block
+			left 50px
+			bottom 30px
+			position absolute
+			font-size 32px
+			color #C6312B
+			text-shadow 0 0 10px white
 
 .backlinks 
 	clear both
