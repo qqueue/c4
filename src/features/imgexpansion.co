@@ -1,5 +1,3 @@
-# TODO add feature to menubar to select whether inlined images
-# are full size or not
 toggleExpand = (e) ->
 	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
 		if @classList.contains 'expanded' # toggle off
@@ -8,36 +6,30 @@ toggleExpand = (e) ->
 			expand this
 		return false
 
-expand = ->
-	it.querySelector \img.thumb .hidden = true
-	if it.querySelector \img.full
-		that.hidden = false
-	else
-		it.insertAdjacentHTML \beforeend """<img src="#{it.href}" class="full">"""
-	it.classList.add \expanded
+expand = (a) ->
+	# hiding a block-level anchor doesn't hide children in ff ;_;
+	a.firstElementChild.hidden = true
+	insertBefore a, kup \img src: a.href, className: \full, ->
+		@on \click -> collapse a
 	remove document.getElementById \imgpreview
 
-collapse = ->
-	it.querySelector \img.full ?.hidden = true
-	it.querySelector \img.thumb .hidden = false
-	it.classList.remove \expanded
-	if (top = it.getBoundingClientRect!.top) < 0 # top of thumb is above scroll
+collapse = (a) ->
+	a.firstElementChild.hidden = false
+	remove a.previousSibling
+	if (top = a.getBoundingClientRect!.top) < 0 # top of thumb is above scroll
 		window.scrollBy 0, top # scroll so it is visible
 
 preloading = false
 
 preloadAll = -> 
-	# TODO delay between loads to avoid massive server hit and possible ban
-	for img of document.querySelectorAll \a.file
-		unless img.querySelector \img.full
-			img.insertAdjacentHTML \beforeend """<img src="#{img.href}" class="full" hidden>"""
+	for a of document.querySelectorAll \a.file
+		kup \img src: a.href #creating an image forces browser to fetch
 
 expanding = false
 expandAll = -> expand img for img of document.querySelectorAll \a.file
 
-
 collapseAll = -> 
-	collapse img for img of document.querySelectorAll \a.file
+	collapse img for img of document.querySelectorAll \img.full
 
 changeDisplay = ->
 	set \img-display @value
@@ -62,16 +54,16 @@ features.imgexpansion =
 				preloadAll!
 				@textContent = "Stop Preloading"
 			else
-				@textContent = "Preload all images"
+				@textContent = "Preload all"
 		listen document.getElementById \collapse-all .on \click collapseAll
 		listen document.getElementById \expand-all .on \click ->
 			! := expanding
 			if expanding
 				expandAll!
 				preloading = false
-				@textContent = "Stop expanding images"
+				@textContent = "Stop expanding"
 			else
-				@textContent = "Expand all images"
+				@textContent = "Expand all"
 		listen document.getElementById \img-display .on \change changeDisplay
 
 		updater.after_update ->

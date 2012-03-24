@@ -194,11 +194,8 @@ for key, feature in features
 	feature.on! unless key is \postpreview
 
 do ->
-	on = true
-	listen document.getElementById \show-log .on \click ->
-		! := on
-		document.getElementById \log .hidden = on
-		@textContent = if on then 'Show Log' else 'Hide Log'
+	listen document.getElementById \dump-log .on \click ->
+		console.log log.messages
 
 # run other onready handlers
 onready.execute!

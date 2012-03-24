@@ -1,24 +1,20 @@
 class Image
 	({@thumb, @url, @width, @height, @size, @filename, @md5, @spoiler}) ->
 	
+	info: ->
+		"""
+		<div class="fileinfo">
+			<span class="dimensions">#{@width}x#{@height}</span>
+			<span class="size">#{@size}</span>
+			<span class="filename">#{@filename or ''}</span>
+			<a class="saucelink" href="http://iqdb.org/?url=#{@url}" target="_blank">iqdb</a>
+			<a class="saucelink" href="http://google.com/searchbyimage?image_url=#{@url}" target="_blank">google</a>
+		</div>
+		"""
+
 	render: ->
 		"""
-		<figure class="image">
-			<figcaption class="fileinfo">
-				<span class="dimensions">#{@width}x#{@height}</span>
-				<span class="size">#{@size}</span>
-				<span class="filename">#{@filename or ''}</span>
-				<a class="saucelink" href="http://iqdb.org/?url=#{@url}" target="_blank">iqdb</a>
-				<a class="saucelink" href="http://google.com/searchbyimage?image_url=#{@url}" target="_blank">google</a>
-			</figcaption>
-			<a class="file" target="_blank" href="#{@url}" style="max-width: #{@width >? @thumb.width}">
-				<img class="thumb" src="#{@thumb.url}" width="#{@thumb.width}" height="#{@thumb.height}">
-			</a>
-		</figure>
+		<a class="file" target="_blank" href="#{@url}">
+			<img class="thumb" src="#{@thumb.url}" width="#{@thumb.width}" height="#{@thumb.height}">
+		</a>
 		"""
-		# a.file has a max-width specified because block displayed elements
-		# that aren't floated have 100% width, which makes the area to the right
-		# of the image also clickable (annoying), yet the tricks to make the element
-		# shrink-to-fit (http://www.brunildo.org/test/shrink-to-fit.html) prevent
-		# the element from obeying the simple global max-width: 100% rule. 
-		# let me know if you figure out a better workaround ;_;

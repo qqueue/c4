@@ -69,34 +69,33 @@
 
 <div id="controls">
 	<div id="updater">
-		<button id="update-now">Update now</button>
 		<span id="update-status"></span>
 		<span id="countdown"></span>
+		<button id="update-now">Update now</button>
 	</div>
 	<span id="post-status"></span>
 	<div id="imgexpansion">
-		<button type="button" id="preload-all" />Preload all images</button>
-		<button type="button" id="expand-all" />Expand all images</button>
-		<button type="button" id="collapse-all" />Collapse all images</button>
-		<label>Expanded image display:
+		<label>Expanded images:
 			<select id="img-display">
 				<option value="fit">Fit width</option>
 				<option value="full">Full size</option>
 			</select>
+		<button type="button" id="preload-all" />Preload all</button>
+		<button type="button" id="expand-all" />Expand all</button>
+		<button type="button" id="collapse-all" />Collapse all</button>
+		
 		</label>
 	</div>
-	<div>
-		<button id="show-log">Show Log</button>
-	</div>
+	<button id="dump-log">Dump Log</button>
 </div>
 
-<textarea readonly hidden id="log"></textarea>
+
 
 <footer>
-	<nav class="boardlinks">#{board.nav}</nav>
 	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
 	<p>
 		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster.</small>
 	</p>
+	<nav class="boardlinks">#{board.nav}</nav>
 </footer>
 

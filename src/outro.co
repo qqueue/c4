@@ -1,4 +1,4 @@
 <-! document.addEventListener \DOMContentLoaded
 
 log "finished"
-console.log log.all()
+console?log? log.messages

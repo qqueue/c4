@@ -67,7 +67,7 @@ listen window .on \message ({data}) ->
 	if /Post successful!|uploaded!/.test html.textContent
 		postStatus 'Post successful!'
 		# update and show new post, giving some time for 4chan to process it
-		setTimeout updater.update, 3000
+		updater.countdown 3sec
 	
 		captcha.value = ''
 		# TODO figure out better way to reset captcha field

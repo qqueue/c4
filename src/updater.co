@@ -63,7 +63,7 @@ updater.update = ->
 						# call after_update hooks
 						fn thread.new for fn of callbacks
 
-						updater.status = "Updated #{thread.new.length} new posts!"
+						updater.status = "#{thread.new.length} new posts!"
 				else
 					updater.status = "No new posts..."
 				updater.countdown!
@@ -72,10 +72,10 @@ updater.update = ->
 				updater.countdown!
 			.on \error ->
 				updater.status = if @status is 404
+					titler.text += '(dead)'
 					"thread 404'd"
 				else
 					"Couldn't fetch thread page!"
-				# TODO redirect to archive
 			.on \loadend ->
 				updater.button.disabled = false
 		@send!
@@ -111,6 +111,8 @@ updater.after_update = -> callbacks.push it
 
 timeout = null
 
+# kind of unneccessary, but proxies the textContent field in a more 'natural'
+# way, instead of as a function call
 Object.defineProperty updater, \status,
 	get: -> document.getElementById \update-status .textContent
 	set: -> document.getElementById \update-status .textContent = it
@@ -120,8 +122,8 @@ Object.defineProperty updater, \count,
 Object.defineProperty updater, \button,
 	get: -> document.getElementById \update-now
 
-updater.countdown = ->
-	tminus = 30sec
+updater.countdown = (tminus = 30) ->
+	clearTimeout timeout
 	timeout := setTimeout do
 		function tick
 			updater.count = "Updating in #tminus seconds..."

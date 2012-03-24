@@ -108,6 +108,7 @@ body > header
 
 .post 
 	margin-top 3px
+	overflow-y auto
 
 .reply 
 	padding 2px
@@ -137,7 +138,7 @@ body > header
 	font-size 100%
 	font-weight normal
 
-.op > h1 
+.op > header > h1 
 	font-size 130%
 
 .post .title 
@@ -154,8 +155,6 @@ body > header
 .tripcode 
 	color #228854
 
-.image
-	margin 0
 .fileinfo
 	margin-left 20px
 .file 
@@ -164,8 +163,9 @@ body > header
 	margin 3px 20px
 	position relative
 
-.file.expanded 
-	float none
+img.full
+	// seems to fix weird left-margin in firefox
+	display block
 
 .capcode 
 	font-weight 800
@@ -366,6 +366,20 @@ a.permalink .id, a.saucelink
 	li 
 		width 30em
 
+#controls
+	fixed bottom left
+	background rgba( 200, 200, 200, .8 )
+	width 100%
+	padding .5em
+	font-size 9pt
+	button
+		font-size inherit
+
+#updater
+	float right
+	padding-right 1em
+
 body > footer 
 	text-align center
+	margin-bottom 5em
 
