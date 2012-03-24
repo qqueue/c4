@@ -7,8 +7,19 @@
 	</hgroup>
 	#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
 </header>
+#{if board.isThread 
+	"""
+	<a href="#{board.url}">[Return]</a>
+	<a href="#{'#bottom'}">[Bottom]</a>
+	"""
+else ''}
 <div id="threads">#{render_all data.threads, \article}</div>
-#{if board.isThread then "<a href=\"#{board.url}\">[Return]</a>" else ''}
+#{if board.isThread 
+	"""
+	<a href="#{board.url}">[Return]</a>
+	<a href="#">[Top]</a>
+	"""
+else ''}
 <nav id="pages"></nav>
 #{
 	if board.locked
@@ -89,9 +100,7 @@
 	<button id="dump-log">Dump Log</button>
 </div>
 
-
-
-<footer>
+<footer id="bottom">
 	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
 	<p>
 		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster.</small>
