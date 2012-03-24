@@ -17,7 +17,7 @@ parser.date = do ->
 # TODO need to split this up into board and thread parsers
 # while still sharing some parts, since a lot of the logic
 # is working around stupid board pages
-parser.yotsuba = (document, {preview} = {preview: board.isBoard, threadPath: board.threadPath}) ->
+parser.yotsuba = (document, {preview, threadPath} = {preview: board.isBoard, threadPath: board.threadPath}) ->
 	# TODO this is a hack to avoid reparsing 
 	# move this to updater, or to onready
 	# if last-modified on the ajax call is less than this

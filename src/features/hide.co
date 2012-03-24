@@ -9,11 +9,11 @@ features.hide =
 			document.getElementById it .classList.toggle \hidden
 
 		listen document.getElementById \threads
-			.on \click '.reply > h1 > button.hide' ->
+			.on \click \button.hide ->
 				hide @value
 				# persist with session storage
 				sset (@value): if sget @value then '' else 'hidden'
-			.on \click '.op > h1 > button.hide' ->
+			.on \click '.op button.hide' ->
 				thread = "thread-#{@value}"
 				hide thread
 				sset (thread): if sget thread then '' else 'hidden'
