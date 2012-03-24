@@ -1,11 +1,14 @@
-# TODO handle new post highlighting better
-# with CSS, and title changing
-# look into including that fancy icon number libary
-# or because it's not invented here, rewriting it
+
+
 updater.update = ->
 	clearTimeout timeout # clear any other running countdowns
 	updater.status = "Updating thread..."
 	updater.button.disabled = true
+	lock = #scroll bottom of page
+		(window.scrollMaxY - window.scrollY < 50) and
+		( document.mozVisibilityState is \visible or 
+		document.webkitVisibilityState is \visible )
+
 	with new XMLHttpRequest
 		@open \get document.URL 
 		# shit is weird, if the request is 200 OK, it'll time out every time
@@ -59,6 +62,12 @@ updater.update = ->
 						# when the window scrolls past the end of them
 						resetNew thread.new
 
+						if lock then setTimeout do
+							function smoothScroll
+								if window.scrollMaxY - window.scrollY
+									window.scrollBy 0, that/5 >? 1
+									setTimeout smoothScroll, 50ms
+							10ms
 
 						# call after_update hooks
 						fn thread.new for fn of callbacks
