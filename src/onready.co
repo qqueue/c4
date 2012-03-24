@@ -43,7 +43,7 @@ with board
 	centerEls = document.getElementsByTagName \center
 
 	@title = logoEl.children.2.children.0.children.0.textContent
-	@subtitle = logoEl.children.4?innerHTML
+	@subtitle = logoEl.children.4?innerHTML or ''
 
 	# detect based on the yellow theme
 	@nsfw = document.styleSheets.0.ownerNode.href is \http://static.4chan.org/css/yotsuba.9.css

@@ -65,7 +65,7 @@ updater.update = ->
 						if lock then setTimeout do
 							function smoothScroll
 								if window.scrollMaxY - window.scrollY
-									window.scrollBy 0, that/5 >? 1
+									window.scrollBy 0, that/4 >? 1
 									setTimeout smoothScroll, 50ms
 							10ms
 
