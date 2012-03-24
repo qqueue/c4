@@ -105,7 +105,7 @@ resetNew = (posts) ->
 				removeNew!
 		else # wait till post is scrolled to
 			listen window .on \scroll function reset
-				if ( window.innerHeight + window.scrollY ) > y
+				if ( window.innerHeight + window.scrollY ) > post.offsetTop
 					removeNew!
 					listen window .off \scroll reset
 

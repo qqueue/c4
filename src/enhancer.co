@@ -33,12 +33,12 @@ parser.enhance = ->
 
 		# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
 		.replace do
-			/([^"'(]|^)(https?:\/\/)([^<\s]+)/g
+			/([^"']|^)(https?:\/\/)([^<\s]+)/g
 			'$1<a class="external" rel="noreferrer" href="$2$3" title="$2$3" target="_blank">[$3]</a>'
 
 		# specialcase linkify urls without a protocol but with a common tld
 		.replace do
-			/(^|>|\s)([\w\.\-]+\.(?:com|net|org|jp(?!g))[^<\s]*)/g
+			/(^|>|;|\s)([\w\.\-]+\.(?:com|net|org|eu|jp(?!g))[^<\s]*)/g
 			'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
 
 		# attempt to redirect broken post links to the archive

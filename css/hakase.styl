@@ -109,9 +109,13 @@ body > header
 .post 
 	margin-top 3px
 
+.replies
+	counter-reset reply
+
 .reply 
+	counter-increment reply
 	padding 2px
-	margin-left 1.5em
+	margin-left 2em
 	border-style solid
 	border-width 0 1px 1px 0
 	// motherfucking yellow fade
@@ -125,10 +129,12 @@ body > header
 	content " (sage)"
 
 .reply:before 
-	content ">>"
-	display block
+	content counter(reply, decimal)
+	text-align right
+	display inline-block
 	height 0
-	margin-left -1.5em
+	margin-left -2.5em
+	width 2em
 	font-size 10pt
 
 .post h1 
@@ -177,7 +183,7 @@ img.full
 	.poster, .capcode
 		color 800080
 
-button
+button:enabled
 	cursor pointer
 
 button.hide,
