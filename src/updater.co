@@ -70,7 +70,7 @@ updater.update = ->
 							10ms
 
 						# call after_update hooks
-						fn thread.new for fn of callbacks
+						fn! for fn of updater.callbacks
 				updater.countdown!
 			.on \timeout ->
 				updater.status = "request timed out..."
@@ -110,9 +110,9 @@ resetNew = (posts) ->
 					listen window .off \scroll reset
 
 
-callbacks = []
+updater.callbacks = []
 
-updater.after_update = -> callbacks.push it
+updater.after_update = -> updater.callbacks.push it
 
 timeout = null
 

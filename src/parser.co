@@ -17,7 +17,7 @@ parser.date = do ->
 # TODO need to split this up into board and thread parsers
 # while still sharing some parts, since a lot of the logic
 # is working around stupid board pages
-parser.yotsuba = (document) ->
+parser.yotsuba = (document, {preview} = {preview: board.isBoard, threadPath: board.threadPath}) ->
 	# TODO this is a hack to avoid reparsing 
 	# move this to updater, or to onready
 	# if last-modified on the ajax call is less than this
@@ -54,7 +54,7 @@ parser.yotsuba = (document) ->
 	# ########################################################
 	time "preprocess"
 	# ########################################################
-	if board.isThread
+	if not preview
 		opHash = '#'+board.threadId
 		
 		# classify op and crossthread links
@@ -63,7 +63,7 @@ parser.yotsuba = (document) ->
 			unless />>>/.test link.textContent # skip crossboard links
 				if opHash is link.hash
 					link.className += ' oplink'
-				else if link.pathname is not board.threadPath
+				else if link.pathname and link.pathname is not threadPath
 					link.className += ' crossthread'
 		timeEnd "classify links"
 	else # board page
@@ -127,7 +127,7 @@ parser.yotsuba = (document) ->
 	time "create objects"
 	# ########################################################
 	threads = for i til numThreads
-		new Thread ids[n].name, !board.isThread, ->
+		new Thread ids[n].name, preview, ->
 			@op = parsePost this, true, \threadNum, i
 			@replies = for el of replyEls 
 				if el.parentNode.parentNode.parentNode.threadNum is i # walk to table from td
@@ -136,7 +136,7 @@ parser.yotsuba = (document) ->
 				@locked = !!closedThreads.shift()
 			@sticky = !!stickies-- if stickies > 0
 
-			if not board.isThread and omittedposts[0]?.threadNum is i
+			if preview and omittedposts[0]?.threadNum is i
 				omitted = omittedposts.shift().textContent
 				@omitted =
 					replies: parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
@@ -144,6 +144,6 @@ parser.yotsuba = (document) ->
 		
 	timeEnd "create objects"
 
-	thread: threads[0] if board.isThread
+	thread: threads[0] unless preview
 	threads: threads
 
