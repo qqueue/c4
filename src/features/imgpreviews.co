@@ -1,49 +1,53 @@
 # TODO add check to constrain image to the quandrant around the mouse
 # that has the greatest area, so a catalog-like layout is possible
-constrain = (el, e) ->
-	return unless el and e
-	height = el.naturalHeight
-	width = el.naturalWidth
+constrain = (el, {clientX: x, clientY: y}) ->
+	# why use getAttribute instead of width and height directly?
+	# width and height are affected by css styles, while getAttribute
+	# returns the value first set on the element
+	width = el.getAttribute \width
+	height = el.getAttribute \height
 	docheight = window.innerHeight - 20
-	availableheight = docheight - e.clientY
+	availableheight = docheight - y
 	# using clientWidth to account for scrollbars
 	# can't use it for height because it would be the entire
 	# document height
 	docwidth = document.documentElement.clientWidth - 20
-	availablewidth = docwidth - e.clientX
+	availablewidth = docwidth - x
 	
 	ratio = Math.min 1, docheight/height, availablewidth/width
 
 	el.style.width = width * ratio
 	el.style.height = height * ratio
 
-	el.style.left = e.clientX + 10
+	el.style.left = x + 10
 	if (height * ratio ) > availableheight
 		el.style.bottom = 10
 		el.style.removeProperty \top
 	else
-		el.style.top = e.clientY + 10
+		el.style.top = y + 10
 
 make = (e) ->
-	src = @parentElement.href
+	width = @parentElement.getAttribute \data-width
+	height = @parentElement.getAttribute \data-height
+
 	remove document.getElementById \imgpreview
-	create \img ->
-		@id = \imgpreview
-		@src = src
-		@alt = "Loading..."
-		listen this
-			.on \load ->
+
+	document.body.appendChild do
+		kup \img {id: \imgpreview, src: @parentElement.href, alt: "Loading...", width, height } ->
+			@on \load ->
 				@removeAttribute \alt
 				@style.opacity = 1
-			.on \error -> @alt = "Unable to load image."
-		constrain this, e
-		@style.opacity = 0.7
-		@style.position = \fixed
-		document.body.appendChild this
+			@on \error -> @alt = "Unable to load image."
+
+			constrain this, e
+
+			@style.opacity = 0.7
+			@style.position = \fixed
 	listen this
 		.on \mousemove move
 
-move = (e) -> constrain document.getElementById(\imgpreview), e
+move = (e) -> 
+	constrain document.getElementById(\imgpreview), e
 
 destroy = (e) ->
 	remove document.getElementById \imgpreview

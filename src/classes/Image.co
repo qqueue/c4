@@ -14,7 +14,7 @@ class Image
 
 	render: ->
 		"""
-		<a class="file" target="_blank" href="#{@url}">
+		<a class="file" target="_blank" href="#{@url}" data-width="#{@width}" data-height="#{@height}">
 			<img class="thumb" src="#{@thumb.url}" width="#{@thumb.width}" height="#{@thumb.height}">
 		</a>
 		"""

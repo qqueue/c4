@@ -61,7 +61,6 @@ listen = (element) -> new # chainable wrapper for addEventListener
 						# still need to walk up tree to find target context
 						target.=parentElement until target[matchesSelector] selector
 						if handler.call(target, event) is false
-							log "canceling propogation"
 							event.stopPropagation!
 							event.preventDefault!
 						return 
@@ -138,14 +137,25 @@ kup = do ->
 		off: (event, selector, handler) -> listen @el .off event, selector, handler
 
 		# proxy common attributes, non-exhaustive
-		<[id classList src href style width height textContent]>.forEach (attr) ->
+		<[
+			id classList src href style width height textContent naturalWidth naturalHeight
+			attributes
+		]>.forEach (attr) ->
 			Object.defineProperty ElementProxy.prototype, attr,
 				get: -> @el[attr]
 				set: -> @el[attr] = it
+		# proxy common methods
+		<[
+			getAttribute
+		]>.forEach (method) ->
+			ElementProxy::[method] = -> @el[method].apply @el, @@
 
 		# helpers for each kind of element
 		# non-exhaustive, until I need them
-		<[body div section header footer article hgroup h1 h2 a ol ul li span b i em strong]>.forEach (tag) ->
+		<[
+			body div section header footer article hgroup h1 h2 a ol ul li span b i em strong
+			img
+		]>.forEach (tag) ->
 			ElementProxy::[tag] = (attributes, content) ->
 				new ElementProxy this, tag, attributes, content
 	

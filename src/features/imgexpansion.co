@@ -1,22 +1,20 @@
 toggleExpand = (e) ->
 	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-		if @classList.contains 'expanded' # toggle off
-			collapse this
-		else
-			expand this
+		expand this
 		return false
 
 expand = (a) ->
-	# hiding a block-level anchor doesn't hide children in ff ;_;
-	a.firstElementChild.hidden = true
-	insertBefore a, kup \img src: a.href, className: \full, ->
-		@on \click -> collapse a
-	remove document.getElementById \imgpreview
+	unless a.previousSibling?tagName is \IMG
+		# hiding a block-level anchor doesn't hide children in ff ;_;
+		a.firstElementChild.hidden = true
+		insertBefore a, kup \img src: a.href, className: \full, ->
+			@on \click -> collapse a
+		remove document.getElementById \imgpreview
 
-collapse = (a) ->
+collapse = (a, scroll = true) ->
 	a.firstElementChild.hidden = false
 	remove a.previousSibling
-	if (top = a.getBoundingClientRect!.top) < 0 # top of thumb is above scroll
+	if scroll and (top = a.getBoundingClientRect!.top) < 0 # top of thumb is above scroll
 		window.scrollBy 0, top # scroll so it is visible
 
 preloading = false
@@ -26,10 +24,10 @@ preloadAll = ->
 		kup \img src: a.href #creating an image forces browser to fetch
 
 expanding = false
-expandAll = -> expand img for img of document.querySelectorAll \a.file
+expandAll = -> expand img for img of $$ \a.file
 
 collapseAll = -> 
-	collapse img for img of document.querySelectorAll \img.full
+	collapse img, false for img of $$ \a.file
 
 changeDisplay = ->
 	set \img-display @value
