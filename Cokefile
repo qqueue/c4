@@ -1,6 +1,7 @@
 fs = require \fs
 coco = require \coco
 stylus = require \stylus
+nib = require \nib
 _ = require \underscore
 
 ls = -> # appends relative path to readdir paths, and skip .swp files
@@ -9,12 +10,13 @@ join = -> _.flatten @@ .join \\n
 read = -> fs.readFileSync it, \utf8
 compile = -> coco.compile read it
 bare = -> coco.compile read(it), bare: true
+stylus.nib = -> stylus it .use nib!
 
 outfile = \html5chan@httpsgithubcomqueue-html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-	err, css <- stylus.render read(\css/hakase.styl) # sexy coco flattened callback
+	err, css <- stylus.nib read(\css/hakase.styl) .render # sexy coco flattened callback
 	try
 		throw err if err
 		fs.writeFileSync do

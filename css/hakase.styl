@@ -1,14 +1,12 @@
+@import 'nib'
+
 html 
 	min-height 100%
 	font-family sans-serif
 	font-size 10pt
 
-gradient()
-	background-image linear-gradient(arguments)
-	background-image -moz-linear-gradient(arguments)
-	background-image -webkit-linear-gradient(arguments)
 body.sfw
-	gradient #d1d5ee, #eef2ff 200px
+	background linear-gradient( top, #d1d5ee, #eef2ff 200px )
 	& > header a, & > footer a
 		color #34345c
 	.boardlinks
@@ -32,7 +30,7 @@ body.sfw
 		color #d00
 
 body.nsfw 
-	gradient #fed7af, #ffe 200px
+	background linear-gradient( top, #fed7af, #ffe 200px )
 	color #800000
 	& > header a, & > footer a
 		color #800
@@ -117,8 +115,8 @@ body > header
 	border-style solid
 	border-width 0 1px 1px 0
 	// motherfucking yellow fade
-	-moz-transition-property background-color
-	-moz-transition-duration 5s
+	transition-property background-color
+	transition-duration 5s
 
 .reply.new
 	background-color #feffbf !important
@@ -262,7 +260,7 @@ a.permalink .id, a.saucelink
 	border 3px solid 
 	border-color #C6312B 
 	border-radius 10px
-	-moz-transition .5s
+	transition .5s
 
 	&:hover
 		border-color #FFA200
