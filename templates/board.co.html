@@ -61,6 +61,7 @@ else
 	<nav class="boardlinks">#{board.nav}</nav>
 </footer>
 
+<div id="sticky">
 #{
 	if !board.locked
 		"""
@@ -86,6 +87,7 @@ else
 					<div id="buttons">
 						<button type="submit" tabindex="10" id="post" value="Submit">Post #{if board.isThread then 'Reply' else 'New Thread'}</button>
 						#{if board.isThread then """<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage Reply</button>""" else ''}
+						<span id="post-status"></span>
 					</div>
 				</div>
 			</form>
@@ -93,22 +95,23 @@ else
 		"""
 }
 
-<div id="controls">
-	<div id="updater">
-		<span id="update-status"></span>
-		<button id="update-now">Update now</button>
-	</div>
-	<span id="post-status"></span>
-	<div id="imgexpansion">
-		<label>Expanded images:
-			<select id="img-display">
-				<option value="fit">Fit width</option>
-				<option value="full">Full size</option>
-			</select>
-		<button type="button" id="preload-all" />Preload all</button>
-		<button type="button" id="expand-all" />Expand all</button>
-		<button type="button" id="collapse-all" />Collapse all</button>
-		
-		</label>
+	<div id="controls">
+		<div id="updater">
+			<span id="update-status"></span>
+			<button id="update-now">Update now</button>
+		</div>
+
+		<div id="imgexpansion">
+			<label>Expanded images:
+				<select id="img-display">
+					<option value="fit">Fit width</option>
+					<option value="full">Full size</option>
+				</select>
+			<button type="button" id="preload-all" />Preload all</button>
+			<button type="button" id="expand-all" />Expand all</button>
+			<button type="button" id="collapse-all" />Collapse all</button>
+			
+			</label>
+		</div>
 	</div>
 </div>

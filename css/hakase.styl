@@ -108,7 +108,6 @@ body > header
 
 .post 
 	margin-top 3px
-	overflow-y auto
 
 .reply 
 	padding 2px
@@ -342,10 +341,18 @@ a.permalink .id, a.saucelink
 #delform
 	float right
 
-#postform-wrapper
+#sticky
 	background rgba( 200, 200, 200, .9 )
-	fixed bottom 2em left
+	fixed bottom left
 	width 100%
+	&:hover #postform-wrapper
+		height 250px
+		transition .5s
+
+#postform-wrapper
+	height 0
+	overflow hidden
+	transition .5s
 
 #postform 
 	display table
@@ -366,15 +373,10 @@ a.permalink .id, a.saucelink
 		margin auto
 
 #controls
-	fixed bottom left
-	height 3em
-	background rgba( 200, 200, 200, .9 )
-	width 100%
 	font-size 9pt
 	button
 		font-size inherit
-	div
-		margin .5em
+	margin .5em
 
 #updater
 	float right
