@@ -62,10 +62,6 @@ updater.update = ->
 
 						# call after_update hooks
 						fn thread.new for fn of callbacks
-
-						updater.status = "#{thread.new.length} new posts!"
-				else
-					updater.status = "No new posts..."
 				updater.countdown!
 			.on \timeout ->
 				updater.status = "request timed out..."
@@ -116,9 +112,6 @@ timeout = null
 Object.defineProperty updater, \status,
 	get: -> document.getElementById \update-status .textContent
 	set: -> document.getElementById \update-status .textContent = it
-Object.defineProperty updater, \count,
-	get: -> document.getElementById \countdown .textContent
-	set: -> document.getElementById \countdown .textContent = it
 Object.defineProperty updater, \button,
 	get: -> document.getElementById \update-now
 
@@ -126,7 +119,7 @@ updater.countdown = (tminus = 30) ->
 	clearTimeout timeout
 	timeout := setTimeout do
 		function tick
-			updater.count = "Updating in #tminus seconds..."
+			updater.status = "Updating in #tminus seconds..."
 			tminus--
 			timeout := setTimeout tick, 1000ms
 			if tminus is 0

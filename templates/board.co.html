@@ -10,7 +10,7 @@
 #{if board.isThread 
 	"""
 	<a href="#{board.url}">[Return]</a>
-	<a href="#{'#bottom'}">[Bottom]</a>
+	<a href="\#bottom">[Bottom]</a>
 	"""
 else ''}
 <div id="threads">#{render_all data.threads, \article}</div>
@@ -19,58 +19,33 @@ else ''}
 	<a href="#{board.url}">[Return]</a>
 	<a href="#">[Top]</a>
 	"""
-else ''}
-<nav id="pages"></nav>
-#{
-	if board.locked
-		'<p>Thread closed. You may not reply at this time</p>'
-	else
-		"""
-		<form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/#{board.name}/post">
-			<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
-			#{if board.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
-			<input type="hidden" value="regist" name="mode">
-			<div id="fields">
-				<div id="name-field"><label for="name">Name: </label><input type="text" name="name" id="name" tabindex="10" /></div>
-				<div id="email-field"><label for="email">Email: </label><input type="text" id="email" name="email" tabindex="10" /></div>
-				<div id="subject-field"><label for="subject">Subject: </label><input type="text" id="subject" name="sub" tabindex="10" /></div>
-				<div  id="comment-field"><label for="comment">Comment: </label><textarea name="com" id="comment" rows="4" tabindex="10" ></textarea></div>
-				<div id="captcha-field">
-					<label>Verification: </label>
-					<div id="captcha"></div>
-				</div>
-				<div id="file-field">
-					<label for="file">Image: </label>
-					<div>
-						<input type="file" id="file" name="upfile" tabindex="10" />
-						<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler Image?</label>
-					</div>
-				</div>
-				<div title="for file deletion" id="password-field">
-					<label for="password">Password: </label>
-					<input id="password" type="password" maxlength="8" name="pwd" tabindex="10" >
-				</div>
-				<div id="buttons-wrapper">
-					<label>Submit: </label>
-					<div id="buttons">
-						<button type="submit" tabindex="10" id="post" value="Submit">Post</button>
-						<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage</button>
-					</div>
-				</div>
-			</div>
-			<ul id="rules">
-				<li>Supported file types are: GIF, JPG, PNG </li>
-				<li>Maximum file size allowed is 3072 KB. </li>
-				<li>Images greater than 250x250 pixels will be thumbnailed. </li>
-				<li>Read the <a href="http://www.4chan.org/rules##{board.name}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting.</li>
-				<li><img width="17" height="11" src="http://static.4chan.org/image/jpn-flag.jpg"><a href="http://www.4chan.org/japanese">このサイトについて</a> - <a href="http://www.nifty.com/globalgate/">翻訳</a></li>
-			</ul>
-		</form>
-		"""
+else
+	"""
+	<ul id="pages">
+		#{if board.page > 0 then """<li><a href="#{board.page - 1}">previous</a></li>""" else ''}
+		<li><a href="#{board.url}">0</a></li>
+		<li><a href="1">1</a></li>
+		<li><a href="2">2</a></li>
+		<li><a href="3">3</a></li>
+		<li><a href="4">4</a></li>
+		<li><a href="5">5</a></li>
+		<li><a href="6">6</a></li>
+		<li><a href="7">7</a></li>
+		<li><a href="8">8</a></li>
+		<li><a href="9">9</a></li>
+		<li><a href="10">10</a></li>
+		<li><a href="11">11</a></li>
+		<li><a href="12">12</a></li>
+		<li><a href="13">13</a></li>
+		<li><a href="14">14</a></li>
+		<li><a href="15">15</a></li>
+		#{if board.page < 15 then """<li><a href="#{board.page + 1}">next</a></li>""" else ''}
+	</ul>
+	"""
 }
 <form id="delform" method="POST" action="http://sys.4chan.org/#{board.name}/imgboard.php">
 	<input name="mode" value="usrdel" type="hidden">
-	<label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20" id="delpassword"></label>
+	<label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20" id="delpassword" value="#{board.password}" title="#{board.password}"></label>
 	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
 	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
 </form>
@@ -78,10 +53,49 @@ else ''}
 	<input type="hidden" name="mode" value="report"/>
 </form>
 
+<footer id="bottom">
+	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
+	<p>
+		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster. Read the <a href="http://www.4chan.org/rules##{board.name}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting. <a href="javascript:void 0" id="dump-log">Dump Log</a></small>
+	</p>
+	<nav class="boardlinks">#{board.nav}</nav>
+</footer>
+
+#{
+	if !board.locked
+		"""
+		<div id="postform-wrapper">
+			<form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/#{board.name}/post">
+				<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
+				#{if board.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
+				<input type="hidden" value="regist" name="mode">
+				<input id="password" type="hidden" name="pwd" value="#{board.password}">
+				<div id="fields">
+					<input type="text" name="name" id="name" tabindex="10" placeholder="name\#tripcode" />
+					<input type="text" id="email" name="email" tabindex="10" placeholder="email" />
+					<input type="text" id="subject" name="sub" tabindex="10" placeholder="subject" />
+					<div id="comment-field"><textarea name="com" id="comment" rows="4" tabindex="10" placeholder="comment"></textarea></div>
+					<div id="captcha" style="display:none">
+						<a id="recaptcha_image" href="javascript:Recaptcha.reload()" title="Click for new captcha" ></a>
+						<input type="text" id="recaptcha_response_field" name="recaptcha_response_field" tabindex="10" placeholder="captcha" />
+					</div>
+					<div id="file-field">
+						<input type="file" id="file" name="upfile" tabindex="10" />
+						<label id="spoiler-field"><input type="checkbox" value="on" name="spoiler" tabindex="10" /> Spoiler?</label>
+					</div>
+					<div id="buttons">
+						<button type="submit" tabindex="10" id="post" value="Submit">Post #{if board.isThread then 'Reply' else 'New Thread'}</button>
+						#{if board.isThread then """<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage Reply</button>""" else ''}
+					</div>
+				</div>
+			</form>
+		</div>
+		"""
+}
+
 <div id="controls">
 	<div id="updater">
 		<span id="update-status"></span>
-		<span id="countdown"></span>
 		<button id="update-now">Update now</button>
 	</div>
 	<span id="post-status"></span>
@@ -97,14 +111,4 @@ else ''}
 		
 		</label>
 	</div>
-	<button id="dump-log">Dump Log</button>
 </div>
-
-<footer id="bottom">
-	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
-	<p>
-		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster.</small>
-	</p>
-	<nav class="boardlinks">#{board.nav}</nav>
-</footer>
-

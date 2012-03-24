@@ -12,34 +12,63 @@ document.body.appendChild create \iframe ->
 
 $ \postform .target = \postresponse
 
+checkValidity = ->
+	captcha = $ \recaptcha_response_field
+	file = $ \file
+	comment = $ \comment
+	email = $ \email
 
-listen $ \buttons
-	.on \click (e) ->
-		captcha = $ \recaptcha_response_field
-		file = $ \file
-		comment = $ \comment
-		email = $ \email
+	# noko would load the thread into the iframe and break
+	# sys.4chan.org posting a message back here
+	email.value = '' if /^noko$/i.test email.value
 
-		# noko would load the thread into the iframe and break
-		# sys.4chan.org posting a message back here
-		email.value = '' if /^noko$/i.test email.value
+	captcha.setCustomValidity unless captcha.value
+		"You forgot the captcha!"
+	else ''
+	
+	file.setCustomValidity if !file.value and board.isBoard
+		"You forgot your image!"
+	else ''
 
-		captcha.setCustomValidity unless captcha.value
-			"You forgot the captcha!"
-		else ''
-		
-		file.setCustomValidity if !file.value and board.isBoard
-			"You forgot your image!"
-		else ''
+	comment.setCustomValidity if !file.value and !comment.value
+		"You didn't enter a comment or select a file!"
+	else ''
 
-		comment.setCustomValidity if !file.value and !comment.value
-			"You didn't enter a comment or select a file!"
-		else ''
+	if $ \postform .checkValidity!
+		$ \post .disabled = true
+		$ \sage .disabled = true
+		postStatus "Posting..."
 
-		if $ \postform .checkValidity!
-			$ \post .disabled = true
-			$ \sage .disabled = true
-			postStatus "Posting..."
+listen $ \post .on \click checkValidity
+listen $ \sage .on \click checkValidity
+
+cooldown = ->
+	post = $ \post
+	sage = $ \sage
+	post.disabled = true
+	sage?disabled = true
+
+	message = post.textContent
+
+	tminus = 30sec
+	post.textContent = tminus
+	setTimeout do
+		function tick
+			if tminus-- is 0
+				post.textContent = message
+				post.disabled = false
+				sage?disabled = false
+			else
+				post.textContent = tminus
+				setTimeout tick, 1000ms
+		1000ms
+
+
+
+			
+			
+
+
 
 # the hidden iframe where the form submits to
 # dumps its body back through postMessage
@@ -53,6 +82,8 @@ listen $ \buttons
 #
 # Unfortunately this means we cant get progress events, so no fancy
 # upload progress bar ;_;
+#
+# TODO handle new thread creation with redirect / open in new tab
 listen window .on \message ({data}) ->
 	html = create \div -> @innerHTML = data # reparse innerHTML
 	console.log html
@@ -66,6 +97,7 @@ listen window .on \message ({data}) ->
 
 	if /Post successful!|uploaded!/.test html.textContent
 		postStatus 'Post successful!'
+		cooldown!
 		# update and show new post, giving some time for 4chan to process it
 		updater.countdown 3sec
 	
@@ -87,7 +119,6 @@ listen window .on \message ({data}) ->
 		captcha.value = ''
 		captcha.focus!
 
-# not really the best place for this, but oh well
 # persist entered name and tripcode
 listen $ \name .on \input ->
 	set name: @value

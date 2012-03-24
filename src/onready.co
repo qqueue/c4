@@ -69,6 +69,9 @@ with board
 	@isBoard = !@isThread
 	@locked = document.forms.length is 1 # delform, without postform
 
+	# delete password
+	@password = get \password or Math.random!.toString!.substr -8
+
 
 # disable 4chan styles
 remove el for el of document.querySelectorAll 'link[rel*="stylesheet"], style'
@@ -105,48 +108,35 @@ document.head.appendChild do
 			%hakase.css%
 			'''
 
-# add baord pages
-# man, pagination logic is stupidly complicated
-# also TODO report that missing parenthesis bug
-# TODO inline this into main rendering to avoid
-# rerender
-if board.isBoard then do ->
-	pages = kup \ul ->
-		if ( page = board.page ) > 0
-			@li -> @a {href: page - 1} \previous
-		for page from 0 to 15
-			@li ->
-				# page board/0 redirects to board/ anyway
-				@a {href: page or board.url} page
-		if ( page = board.page ) < 15
-			@li -> @a {href: page + 1} \next
-	
-	pages.children[if board.page then that + 1 else 0].firstChild.id = \current
-	document.getElementById \pages .appendChild pages
+#highlight current page
+if board.isBoard
+	document.getElementById \pages 
+		.querySelector "a[href=\"#{board.page or board.url}\"]" 
+		.id = \current
 
 # create or restore delete password 
-# TODO inline this to avoid rerendering
 do ->
 	password = get \password or Math.random!.toString!.substr -8
 	document.getElementById \delpassword .value = password
 	document.getElementById \delpassword .title = password
-	if field = document.getElementById \password
-		field.value = password
-		field.title = password
-		save = -> set password: field.value
-		field.addEventListener \input save # allows saving of custom passwords
-		document.getElementById \postform .addEventListener \submit save # also save to localStorage on submit
+	document.getElementById \password ?.value = password
 
 # create recaptcha with script already included on page (using 4chan's public key)
 document.head.appendChild do
 	create \script ->
 		@textContent =
-			"if( document.getElementById('captcha') ) {
-				Recaptcha.create('6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', 'captcha', {
-						theme: 'clean',
-						tabindex: 10,
+			"(function() {
+				var that;
+				if( that = document.getElementById('captcha') ) {
+					Recaptcha._init_options({
+						theme: 'custom',
+						custom_theme_widget: that
 					});
-			}"
+					Recaptcha.theme = 'custom';
+					Recaptcha.widget = that;
+					Recaptcha._finish_widget();
+				}
+			})();"
 
 # rescroll to target element if this page hasn't been scrolled before
 # this retains the browser's natural scroll position memory
