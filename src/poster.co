@@ -2,6 +2,16 @@
 
 postStatus = ->
 	$ \post-status .textContent = it
+#
+# set .visible class on postform-wrapper when at the bottom of the screen
+# so stylesheet can make it visible
+# kinda stylesheet specific, oh well
+
+visible = false # hold visible
+showform = -> $ \postform-wrapper .classList.add \visible if bottom or visible
+hideform = -> $ \postform-wrapper .classList.remove \visible unless bottom or visible
+
+bottom = false # at the bottom of screen, set by scroller
 
 <- onready
 
@@ -36,7 +46,11 @@ checkValidity = ->
 
 	if $ \postform .checkValidity!
 		$ \post .disabled = true
-		$ \sage .disabled = true
+		$ \sage ?disabled = true
+		
+		visible := true
+		showform! # make sure the form stays visible
+
 		postStatus "Posting..."
 
 listen $ \post .on \click checkValidity
@@ -63,13 +77,6 @@ cooldown = ->
 				setTimeout tick, 1000ms
 		1000ms
 
-
-
-			
-			
-
-
-
 # the hidden iframe where the form submits to
 # dumps its body back through postMessage
 # which we can then parse here to determine the status of the post
@@ -93,29 +100,28 @@ listen window .on \message ({data}) ->
 	comment = $ \comment
 
 	$ \post .disabled = false
-	$ \sage .disabled = false
+	$ \sage ?disabled = false
 
 	if /Post successful!|uploaded!/.test html.textContent
 		postStatus 'Post successful!'
 		cooldown!
+		
+		visible := false # don't need to show form anymore
+		hideform!
+
+		$ \postform .reset!
+		$ \name .value = get \name or '' # persist name
+		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+
 		# update and show new post, giving some time for 4chan to process it
 		updater.countdown 3sec
 	
-		captcha.value = ''
-		# TODO figure out better way to reset captcha field
-		$ \recaptcha_reload_btn .click!
-
-		comment.value = ''
-
-		# through the value of a file input is always '', you can still reset
-		# the field by re-setting it to ''
-		file.value = ''
 
 
 	# TODO check for other errors
 	else if /mistyped the verification/.test html.textContent
 		postStatus 'You mistyped the verification!' 
-		$ \recaptcha_reload_btn .click!
+		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 		captcha.value = ''
 		captcha.focus!
 
@@ -124,4 +130,10 @@ listen $ \name .on \input ->
 	set name: @value
 $ \name .value = get \name or ''
 
+listen window .on \scroll ->
+	y = window.scrollMaxY - window.scrollY
+	if bottom := y < 100
+		showform!
+	else
+		hideform!
 

@@ -111,6 +111,7 @@ body > header
 
 .replies
 	counter-reset reply
+	counter-reset image
 
 .reply 
 	counter-increment reply
@@ -121,6 +122,12 @@ body > header
 	// motherfucking yellow fade
 	transition-property background-color
 	transition-duration 5s
+
+.fileinfo
+	counter-increment image
+	&:before
+		content '#'counter(image, decimal)
+		color rgba(0,0,0,.4)
 
 .reply.new
 	background-color #feffbf !important
@@ -351,14 +358,16 @@ a.permalink .id, a.saucelink
 	background rgba( 200, 200, 200, .9 )
 	fixed bottom left
 	width 100%
-	&:hover #postform-wrapper
-		height 250px
-		transition .5s
+
+#postform-wrapper.visible, #sticky:hover #postform-wrapper
+	height 250px
+	transition height .25s
 
 #postform-wrapper
 	height 0
 	overflow hidden
 	transition .5s
+	transition-delay .5s
 
 #postform 
 	display table
@@ -391,5 +400,5 @@ a.permalink .id, a.saucelink
 	clear both
 	text-align center
 	//semi-decent way to make sure fixed elements have space at the bottom
-	margin-bottom 5em
+	margin-bottom 300px
 

@@ -5,7 +5,7 @@
 if window.location.hostname is \sys.4chan.org
 	log "sys.4chan listener"
 	# pass message back to host page
-	window.parent.postMessage document.body.innerHTML, \http://boards.4chan.org
+	window.parent.postMessage document.documentElement.innerHTML, \http://boards.4chan.org
 
 	# switch to about:blank to prevent meta redirect
 	# on 'post successful' from loading the board page

@@ -40,40 +40,40 @@ render_all = (objects, ...options) ->
 # selectors
 mouse = mouseenter: \mouseover, mouseleave: \mouseout
 listen = (element) -> new # chainable wrapper for addEventListener
-		@on = (event, selector, handler) ->
-			return this unless element
-			if (events = event.split ' ').length > 1 # handle space separated events
-				@on e, selector, handler for e of events
-				return
-			if typeof selector is \function
-				handler = selector
-				selector = null
-			# replace non-bubbling events with those that do
-			event = that if mouse[event]
-			element.addEventListener do
-				event
-				if selector then !({target}: event) ->
-					return unless target # sometimes target disappears, weird
-					# if actual selector, or child of selector
-					# this offloads the usual strategy of walking up parentElements
-					# to the internal browser query engine
-					if target[matchesSelector] "#selector, #selector *" 
-						# still need to walk up tree to find target context
-						target.=parentElement until target[matchesSelector] selector
-						if handler.call(target, event) is false
-							event.stopPropagation!
-							event.preventDefault!
-						return 
-				# TODO add same wrapper for return false
-				else handler # just plain callback
-			return this
-		# TODO this doesn't handle delegated events very well
-		@off = (event, handler) ->
-			return this unless element
-			if (events = event.split ' ').length > 1 # handle space separated events
-				@off e, handler for e of events
-				return
-			element.removeEventListener event, handler
+	@on = (event, selector, handler) ->
+		return this unless element
+		if (events = event.split ' ').length > 1 # handle space separated events
+			@on e, selector, handler for e of events
+			return
+		if typeof selector is \function
+			handler = selector
+			selector = null
+		# replace non-bubbling events with those that do
+		event = that if mouse[event]
+		element.addEventListener do
+			event
+			if selector then !({target}: event) ->
+				return unless target # sometimes target disappears, weird
+				# if actual selector, or child of selector
+				# this offloads the usual strategy of walking up parentElements
+				# to the internal browser query engine
+				if target[matchesSelector] "#selector, #selector *" 
+					# still need to walk up tree to find target context
+					target.=parentElement until target[matchesSelector] selector
+					if handler.call(target, event) is false
+						event.stopPropagation!
+						event.preventDefault!
+					return 
+			# TODO add same wrapper for return false
+			else handler # just plain callback
+		return this
+	# TODO this doesn't handle delegated events very well
+	@off = (event, handler) ->
+		return this unless element
+		if (events = event.split ' ').length > 1 # handle space separated events
+			@off e, handler for e of events
+			return
+		element.removeEventListener event, handler
 
 closest = (selector, el) ->
 	return false unless el
