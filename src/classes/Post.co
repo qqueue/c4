@@ -66,15 +66,15 @@ class Post
 					<span class="capcode">#{@capcode or ''}</span>
 					<span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
 					<time pubdate datetime="#{@time.toISOString!}" title="#{@time.prettyPrint!}">#{@time.prettyRelative!}</time>
-					#{if @op and @thread.sticky then '<img alt="sticky" src="http://static.4chan.org/image/sticky.gif">' else ''}
-					#{if @op and @thread.closed then '<img alt="closed" src="http://static.4chan.org/image/closed.gif">' else ''}
+					#{if @op and @thread.sticky then '<img alt="sticky" src="//static.4chan.org/image/sticky.gif">' else ''}
+					#{if @op and @thread.closed then '<img alt="closed" src="//static.4chan.org/image/closed.gif">' else ''}
 					#{if @op and @thread.preview then "<a href=\"#{@url}\" class=\"replylink\">[Reply]</a>" else ''}
 					<a href="#{@url}" class="permalink">No.<span class="id">#{@id}</span></a>
 				</h1>
 				#{@image?info! or ''}
 			</header>
 			#{@image?render! or ''}
-			#{if @deletedImage then '<img class="deleted-image" alt="File deleted." src="http://static.4chan.org/image/filedeleted.gif">' else ''}
+			#{if @deletedImage then '<img class="deleted-image" alt="File deleted." src="//static.4chan.org/image/filedeleted.gif">' else ''}
 			<div class="comment">#{@comment}</div>
 			<footer class="backlinks">#{@backlinks!}</footer>
 		</#container>

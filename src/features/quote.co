@@ -3,7 +3,8 @@
 quote = ->
 	selection = window.getSelection!toString!trim!
 	selection = ">#selection\n" if(selection) 
-	document.getElementById \comment .value += ">>#{@textContent}\n#selection"
+	$ \comment .value += ">>#{@textContent}\n#selection"
+	$ \comment .focus!
 	return false
 
 features.quote =

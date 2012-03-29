@@ -2,7 +2,7 @@
 	<nav class="boardlinks">#{board.nav}</nav>
 	<img src="#{board.banner}" alt="4chan::" id="banner"/>
 	<hgroup>
-		<h1><a href="http://boards.4chan.org/#{board.name}/">#{board.title}</a></h1>
+		<h1><a href="//boards.4chan.org/#{board.name}/">#{board.title}</a></h1>
 		<h2>#{board.subtitle}</h2>
 	</hgroup>
 	#{if board.motd then "<div id=\"motd\">#that</div>" else ''}
@@ -43,20 +43,20 @@ else
 	</ul>
 	"""
 }
-<form id="delform" method="POST" action="http://sys.4chan.org/#{board.name}/imgboard.php">
+<form id="delform" method="POST" action="//sys.4chan.org/#{board.name}/imgboard.php">
 	<input name="mode" value="usrdel" type="hidden">
 	<label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20" id="delpassword" value="#{board.password}" title="#{board.password}"></label>
 	<button type="submit" value="Delete" tabindex="20">Delete Post</button>
 	<button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
 </form>
-<form id="reportform" method="GET" action="http://sys.4chan.org/#{board.name}/imgboard.php" target="_blank">
+<form id="reportform" method="GET" action="//sys.4chan.org/#{board.name}/imgboard.php" target="_blank">
 	<input type="hidden" name="mode" value="report"/>
 </form>
 
 <footer id="bottom">
 	<p><small>- <a rel="nofollow" target="_top" href="http://www.2chan.net/">futaba</a> + <a target="_top" href="http://www.4chan.org/">yotsuba</a> + <a href="https://github.com/queue-/html5chan">html5chan</a> -</small> </p>
 	<p>
-		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster. Read the <a href="http://www.4chan.org/rules##{board.name}">rules</a> and <a href="http://www.4chan.org/faq">FAQ</a> before posting. <a href="javascript:void 0" id="dump-log">Dump Log</a></small>
+		<small>All trademarks and copyrights on this page are owned by their respective parties. Images uploaded are the responsibility of the Poster. Comments are owned by the Poster. Read the <a href="//www.4chan.org/rules##{board.name}">rules</a> and <a href="//www.4chan.org/faq">FAQ</a> before posting. <a href="javascript:void 0" id="dump-log">Dump Log</a></small>
 	</p>
 	<nav class="boardlinks">#{board.nav}</nav>
 </footer>
@@ -66,7 +66,7 @@ else
 	if !board.locked
 		"""
 		<div id="postform-wrapper">
-			<form id="postform" enctype="multipart/form-data" method="POST" action="http://sys.4chan.org/#{board.name}/post">
+			<form id="postform" enctype="multipart/form-data" method="POST" action="//sys.4chan.org/#{board.name}/post">
 				<input type="hidden" value="3145728" name="MAX_FILE_SIZE">
 				#{if board.threadId then "<input type=\"hidden\" value=\"#that\" name=\"resto\">" else ''}
 				<input type="hidden" value="regist" name="mode">
@@ -96,12 +96,16 @@ else
 }
 
 	<div id="controls">
-		<div id="updater">
+	#{if board.isThread then """<a href="#{board.url}">[Return]</a>""" else ''}
+		<a href="#">[Top]</a>
+		<a href="\#bottom">[Bottom]</a>
+
+		<span id="updater">
 			<span id="update-status"></span>
 			<button id="update-now">Update now</button>
-		</div>
+		</span>
 
-		<div id="imgexpansion">
+		<span id="imgexpansion">
 			<label>Expanded images:
 				<select id="img-display">
 					<option value="fit">Fit width</option>
@@ -112,6 +116,6 @@ else
 			<button type="button" id="collapse-all" />Collapse all</button>
 			
 			</label>
-		</div>
+		</span>
 	</div>
 </div>

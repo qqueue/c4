@@ -7,6 +7,7 @@ postStatus = ->
 # so stylesheet can make it visible
 # kinda stylesheet specific, oh well
 
+# FIXME this logic sucks
 visible = false # hold visible
 showform = -> $ \postform-wrapper .classList.add \visible if bottom or visible
 hideform = -> $ \postform-wrapper .classList.remove \visible unless bottom or visible
@@ -117,13 +118,17 @@ listen window .on \message ({data}) ->
 		updater.countdown 3sec
 	
 
-
 	# TODO check for other errors
 	else if /mistyped the verification/.test html.textContent
 		postStatus 'You mistyped the verification!' 
 		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 		captcha.value = ''
 		captcha.focus!
+	else if /duplicate file entry detected/
+		# TODO select for link to duplicate file
+		$ \postform .reset!
+		$ \name .value = get \name or '' # persist name
+		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 
 # persist entered name and tripcode
 listen $ \name .on \input ->
@@ -137,3 +142,17 @@ listen window .on \scroll ->
 	else
 		hideform!
 
+# if form is focused, don't hide
+$ \postform .addEventListener do
+	\focus
+	->
+		visible := true
+		showform!
+	true # have to use capture for non-bubbling focus events
+
+$ \postform .addEventListener do
+	\blur
+	->
+		visible := false
+		hideform!
+	true # have to use capture for non-bubbling focus events

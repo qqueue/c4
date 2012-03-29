@@ -69,6 +69,10 @@ updater.update = ->
 									setTimeout smoothScroll, 50ms
 							10ms
 
+						# update post count
+						document.querySelector "\#thread-#{thread.id} .thread-info"
+							.textContent = "#{thread.replies.length} replies and #{thread.imageReplies.length} image replies."
+
 						# call after_update hooks
 						fn! for fn of updater.callbacks
 				updater.countdown!
