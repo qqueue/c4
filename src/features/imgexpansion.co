@@ -9,7 +9,7 @@ expand = (a) ->
 		a.firstElementChild.hidden = true
 		insertBefore a, kup \img src: a.href, className: \full, ->
 			@on \click -> collapse a
-		remove document.getElementById \imgpreview
+		remove $ \imgpreview
 
 collapse = (a, scroll = true) ->
 	a.firstElementChild.hidden = false
@@ -31,30 +31,26 @@ collapseAll = ->
 
 changeDisplay = ->
 	set \img-display @value
-	document.getElementById \img-style .textContent = switch @value
-		case \full then ""
-		case \fit then "img.full { max-width: 100%; }"
+	$ \img-style 
+		.textContent = if @value is \full then "" else "img.full { max-width: 100%; }"
 
 features.imgexpansion =
 	on: ->
 		document.head.appendChild create \style ->
 			@id = \img-style
-			@textContent = switch get \img-display
-				case \full then ""
-				case \fit then "img.full { max-width: 100%; }"
-				default then "img.full { max-width: 100%; }"
+			@textContent = if get \img-display is \full then "" else "img.full { max-width: 100%; }"
 
-		listen document.getElementById \threads
+		listen $ \threads
 			.on \click \a.file toggleExpand
-		listen document.getElementById \preload-all .on \click ->
+		listen $ \preload-all .on \click ->
 			! := preloading
 			if preloading
 				preloadAll!
 				@textContent = "Stop Preloading"
 			else
 				@textContent = "Preload all"
-		listen document.getElementById \collapse-all .on \click collapseAll
-		listen document.getElementById \expand-all .on \click ->
+		listen $ \collapse-all .on \click collapseAll
+		listen $ \expand-all .on \click ->
 			! := expanding
 			if expanding
 				expandAll!
@@ -62,13 +58,13 @@ features.imgexpansion =
 				@textContent = "Stop expanding"
 			else
 				@textContent = "Expand all"
-		listen document.getElementById \img-display .on \change changeDisplay
+		listen $ \img-display .on \change changeDisplay
 
 		updater.after_update ->
 			preloadAll! if preloading
 			expandAll! if expanding
 
 	off: ->
-		listen document.getElementById \threads
+		listen $ \threads
 			.off \click toggleExpand
 		# TODO off stuff

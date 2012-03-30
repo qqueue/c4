@@ -1,63 +1,47 @@
 # post hover previews
-# TODO fix previews to link location instead of floating with mouse
-# which would enable nicer styling on the link itself to really
-# look like a preview (box-shadows everywhere)
-
-position = (preview, e) ->
-	height = preview.offsetHeight
-	width = preview.offsetWidth
-	left = e.pageX + 10
-	if e.pageX > (window.innerWidth / 2)
-		left = 10
-		preview.style.minWidth = e.pageX
-	preview.style.position = \absolute
-	preview.style.left = left
-	preview.style.top= e.pageY + if @classList.contains \backlink then 10 else -30 - height
-
 make = (e) ->
 	remove document.getElementById \postpreview
-	return if @classList.contains \inlinedlink # don't need to preview if it's right there.
 	host = closest \.post this
 
-	# don't show a preview if the real post is right next to us and is on screen
-	realpost = document.getElementById @hash.substring 1
-	if realpost and ( host.previousSibling is realpost or host.nextSibling is realpost )
-		rect = realpost.getBoundingClientRect!
-		return unless rect.left < 0 or rect.right < 0 or rect.top < 0 or rect.bottom < 0
-
 	hostid = host.id.split \- .pop!
-	if post = Post[id = @hash.substring 1]
+	# if preview exists, and link is not inlined
+	if (post = Post[id = @hash.substring 1]) and not @classList.contains \inlinedlink
 		preview = post.element \article, , \postpreview
-		for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
-			link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
+		for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # highlight
+			link.classList.add \recursivelink
+
+		bounds = @getBoundingClientRect!
+
+		preview.style.position = \fixed
+		if bounds.left > (width = document.documentElement.clientWidth) / 2
+			preview.style.right = width - bounds.left - bounds.width
+		else
+			preview.style.left = bounds.left
+		if @classList.contains \backlink
+				preview.style.top = bounds.top + bounds.height + 5
+		else
+			preview.style.bottom = window.innerHeight - bounds.top + 5
+
 		document.body.appendChild preview
-		position.call this, preview, e
-		listen this
-			.on \mousemove move
 
-move = (e) ->
-	return unless preview = document.getElementById \postpreview
-	position.call this, preview, e
+		listen this .on \mouseout function destroy
+			remove preview
+			listen this .off \mouseout destroy
 
-destroy = (e) ->
-	remove document.getElementById \postpreview
-	listen this
-		.off \mousemove move
-
-highlight = -> # highlight hovered reply
-	if @hash
+	# highlight hovered replies
+	for post of document.getElementsByClassName	"post#{@hash.substring 1}"
+		post.classList.add \hovered
+	
+	listen this .on \mouseout function unhighlight
 		for post of document.getElementsByClassName	"post#{@hash.substring 1}"
-			post.classList.toggle \hovered
-
+			post.classList.remove \hovered
+		listen this .off \mouseout unhighlight
+	
 features.postpreviews =
 	on: ->
 		listen document.getElementById \threads
-			.on \mouseenter 'a.quotelink:not(.inlinedlink):not(.hiddenlink)' make
-			.on \mouseleave \a.quotelink destroy
-			.on 'mouseenter mouseleave' \a.quotelink highlight
+			.on \mouseenter 'a.quotelink' make
 	off: ->
 		listen document.getElementById \threads
 			.off \mouseenter make
-			.off \mouseleave destroy
-			.off 'mouseenter mouseleave' highlight
 	

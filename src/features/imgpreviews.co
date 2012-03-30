@@ -11,9 +11,12 @@ constrain = (el, {clientX: x, clientY: y}) ->
 	# using clientWidth to account for scrollbars
 	# can't use it for height because it would be the entire
 	# document height
+	# plus, ff uses quirks mode:
+	# http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
 	docwidth = document.documentElement.clientWidth - 20
 	availablewidth = docwidth - x
 	
+	# using docheight because image can stretch above mouse y
 	ratio = Math.min 1, docheight/height, availablewidth/width
 
 	el.style.width = width * ratio
@@ -43,8 +46,9 @@ make = (e) ->
 
 			@style.opacity = 0.7
 			@style.position = \fixed
-	listen this
+	listen this # add listeners
 		.on \mousemove move
+		.on \mouseout destroy
 
 move = (e) -> 
 	constrain document.getElementById(\imgpreview), e
@@ -53,14 +57,13 @@ destroy = (e) ->
 	remove document.getElementById \imgpreview
 	listen this
 		.off \mousemove move
+		.off \mouseout destroy
 
 # image hover previews
 features.imgpreviews = 
 	on: ->
 		listen document.getElementById \threads
-			.on \mouseenter 'img.thumb' make
-			.on \mouseleave 'img.thumb' destroy
+			.on \mouseover 'img.thumb' make
 	off: ->
 		listen document.getElementById \threads
 			.off \mouseenter make
-			.off \mouseleave destroy

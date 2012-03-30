@@ -1,31 +1,45 @@
 # hide posts
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
+
+
 features.hide =
 	on: ->
-		hide = ->
-			for link of document.querySelectorAll "a.quotelink[href=\"##it\"]" 
-				link.classList.toggle \hiddenlink
-			document.getElementById it .classList.toggle \hidden
+		hidden = {} # list of all hidden posts/threads
+		# add persisted
+		for id of get(\hidden) or []
+			hidden[id] = true
 
-		listen document.getElementById \threads
-			.on \click \button.hide ->
+		hide = ->
+			for link of $$ "a.quotelink[href=\"##it\"]" 
+				link.classList.toggle \hiddenlink
+			$ it .classList.toggle \hidden
+
+		listen $ \threads
+			.on \click \button.hide !->
 				hide @value
-				# persist with session storage
-				sset (@value): if sget @value then '' else 'hidden'
-			.on \click '.op button.hide' ->
+				if hidden[@value]
+					delete hidden[@value]
+				else
+					hidden[@value] = true
+			.on \click '.op button.hide' !->
 				thread = "thread-#{@value}"
 				hide thread
-				sset (thread): if sget thread then '' else 'hidden'
+				if hidden[thread]
+					delete hidden[thread]
+				else
+					hidden[thread] = true
 		
 		# hide all previously hidden posts and threads
 		for post of document.getElementsByClassName \post
-			hide post.id if sget post.id
+			hide post.id if hidden[post.id]
 		for thread of document.getElementsByClassName \thread
-			hide thread.id if sget thread.id
+			hide thread.id if hidden[thread.id]
+
+		listen window .on \unload ->
+			# persist last 500 hidden threads/posts
+			# assuming Object.keys order is by creation (it's supposed to be) 
+			set \hidden, Object.keys(hidden).slice -500
 	off: ->
-		for el of document.getElementsByClassName \hidden
-			el.classList.remove \hidden
-		for el of document.getElementsByClassName \hiddenlink
-			el.classList.remove \hiddenlink
+		# why would you turn this off? TODO somehow rethink this
 

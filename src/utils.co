@@ -17,13 +17,26 @@ else
 	\webkitMatchesSelector
 
 # special prefixed getters and setters
+# to avoid a possible collision with other userscripts
+sset = (key, val) -> 
+	obj = (key): val if val
+	for key, val in obj or key
+		sessionStorage.setItem "html5chan-#key", if typeof val is \string then val else JSON.stringify val
+sget = -> 
+	try
+		JSON.parse sessionStorage.getItem "html5chan-#it"
+	catch
+		sessionStorage.getItem "html5chan-#it"
 
-# though honestly, I think greasemonkey wraps storage
-# so there's no chance of collisions anyway
-sset = -> sessionStorage.setItem "html5chan-#key", val for key, val in it
-sget = -> sessionStorage.getItem "html5chan-#it"
-set = -> localStorage.setItem "html5chan-#key" val for key, val in it
-get = -> localStorage.getItem "html5chan-#it"
+set = (key, val) -> 
+	obj = (key): val if val
+	for key, val in obj or key
+		localStorage.setItem "html5chan-#key", if typeof val is \string then val else JSON.stringify val
+get = -> 
+	try
+		JSON.parse localStorage.getItem "html5chan-#it"
+	catch
+		localStorage.getItem "html5chan-#it"
 
 create = (tag, fn) -> # helper method to avoid temporary variables with createElement
 	el = document.createElement tag
@@ -74,6 +87,7 @@ listen = (element) -> new # chainable wrapper for addEventListener
 			@off e, handler for e of events
 			return
 		element.removeEventListener event, handler
+		return this
 
 closest = (selector, el) ->
 	return false unless el

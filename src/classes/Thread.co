@@ -35,17 +35,17 @@ class Thread
 		"""
 		<#container id="#{id or "thread-#{@id}"}" class="#classes #{@className!}">
 			#{@op.render \div \op}
+			<div class="thread-info">
 			#{
 				if @omitted
 					"""
-					<div class=\"omitted-replies\">
-						#{@omitted.replies} replies #{if @omitted.imageReplies then "and #{@omitted.imageReplies} image replies" else ''} omitted. Latest #{@replies.length} shown.
-						<button type="button" class="expand" value="#{@id}">Expand</button>
-					</div>
+					#{@omitted.replies} replies #{if @omitted.imageReplies then "and #{@omitted.imageReplies} image replies" else ''} omitted. Latest #{@replies.length} shown.
+					<button type="button" class="expand" value="#{@id}">Expand</button>
 					"""
 				else if not @preview
-					"""<div class="thread-info">#{@replies.length} replies and #{@imageReplies.length} image replies.</div>"""
+					"""#{@replies.length} replies and #{@imageReplies.length} image replies."""
 				else ''}
+			</div>
 			<div class="replies">#{render_all @replies, \article \reply}</div>
 		</#container>
 		"""

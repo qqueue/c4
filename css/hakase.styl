@@ -102,7 +102,7 @@ body > header
 	&:first-child
 		border-top-width 1px
 
-.omitted-replies, .thread-info
+.thread-info
 	clear left
 	text-align right
 
@@ -123,7 +123,7 @@ body > header
 	transition-property background-color
 	transition-duration 5s
 
-.replies .fileinfo
+.replies > .post > header > .fileinfo
 	counter-increment image
 	&:before
 		content '#'counter(image, decimal)
@@ -200,19 +200,31 @@ button.report
 	padding 0 1px
 	line-height 1em
 
+// functional css
+// bad idea? maybe
 .post.hidden 
 	opacity 0.6
 
-	.image, .comment, .backlinks
+	.file, .comment, .backlinks, .fileinfo
 		display none
 
 .thread.hidden
 	opacity 0.6
-	.replies, .omitted-replies
+	.replies, .thread-info
 		display none
 	.op
-		.image, .comment, .backlinks
+		.file, .comment, .backlinks, .fileinfo
 			display: none
+
+.post.inlined
+	// visually hidden only to keep post numbering
+	border 0
+	clip rect(0,0,0,0)
+	height 0
+	overflow hidden
+	padding 0
+	margin 0
+	outline 0
 
 a.quotelink.hiddenlink 
 	text-decoration line-through
@@ -232,6 +244,11 @@ a.permalink
 	text-decoration none
 	color inherit
 	float right
+	display block
+	margin-left 1em
+	line-height 1.7
+	// line-height adjusts a to look in line with rest of text
+	// bit weird, since a becomes a block element
 
 a.saucelink 
 	color inherit
@@ -247,6 +264,7 @@ a.permalink .id, a.saucelink
 		content " (archive)"
 		
 .recursivelink
+	font-weight bold
 	color: black !important
 	
 .comment 
