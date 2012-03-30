@@ -62,7 +62,8 @@ features.imgexpansion =
 
 		updater.after_update ->
 			preloadAll! if preloading
-			expandAll! if expanding
+			if expanding
+				expand img for img of $$ '.new a.file'
 
 	off: ->
 		listen $ \threads
