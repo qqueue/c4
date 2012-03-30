@@ -15,10 +15,7 @@ body.sfw
 		border-color #b7c5d9
 	.post:target
 		background-color #d6bad0 !important
-	.reply:not(.tripcoded):not(.uid),
-	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
-	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid),
-	#postpreview
+	.reply, #postpreview
 		background #d6daf0
 	.reply
 		border-color #b7c5d9
@@ -40,10 +37,7 @@ body.nsfw
 		border-color #808080
 	.post:target
 		background-color #f0c0b0 !important
-	.reply:not(.tripcoded):not(.uid),
-	.post.tripcoded > .comment > .post.inline:not(.tripcoded):not(.uid),
-	.post.tripcoded > .backlinks > .post.inline:not(.tripcoded):not(.uid),
-	#postpreview
+	.reply, #postpreview
 		background-color #f0e0d6
 	.reply
 		border-color #d9bfb7
@@ -332,8 +326,7 @@ a.permalink .id, a.saucelink
 		padding-left 1em
 		margin-left 0
 
-.post:not(.tripcoded) > .comment > .post.inline:not(.tripcoded),
-.post:not(.tripcoded) > .backlinks > .post.inline:not(.tripcoded) 
+.post.inline
 	background-color rgba(255,255,255,0.25)
 
 .backlink+.post.inline 

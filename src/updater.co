@@ -139,4 +139,13 @@ updater.countdown = (tminus = 30) ->
 				updater.update!
 		1000ms
 
+# start updating
+onready ->
+	# autoupdate threads
+	if board.isThread
+		updater.countdown!
+		listen document.getElementById \update-now .on \click ->
+			updater.update!
+	else
+		document.getElementById \updater .hidden = true
 

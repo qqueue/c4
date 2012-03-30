@@ -72,49 +72,54 @@ with board
 	# delete password
 	@password = get \password or Math.random!.toString!.substr -8
 
-
-# disable 4chan styles
-remove el for el of document.querySelectorAll 'link[rel*="stylesheet"], style'
-# disable 4chan's onload functions
-# we can do this because onload has to wait
-# for all the images, which obstensibly takes longer
-# than it does to load this script
-window.onload = window.onunload = undefined
-
 time "parse"
 data = parser.yotsuba document
 timeEnd "parse"
 
 time "render"
-with document.createElement \body
-	@id = board.name
-	@classList.add if board.sfw then \sfw else \nsfw
-	@classList.add if board.isThread then \threadpage else \boardpage
+# replace documentElement with new document element
+# to avoid multiple reflows of removing old styles, adding new content, etc
+# not using my DOM creation helper because it's slower, and speed is of the
+# essence here (also no $ shortcut)
+do ->
+	html = document.createElement \html
+
+	head = document.createElement \head
+	style = document.createElement \style
+	style.id = \html5chan-style
+	style.textContent =
+		'''
+		%hakase.css%
+		'''
+	head.appendChild style
+	title = document.createElement \title
+	title.textContent = board.title
+	head.appendChild title
+	html.appendChild head
+
+	body = document.createElement \body
+	body.id = board.name
+	body.classList.add if board.sfw then \sfw else \nsfw
+	body.classList.add if board.isThread then \threadpage else \boardpage
 	time "parse innerHTML"
-	@innerHTML = 
+	body.innerHTML = 
 		"""
 		%board.co.html%
 		"""
 	timeEnd "parse innerHTML"
-	time "replace body"
-	document.documentElement.replaceChild this, document.body
-	timeEnd "replace body"
+	#highlight current page
+	if board.isBoard
+		body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]" .id = \current
 
-document.head.appendChild do
-	create \style ->
-		@id = \html5chan-style
-		@textContent = 
-			'''
-			%hakase.css%
-			'''
+	html.appendChild body
 
-#highlight current page
-if board.isBoard
-	document.getElementById \pages 
-		.querySelector "a[href=\"#{board.page or board.url}\"]" 
-		.id = \current
+	# replace documentElement
+	time "replace documentElement"
+	document.replaceChild html, document.documentElement
+	timeEnd "replace documentElement"
 
 # create recaptcha with script already included on page (using 4chan's public key)
+# had to pick apart recaptcha's internal api to get it to work without theming
 document.head.appendChild do
 	create \script ->
 		@textContent =
@@ -131,6 +136,12 @@ document.head.appendChild do
 				}
 			})();"
 
+# disable 4chan's onload functions
+# we can do this because onload has to wait
+# for all the images, which obstensibly takes longer
+# than it does to load this script
+window.onload = window.onunload = void
+
 # rescroll to target element if this page hasn't been scrolled before
 # this retains the browser's natural scroll position memory
 # while still scrolling to the new hash target's position 
@@ -140,40 +151,14 @@ if window.location.hash and not sget document.URL
 	window.addEventListener \scroll function registerPage
 		sset (document.URL): true
 		window.removeEventListener \scroll registerPage
-	
+
+
 timeEnd "render"
 
-# mess with title
-if board.isThread
-	with data.thread.op
-		if @title
-			title = truncate that
-		else
-			title = ''
-			title += "#{@poster} - " if @poster is not \Anonymous
-			if (op = document.getElementById(@id).querySelector('.comment').textContent).length > 0
-				title += truncate op
-			else if @image
-				title += truncate that.filename
-			else
-				title = @time.prettyPrint!
-		title += " - /#{board.name}/" 
-		titler.text = title
+# run other onready handlers
+onready.execute data
 
-# autoupdate threads
-if board.isThread
-	updater.countdown!
-	listen document.getElementById \update-now .on \click ->
-		updater.update!
-else
-	document.getElementById \updater .hidden = true
 # enable all features
 # TODO load settings and selectively load features
 for key, feature in features
 	feature.on! unless key is \postpreview
-
-listen document.getElementById \dump-log .on \click ->
-	console.log log.messages
-
-# run other onready handlers
-onready.execute!

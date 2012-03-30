@@ -16,12 +16,8 @@ class Post
 	) ->
 		@url = if @op then @thread.url else @thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
-
 		
-		Post.tripcodes[@tripcode] = true if @tripcode
-		Post.uids[@uid] = true if @uid
-		
-		# backlinker
+		# backlinker, with some fancy logic to detect new ones
 		if quotelinks = @comment.match /&gt;&gt;\d+/g
 			for link of quotelinks
 				quoted = link.substring 8

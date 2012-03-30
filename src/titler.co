@@ -17,4 +17,20 @@ Object.defineProperties titler,
 			text := it
 			setTitle!
 
-
+onready (data) ->
+	# mess with title at start
+	if board.isThread
+		with data.thread.op
+			if @title
+				title = truncate that
+			else
+				title = ''
+				title += "#{@poster} - " if @poster is not \Anonymous
+				if ( op = @comment.replace /<[^>]+>/g '' ).length > 0
+					title += truncate op
+				else if @image
+					title += truncate that.filename
+				else
+					title = @time.prettyPrint!
+			title += " - /#{board.name}/" 
+			titler.text = title
