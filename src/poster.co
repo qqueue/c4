@@ -17,9 +17,10 @@ bottom = false # at the bottom of screen, set by scroller
 <- onready
 
 checkValidity = (e) ->
+	# TODO fix listen so it'll handle returning false from non-delegated events
 	e.preventDefault!
 	e.stopPropagation!
-	console.log "checkvalidity called!"
+
 	form = $ \postform
 	captcha = $ \recaptcha_response_field
 	file = $ \file
@@ -51,9 +52,11 @@ checkValidity = (e) ->
 
 		postStatus "Posting..."
 		$ \progress .hidden = false # show progress bar
+		$ \progress .value = 0
 
 		data = new FormData form
 		# since we're ajaxing this, need to replace email with sage
+		# if that was used to submit
 		if this is $ \sage # sage button clicked
 			data.append \email \sage
 		#ajax time!
@@ -61,9 +64,6 @@ checkValidity = (e) ->
 			@open \POST form.action
 			listen this 
 				.on \load ->
-					console.log "success!"
-					console.log this
-
 					html = document.createElement \div 
 					html.innerHTML = @response
 					console.log html
@@ -100,15 +100,12 @@ checkValidity = (e) ->
 						$ \postform .reset!
 						$ \name .value = get \name or '' # persist name
 						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-				.on \progress (e) -> 
-					console.log "progress!"
-					$ \progress .value = 100 * e.loaded / e.total
-					console.log this
-					console.log e
 				.on \loadend ->
 					$ \progress .hidden = true # hide progress bar
 
-			console.log "ajax posting!"
+			listen this.upload .on \progress (e) -> 
+				$ \progress .value = 100 * e.loaded / e.total
+
 			@send data
 
 		
