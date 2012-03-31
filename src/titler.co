@@ -26,7 +26,8 @@ onready (data) ->
 			else
 				title = ''
 				title += "#{@poster} - " if @poster is not \Anonymous
-				if ( op = @comment.replace /<[^>]+>/g '' ).length > 0
+				# poor man's textContent
+				if ( op = @comment.replace /<[^>]+>/g '' .replace /&gt;/g '>' ).length > 0
 					title += truncate op
 				else if @image
 					title += truncate that.filename

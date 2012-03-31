@@ -1,18 +1,9 @@
 <-! document.addEventListener \DOMContentLoaded
 
-# sys.4chan.org is where the post happens
-# so to fake a non-reloading ajax
-if window.location.hostname is \sys.4chan.org
-	log "sys.4chan listener"
-	# pass message back to host page
-	window.parent.postMessage document.documentElement.innerHTML, "#{window.location.protocol}//boards.4chan.org"
-
-	# switch to about:blank to prevent meta redirect
-	# on 'post successful' from loading the board page
-	# inside the hidden iframe
-	window.location = 'about:blank'
-
-	return # stop processing the rest of the script
+# force https: protocol, so ajax posting will work
+#if window.location.protocol is \http:
+	# window.location has its own 'replace' method which is weird
+#	window.location.= toString!.replace /^http/ 'https'
 
 board.name = window.location.pathname.split \/ .1
 

@@ -21,6 +21,11 @@ updater.update = ->
 		# that the request went 200 OK. not sure why, report bug maybe?
 		listen this 
 			.on \load ->
+				# why do 404 pages call 'load' handler? 
+				if @status is 404
+					titler.text += '(dead)'
+					updater.status = "thread 404'd"
+					return
 				# have to check the header instead of the status as 304,
 				# becuase if the browser caches the request (shows up in firebug as
 				# 304), it'll still be show up as 200 OK in here to prevent history
@@ -80,11 +85,7 @@ updater.update = ->
 				updater.status = "request timed out..."
 				updater.countdown!
 			.on \error ->
-				updater.status = if @status is 404
-					titler.text += '(dead)'
-					"thread 404'd"
-				else
-					"Couldn't fetch thread page!"
+				updater.status = "Couldn't fetch thread page!"
 			.on \loadend ->
 				updater.button.disabled = false
 		@send!

@@ -5,8 +5,6 @@
 // 
 // @match       http://boards.4chan.org/*
 // @match       https://boards.4chan.org/*
-// @match       http://sys.4chan.org/*
-// @match       https://sys.4chan.org/*
 // @exclude     http://boards.4chan.org/f/*
 // @exclude     https://boards.4chan.org/f/*
 //

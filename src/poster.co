@@ -16,14 +16,11 @@ bottom = false # at the bottom of screen, set by scroller
 
 <- onready
 
-document.body.appendChild create \iframe ->
-	@id = \postresponse
-	@name = \postresponse
-	@hidden = true
-
-$ \postform .target = \postresponse
-
-checkValidity = ->
+checkValidity = (e) ->
+	e.preventDefault!
+	e.stopPropagation!
+	console.log "checkvalidity called!"
+	form = $ \postform
 	captcha = $ \recaptcha_response_field
 	file = $ \file
 	comment = $ \comment
@@ -45,7 +42,7 @@ checkValidity = ->
 		"You didn't enter a comment or select a file!"
 	else ''
 
-	if $ \postform .checkValidity!
+	if form.checkValidity!
 		$ \post .disabled = true
 		$ \sage ?disabled = true
 		
@@ -53,6 +50,69 @@ checkValidity = ->
 		showform! # make sure the form stays visible
 
 		postStatus "Posting..."
+		$ \progress .hidden = false # show progress bar
+
+		data = new FormData form
+		# since we're ajaxing this, need to replace email with sage
+		if this is $ \sage # sage button clicked
+			data.append \email \sage
+		#ajax time!
+		with new XMLHttpRequest
+			@open \POST form.action
+			listen this 
+				.on \load ->
+					console.log "success!"
+					console.log this
+
+					html = document.createElement \div 
+					html.innerHTML = @response
+					console.log html
+
+					captcha = $ \recaptcha_response_field
+					file = $ \file
+					comment = $ \comment
+
+					$ \post .disabled = false
+					$ \sage ?disabled = false
+
+					if /Post successful!|uploaded!/.test html.textContent
+						postStatus 'Post successful!'
+						cooldown!
+						
+						visible := false # don't need to show form anymore
+						hideform!
+
+						$ \postform .reset!
+						$ \name .value = get \name or '' # persist name
+						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+
+						# update and show new post, giving some time for 4chan to process it
+						updater.countdown 3sec
+
+					# TODO check for other errors
+					else if /mistyped the verification/.test html.textContent
+						postStatus 'You mistyped the verification!' 
+						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+						captcha.value = ''
+						captcha.focus!
+					else if /duplicate file entry detected/
+						# TODO select for link to duplicate file
+						$ \postform .reset!
+						$ \name .value = get \name or '' # persist name
+						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+				.on \progress (e) -> 
+					console.log "progress!"
+					$ \progress .value = 100 * e.loaded / e.total
+					console.log this
+					console.log e
+				.on \loadend ->
+					$ \progress .hidden = true # hide progress bar
+
+			console.log "ajax posting!"
+			@send data
+
+		
+	return false # prevent normal submission
 
 listen $ \post .on \click checkValidity
 listen $ \sage .on \click checkValidity
@@ -77,58 +137,6 @@ cooldown = ->
 				post.textContent = tminus
 				setTimeout tick, 1000ms
 		1000ms
-
-# the hidden iframe where the form submits to
-# dumps its body back through postMessage
-# which we can then parse here to determine the status of the post
-# 
-# this is similar to the approach 4chanx takes, but instead of 
-# trying to pass all the formdata through postMessage, and
-# have the iframe make the xhr for us, we just fake 
-# a no-reload response by having the userscript also load on
-# the sys.4chan.org result page and have it send us the response.
-#
-# Unfortunately this means we cant get progress events, so no fancy
-# upload progress bar ;_;
-#
-# TODO handle new thread creation with redirect / open in new tab
-listen window .on \message ({data}) ->
-	html = create \div -> @innerHTML = data # reparse innerHTML
-	console.log html
-
-	captcha = $ \recaptcha_response_field
-	file = $ \file
-	comment = $ \comment
-
-	$ \post .disabled = false
-	$ \sage ?disabled = false
-
-	if /Post successful!|uploaded!/.test html.textContent
-		postStatus 'Post successful!'
-		cooldown!
-		
-		visible := false # don't need to show form anymore
-		hideform!
-
-		$ \postform .reset!
-		$ \name .value = get \name or '' # persist name
-		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-
-		# update and show new post, giving some time for 4chan to process it
-		updater.countdown 3sec
-	
-
-	# TODO check for other errors
-	else if /mistyped the verification/.test html.textContent
-		postStatus 'You mistyped the verification!' 
-		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-		captcha.value = ''
-		captcha.focus!
-	else if /duplicate file entry detected/
-		# TODO select for link to duplicate file
-		$ \postform .reset!
-		$ \name .value = get \name or '' # persist name
-		$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 
 # persist entered name and tripcode
 listen $ \name .on \input ->

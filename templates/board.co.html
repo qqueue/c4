@@ -87,7 +87,7 @@ else
 					<div id="buttons">
 						<button type="submit" tabindex="10" id="post" value="Submit">Post #{if board.isThread then 'Reply' else 'New Thread'}</button>
 						#{if board.isThread then """<button type="submit" name="email" value="sage" tabindex="10" id="sage">Sage Reply</button>""" else ''}
-						<span id="post-status"></span>
+						<span id="post-status"></span><progress max="100" value="0" hidden="" id="progress"></progress>
 					</div>
 				</div>
 			</form>
