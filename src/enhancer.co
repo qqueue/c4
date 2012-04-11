@@ -21,9 +21,9 @@ parser.enhance = ->
 						(\?[&=\w\-_;\#]*)? # options
 					| 
 					(?:www\.)youtube\.com\/watch\?
-						([&=\w\-_;\?\#]*) # pre video id options (annoying, since this will have to give up matches)
+						([&=\w\-_;\?\#\%]*) # pre video id options (annoying, since this will have to give up matches)
 						v=([\w\-_]+) # video id
-						([&=\w\-_;\?\#]*) # post vieo id options
+						([&=\w\-_;\?\#\%]*) # post vieo id options
 				)
 			//g
 			# using background-image so browsers will correctly draw rounded corners
