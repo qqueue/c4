@@ -1,6 +1,10 @@
 # post hover previews
-make = (e) ->
+<- onready
+<- listen $ \threads .on \mouseover 'a.quotelink'
+
+if @hash
 	remove document.getElementById \postpreview
+
 	host = closest \.post this
 
 	hostid = host.id.split \- .pop!
@@ -31,17 +35,8 @@ make = (e) ->
 	# highlight hovered replies
 	for post of document.getElementsByClassName	"post#{@hash.substring 1}"
 		post.classList.add \hovered
-	
+
 	listen this .on \mouseout function unhighlight
 		for post of document.getElementsByClassName	"post#{@hash.substring 1}"
 			post.classList.remove \hovered
 		listen this .off \mouseout unhighlight
-	
-features.postpreviews =
-	on: ->
-		listen document.getElementById \threads
-			.on \mouseenter 'a.quotelink' make
-	off: ->
-		listen document.getElementById \threads
-			.off \mouseenter make
-	
