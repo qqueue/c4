@@ -13,7 +13,7 @@ embed = (e) ->
 fetch_link = ->
 	link = this # called as event handler
 	unless @title # this prevents multiple xhrs from being created
-		@title = 'Loading video title... (re-mouse over preview to refresh)'
+		@title = 'Loading video title... (mouse over preview again to refresh)'
 		with new XMLHttpRequest
 			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
 			# fucking chrome and its problems with supporting html5
