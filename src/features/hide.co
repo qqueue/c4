@@ -2,44 +2,48 @@
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
 
+# grab or start persisted hidden hash
+hidden = get \hidden or { posts: {}, threads: {} }
+# delete expired posts to keep object small
+for key, hash in hidden
+	for key, expiry in hash
+		delete hidden[key] if expiry < Date.now!
 
-features.hide =
-	on: ->
-		hidden = {} # list of all hidden posts/threads
-		# add persisted
-		for id of get(\hidden) or []
-			hidden[id] = true
+toggle = -> 
+	# set class on referencing links
+	# TODO somehow persist this with dynamically loaded content
+	for link of $$ "a.quotelink[href=\"##it\"]" 
+		link.classList.toggle \hiddenlink
+	$ it .classList.toggle \hidden
 
-		hide = ->
-			for link of $$ "a.quotelink[href=\"##it\"]" 
-				link.classList.toggle \hiddenlink
-			$ it .classList.toggle \hidden
+<- onready
 
-		listen $ \threads
-			.on \click \button.hide !->
-				hide @value
-				if hidden[@value]
-					delete hidden[@value]
-				else
-					hidden[@value] = true
-			.on \click '.op button.hide' !->
-				thread = "thread-#{@value}"
-				hide thread
-				if hidden[thread]
-					delete hidden[thread]
-				else
-					hidden[thread] = true
-		
-		# hide all previously hidden posts and threads
-		for post of document.getElementsByClassName \post
-			hide post.id if hidden[post.id]
-		for thread of document.getElementsByClassName \thread
-			hide thread.id if hidden[thread.id]
+listen $ \threads
+	.on \click \button.hide !->
+		toggle @value
+		if hidden.posts[@value]
+			delete hidden.posts[@value]
+		else
+			hidden.posts[@value] = Date.now! + 604800000ms # 1 week
+	.on \click '.op button.hide' !->
+		thread = "thread-#{@value}"
+		toggle thread
+		if hidden.threads[thread]
+			delete hidden.threads[thread]
+		else
+			# use Thread hash to always persist sticky threads
+			hidden.threads[thread] = if Thread[@value]?sticky
+				Number.MAX_VALUE
+			else
+				Date.now! + 604800000ms # otherwise, a week should be enough
 
-		listen window .on \unload ->
-			# persist last 500 hidden threads/posts
-			# assuming Object.keys order is by creation (it's supposed to be) 
-			set \hidden, Object.keys(hidden).slice -500
-	off: ->
-		# why would you turn this off? TODO somehow rethink this
+# hide all previously hidden posts and threads
+# TODO do this at render time instead of post render for faster display
+for post of document.getElementsByClassName \post
+	toggle post.id if hidden.posts[post.id]
+for thread of document.getElementsByClassName \thread
+	toggle thread.id if hidden.threads[thread.id]
+
+# persist hidden
+listen window .on \unload -> set \hidden, hidden
 
