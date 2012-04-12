@@ -1,9 +1,8 @@
 # various utils
 # these aren't wrapped, so they are available
 # everywhere else
-# TODO namespace these to avoid embarrasing collisions
 
-# I'll take the tiny performance hit, except in the parser
+# I'll take the tiny performance hit for nicer method names, except in the parser
 $ = -> document.getElementById it
 $$ = -> document.querySelectorAll it
 
@@ -18,83 +17,69 @@ else
 
 # special prefixed getters and setters
 # to avoid a possible collision with other userscripts
-sset = (key, val) -> 
-	obj = (key): val if val
-	for key, val in obj or key
-		sessionStorage.setItem "html5chan-#key", if typeof val is \string then val else JSON.stringify val
-sget = -> 
-	try
-		JSON.parse sessionStorage.getItem "html5chan-#it"
-	catch
-		sessionStorage.getItem "html5chan-#it"
+# uses the nice property that JSON.stringify(string) is still reversible with
+# JSON.parse, since it adds the necessary double quotes
+[set, get, sset, sget] = do ->
+	setter = (storage) -> !(key, val) -> 
+		obj = (key): val if val # support both hash and key,val syntax
+		for key, val in obj or key
+			storage.setItem "html5chan-#key", JSON.stringify val
+	getter = (storage) -> -> try JSON.parse storage.getItem "html5chan-#it"
 
-set = (key, val) -> 
-	obj = (key): val if val
-	for key, val in obj or key
-		localStorage.setItem "html5chan-#key", if typeof val is \string then val else JSON.stringify val
-get = -> 
-	try
-		JSON.parse localStorage.getItem "html5chan-#it"
-	catch
-		localStorage.getItem "html5chan-#it"
-
-create = (tag, fn) -> # helper method to avoid temporary variables with createElement
-	el = document.createElement tag
-	fn.call el, el # el is also the first argument, in case 'this' is unusable
-	el
+	return 
+		setter localStorage
+		getter localStorage
+		setter sessionStorage
+		getter sessionStorage
 
 render_all = (objects, ...options) ->
 	(obj.render.apply obj, options for obj of objects).join ''
 
-# TODO compact delegated listeners
-# by checking some sort of list of listeners
-# on the same parent with the same event type
-# so when walking up the tree, we can check all
-# selectors
-mouse = mouseenter: \mouseover, mouseleave: \mouseout
-listen = (element) -> new # chainable wrapper for addEventListener
-	@on = (event, selector, handler) ->
-		return this unless element
-		if (events = event.split ' ').length > 1 # handle space separated events
-			@on e, selector, handler for e of events
-			return
-		if typeof selector is \function
-			handler = selector
-			selector = null
-		# replace non-bubbling events with those that do
-		event = that if mouse[event]
-		element.addEventListener do
-			event
-			if selector then !({target}: event) ->
-				return unless target # sometimes target disappears, weird
-				# if actual selector, or child of selector
-				# this offloads the usual strategy of walking up parentElements
-				# to the internal browser query engine
-				if target[matchesSelector] "#selector, #selector *" 
-					# still need to walk up tree to find target context
-					target.=parentElement until target[matchesSelector] selector
-					if handler.call(target, event) is false
-						event.stopPropagation!
-						event.preventDefault!
-					return 
-			# TODO add same wrapper for return false
-			else handler # just plain callback
-		return this
-	# TODO this doesn't handle delegated events very well
-	@off = (event, handler) ->
-		return this unless element
-		if (events = event.split ' ').length > 1 # handle space separated events
-			@off e, handler for e of events
-			return
-		element.removeEventListener event, handler
-		return this
+listen = do ->
+	mouse = mouseenter: \mouseover, mouseleave: \mouseout
+	(element) -> new # chainable wrapper for addEventListener
+		@on = (event, selector, handler) ->
+			return this unless element
+			if (events = event.split ' ').length > 1 # handle space separated events
+				@on e, selector, handler for e of events
+				return this
+			if typeof selector is \function
+				handler = selector
+				selector = null
+			# replace non-bubbling events with those that do
+			event = that if mouse[event]
+			element.addEventListener do
+				event
+				if selector then !({target}: event) ->
+					return unless target # sometimes target disappears, weird
+					# if actual selector, or child of selector
+					# this offloads the usual strategy of walking up parentElements
+					# to the internal browser query engine
+					if target[matchesSelector] "#selector, #selector *" 
+						# but if it does match, still need to walk up tree to find target context
+						target.=parentElement until target[matchesSelector] selector
+						if handler.call(target, event) is false
+							event.stopPropagation!
+							event.preventDefault!
+						return 
+				# TODO add same wrapper for return false, without breaking @off
+				# functionality
+				else handler # just plain callback
+			return this
+		# TODO this doesn't handle delegated events, since they are proxied
+		@off = (event, handler) ->
+			return this unless element
+			if (events = event.split ' ').length > 1 # handle space separated events
+				@off e, handler for e of events
+				return
+			element.removeEventListener event, handler
+			return this
 
 closest = (selector, el) ->
 	return false unless el
 	while el, el.=parentElement
 		return el if el[matchesSelector] selector
 remove = -> it.parentElement.removeChild it if it and it.parentElement
-
 
 do ->
 	pad = (number) ->
@@ -184,7 +169,7 @@ kup = do ->
 insertBefore = (ref, el) -> ref.parentNode.insertBefore el, ref
 insertAfter = (ref, el) -> insertBefore ref.nextSibling, el
 
-# sha1 hasher, used for e{x|-}hentai sauce
+# TODO sha1 hasher, used for e{x|-}hentai sauce
 
 truncate = (it, length = 20) -> 
 	if it.length > length then "#{it.substring 0 length}..." else it

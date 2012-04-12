@@ -111,21 +111,21 @@ do ->
 
 # create recaptcha with script already included on page (using 4chan's public key)
 # had to pick apart recaptcha's internal api to get it to work without theming
-document.head.appendChild do
-	create \script ->
-		@textContent =
-			"(function() {
-				var that;
-				if( that = document.getElementById('captcha') ) {
-					Recaptcha._init_options({
-						theme: 'custom',
-						custom_theme_widget: that
-					});
-					Recaptcha.theme = 'custom';
-					Recaptcha.widget = that;
-					Recaptcha._finish_widget();
-				}
-			})();"
+recaptcha = document.createElement \script
+recaptcha.textContent = "
+(function() {
+	var that;
+	if( that = document.getElementById('captcha') ) {
+		Recaptcha._init_options({
+			theme: 'custom',
+			custom_theme_widget: that
+		});
+		Recaptcha.theme = 'custom';
+		Recaptcha.widget = that;
+		Recaptcha._finish_widget();
+	}
+})();"
+document.head.appendChild recaptcha
 
 # disable 4chan's onload functions
 # we can do this because onload has to wait
@@ -150,6 +150,6 @@ timeEnd "render"
 onready.execute data
 
 # enable all features
-# TODO load settings and selectively load features
+# FIXME not really using the feature hash, so remove this
 for key, feature in features
 	feature.on! unless key is \postpreview

@@ -36,7 +36,7 @@ changeDisplay = ->
 
 features.imgexpansion =
 	on: ->
-		document.head.appendChild create \style ->
+		document.head.appendChild kup \style ->
 			@id = \img-style
 			@textContent = if get \img-display is \full then "" else "img.full { max-width: 100%; }"
 
