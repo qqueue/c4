@@ -413,3 +413,14 @@ a.permalink .id, a.saucelink
 	//semi-decent way to make sure fixed elements have space at the bottom
 	margin-bottom 300px
 
+// yet more functional stylins (well, barely functional)
+#lightbox
+	fixed top left
+	width 100%
+	height 100%
+	pointer-events none
+	background-color rgba(0,0,0,0)
+	transition background-color .5s
+	&.dark
+		background-color rgba(0,0,0,.5)
+

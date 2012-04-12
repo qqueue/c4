@@ -1,69 +1,37 @@
-# TODO add check to constrain image to the quandrant around the mouse
-# that has the greatest area, so a catalog-like layout is possible
-constrain = (el, {clientX: x, clientY: y}) ->
-	# why use getAttribute instead of width and height directly?
-	# width and height are affected by css styles, while getAttribute
-	# returns the value first set on the element
-	width = el.getAttribute \width
-	height = el.getAttribute \height
-	docheight = window.innerHeight - 20
-	availableheight = docheight - y
-	# using clientWidth to account for scrollbars
-	# can't use it for height because it would be the entire
-	# document height
-	# plus, ff uses quirks mode:
-	# http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
-	docwidth = document.documentElement.clientWidth - 20
-	availablewidth = docwidth - x
-	
-	# using docheight because image can stretch above mouse y
-	ratio = Math.min 1, docheight/height, availablewidth/width
+<- onready
+<- listen $ \threads .on \mouseover 'img.thumb' 
 
-	el.style.width = width * ratio
-	el.style.height = height * ratio
+remove $ \imgpreview # just in case
 
-	el.style.left = x + 10
-	if (height * ratio ) > availableheight
-		el.style.bottom = 10
-		el.style.removeProperty \top
-	else
-		el.style.top = y + 10
+width = @parentElement.getAttribute \data-width
+height = @parentElement.getAttribute \data-height
+src = @parentElement.href
 
-make = (e) ->
-	width = @parentElement.getAttribute \data-width
-	height = @parentElement.getAttribute \data-height
+docheight = window.innerHeight - 20
+# using clientWidth to account for scrollbars
+# can't use it for height because it would be the entire
+# document height
+# plus, ff uses quirks mode on 4chan:
+# http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
+docwidth = document.documentElement.clientWidth - 20
 
-	remove document.getElementById \imgpreview
+ratio = Math.min 1, docheight/height, docwidth/width
+width *= ratio
+height *= ratio
 
-	document.body.appendChild do
-		kup \img {id: \imgpreview, src: @parentElement.href, alt: "Loading...", width, height } ->
-			@on \load ->
-				@removeAttribute \alt
-				@style.opacity = 1
-			@on \error -> @alt = "Unable to load image."
+l = $ \lightbox
+l.classList.add \dark
+l.appendChild kup \img {id: \imgpreview alt: "Loading...", src, width, height } ->
+	@on \load -> @removeAttribute \alt
+	@on \error -> @alt = "Unable to load image."
 
-			constrain this, e
+	@css do
+		position: \absolute
+		top: 10 + (docheight - height) / 2
+		left: 10 + (docwidth - width) / 2
 
-			@style.opacity = 0.7
-			@style.position = \fixed
-	listen this # add listeners
-		.on \mousemove move
-		.on \mouseout destroy
+listen this .on \mouseout function destroy
+	remove $ \imgpreview
+	$ \lightbox .classList.remove \dark
+	listen this .off \mouseout destroy
 
-move = (e) -> 
-	constrain document.getElementById(\imgpreview), e
-
-destroy = (e) ->
-	remove document.getElementById \imgpreview
-	listen this
-		.off \mousemove move
-		.off \mouseout destroy
-
-# image hover previews
-features.imgpreviews = 
-	on: ->
-		listen document.getElementById \threads
-			.on \mouseover 'img.thumb' make
-	off: ->
-		listen document.getElementById \threads
-			.off \mouseenter make

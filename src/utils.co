@@ -150,6 +150,9 @@ kup = do ->
 		on: (event, selector, handler) -> listen @el .on event, selector, handler
 		off: (event, selector, handler) -> listen @el .off event, selector, handler
 
+		# simple property copy for css
+		css: -> @el.style <<< it
+
 		# proxy common attributes, non-exhaustive
 		<[
 			id classList src href style width height textContent naturalWidth naturalHeight
