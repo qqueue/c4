@@ -2,17 +2,6 @@
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
 
-# grab or start persisted hidden hash
-hidden = get \hidden 
-if hidden!? or typeof \hidden is not \object
-	hidden = {} 
-hidden.posts = {} unless hidden.posts
-hidden.threads = {} unless hidden.threads
-
-# delete expired posts to keep object small
-for key, hash in hidden
-	for key, expiry in hash
-		delete hidden[key] if expiry < Date.now!
 
 toggle = -> 
 	# set class on referencing links
@@ -23,13 +12,27 @@ toggle = ->
 
 <- onready
 
+# grab or start persisted hidden hash
+hidden = get \hidden 
+if hidden!? or typeof hidden is not \object
+	hidden = {} 
+hidden.posts = {} unless hidden.posts
+hidden.threads = {} unless hidden.threads
+
+# delete expired posts to keep object small
+for type, hash in hidden
+	for key, expiry in hash
+		delete hash[key] if expiry < Date.now!
+
 listen $ \threads
-	.on \click \button.hide !->
+	.on \click '.reply button.hide' !->
 		toggle @value
 		if hidden.posts[@value]
 			delete hidden.posts[@value]
 		else
 			hidden.posts[@value] = Date.now! + 604800000ms # 1 week
+		# persist
+		set \hidden, hidden
 	.on \click '.op button.hide' !->
 		thread = "thread-#{@value}"
 		toggle thread
@@ -41,14 +44,13 @@ listen $ \threads
 				Number.MAX_VALUE
 			else
 				Date.now! + 604800000ms # otherwise, a week should be enough
-
+		# persist
+		set \hidden, hidden
 # hide all previously hidden posts and threads
 # TODO do this at render time instead of post render for faster display
 for post of document.getElementsByClassName \post
 	toggle post.id if hidden.posts[post.id]
 for thread of document.getElementsByClassName \thread
-	toggle thread.id if hidden.threads[thread.id]
-
-# persist hidden
-listen window .on \unload -> set \hidden, hidden
+	if hidden.threads[thread.id]
+		toggle thread.id 
 
