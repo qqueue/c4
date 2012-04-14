@@ -50,26 +50,37 @@ class Post
 	render: (container, classes = '', id)->
 		"""
 		<#container class="#classes #{@className!}" id="#{id or @id}">
-			<header>
-				<h1>
-					<input type="checkbox" value="delete" name="#{@id}" form="delform">
-					<button type="button" class="hide" value="#{@id}">&times;</button>
-					<button type="submit" form="reportform" class="report" name="no" value="#{@id}">!</button>
-					<span class="title">#{@title or ''}</span>
-					<a class="poster" #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
+			<h1>
+				<input type="checkbox" value="delete" name="#{@id}" form="delform">
+				<button type="button" class="hide" value="#{@id}">&times;</button>
+				<button type="submit" form="reportform" class="report" name="no" value="#{@id}">!</button>
+				<span class="title">#{@title or ''}</span>
+				<a class="poster" #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
 
-					<span class="tripcode">#{@tripcode or ''}</span>
-					<span class="capcode">#{@capcode or ''}</span>
-					<span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
-					<time pubdate datetime="#{@time.toISOString!}" title="#{@time.prettyPrint!}">#{@time.prettyRelative!}</time>
-					#{if @op and @thread.sticky then '<img alt="sticky" src="//static.4chan.org/image/sticky.gif">' else ''}
-					#{if @op and @thread.closed then '<img alt="closed" src="//static.4chan.org/image/closed.gif">' else ''}
-					#{if @op and @thread.preview then "<a href=\"#{@url}\" class=\"replylink\">[Reply]</a>" else ''}
-					<a href="#{@url}" class="permalink">No.<span class="id">#{@id}</span></a>
-				</h1>
-				#{@image?info! or ''}
-			</header>
-			#{@image?render! or ''}
+				<span class="tripcode">#{@tripcode or ''}</span>
+				<span class="capcode">#{@capcode or ''}</span>
+				<span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
+				<time pubdate datetime="#{@time.toISOString!}" title="#{@time.prettyPrint!}">#{@time.prettyRelative!}</time>
+				#{if @op and @thread.sticky then '<img alt="sticky" src="//static.4chan.org/image/sticky.gif">' else ''}
+				#{if @op and @thread.closed then '<img alt="closed" src="//static.4chan.org/image/closed.gif">' else ''}
+				#{if @op and @thread.preview then "<a href=\"#{@url}\" class=\"replylink\">[Reply]</a>" else ''}
+				<a href="#{@url}" class="permalink">No.<span class="id">#{@id}</span></a>
+			</h1>
+			#{if @image
+				"""			
+				<div class="fileinfo">
+					<span class="dimensions">#{@image.width}x#{@image.height}</span>
+					<span class="size">#{@image.size}</span>
+					<span class="filename">#{@image.filename or ''}</span>
+					<a class="saucelink" href="http://iqdb.org/?url=#{@image.url}" target="_blank">iqdb</a>
+					<a class="saucelink" href="http://google.com/searchbyimage?image_url=#{@image.url}" target="_blank">google</a>
+				</div>
+				<a class="file" target="_blank" href="#{@image.url}" data-width="#{@image.width}" data-height="#{@image.height}">
+					<img class="thumb" src="#{@image.thumb.url}" width="#{@image.thumb.width}" height="#{@image.thumb.height}">
+				</a>
+				"""
+			else ''
+			}
 			#{if @deletedImage then '<img class="deleted-image" alt="File deleted." src="//static.4chan.org/image/filedeleted.gif">' else ''}
 			<div class="comment">#{@comment}</div>
 			<footer class="backlinks">#{@backlinks!}</footer>

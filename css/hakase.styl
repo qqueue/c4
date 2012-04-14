@@ -115,9 +115,9 @@ body > header
 	border-width 0 1px 1px 0
 	// motherfucking yellow fade
 	transition-property background-color
-	transition-duration 5s
+	transition-duration 4s
 
-.replies > .post > header > .fileinfo
+.replies > .post > .fileinfo
 	counter-increment image
 	&:before
 		content '#'counter(image, decimal)
@@ -126,7 +126,7 @@ body > header
 .reply.new
 	background-color #feffbf !important
 
-.sage > header > h1 > .poster:after 
+.sage > h1 > .poster:after 
 	content " (sage)"
 
 .reply:before 
@@ -144,7 +144,7 @@ body > header
 	font-size 100%
 	font-weight normal
 
-.op > header > h1 
+.op > h1 
 	font-size 130%
 
 .post .title 

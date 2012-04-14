@@ -83,21 +83,20 @@ parser.yotsuba = (document, {preview, threadPath} = {preview: board.isBoard, thr
 	imageEls = Array::slice.call context.querySelectorAll 'img[md5]'
 	images = for thumb,i of imageEls
 		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
-		new Image do		
-			thumb:
-				url: thumb.src
-				width: thumb.width
-				height: thumb.height
-			url: thumb.parentNode.href
-			
-			width: parseInt dimensions[1], 10
-			height: parseInt dimensions[2], 10
-			
-			size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-			filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
-			md5: thumb.getAttribute 'md5'
-			
-			spoiler: /^Spoiler Image/.test thumb.alt
+		thumb:
+			url: thumb.src
+			width: thumb.width
+			height: thumb.height
+		url: thumb.parentNode.href
+		
+		width: parseInt dimensions[1], 10
+		height: parseInt dimensions[2], 10
+		
+		size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+		filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
+		md5: thumb.getAttribute 'md5'
+		
+		spoiler: /^Spoiler Image/.test thumb.alt
 	
 	ids = context.querySelectorAll 'input[value="delete"]'
 	times = context.getElementsByClassName \posttime
