@@ -153,3 +153,22 @@ onready.execute data
 # FIXME not really using the feature hash, so remove this
 for key, feature in features
 	feature.on! unless key is \postpreview
+
+# trying catalog-like loading
+# fascinating, it works pretty much as expected
+/*
+if board.isBoard
+	for i from 1 to 15
+		with new XMLHttpRequest
+			@open \GET board.url + i
+			listen this .on \load ->
+				html = document.createElement \div
+				html.innerHTML = @response
+
+				{threads} = parser.yotsuba html
+				el = $ \threads
+				for thread of threads
+					unless $ "thread-#{thread.id}"
+						el.appendChild thread.element!
+			@send!
+*/					
