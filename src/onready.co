@@ -63,10 +63,9 @@ with board
 	# delete password
 	@password = get \password or Math.random!.toString!.substr -8
 
-time "parse"
-data = parser.yotsuba document
-timeEnd "parse"
-
+data = parser.board document
+console.dir data
+/*
 time "render"
 # replace documentElement with new document element
 # to avoid multiple reflows of removing old styles, adding new content, etc
@@ -153,7 +152,7 @@ onready.execute data
 # FIXME not really using the feature hash, so remove this
 for key, feature in features
 	feature.on! unless key is \postpreview
-
+*/
 # trying catalog-like loading
 # fascinating, it works pretty much as expected
 /*

@@ -1,7 +1,6 @@
 class Thread
-	(@id, @preview, fn) ->
+	postprocess: ->
 		@url = board.threadurl+@id
-		fn.call this # additional constructing in parser
 		
 		#convenience array including op
 		@posts = [@op].concat @replies

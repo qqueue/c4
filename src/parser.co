@@ -13,136 +13,224 @@ parser.date = do ->
 			( parseInt( match.4, 10 ) + timezone ) % 24
 			parseInt( match.5, 10 )
 
-# in the context of given document
-# TODO need to split this up into board and thread parsers
-# while still sharing some parts, since a lot of the logic
-# is working around stupid board pages
-parser.yotsuba = (document, {preview, threadPath} = {preview: board.isBoard, threadPath: board.threadPath}) ->
-	# TODO this is a hack to avoid reparsing 
-	# move this to updater, or to onready
-	# if last-modified on the ajax call is less than this
-	parser.last_parse = Date.now!
+# lots of repetition in the interest of speed:
+# * no conversion of NodeList to Array
+# * as few method calls as possible
+# * use indices instead of Array.push/shift
 
-	context = document.querySelector 'form[name="delform"]'
-	n = 0 # counter for elements that always exist
-	_poster = 0 # need separate counter since capcodes are hidden in this selector
-	parsePost = (thread, op, testAttr, testObj) -> 
-		p = new Post do
-			ids[n].name
-			op
-			thread
-			parser.date times[n].textContent
-			titles[n].textContent
-			posters[_poster++].textContent
-			comments[n]
-			(email = true) and emails.shift().href.substring(7) if emails[0]?.parentNode[testAttr] is testObj
-			imageEls.shift() and images.shift() if imageEls[0]?.parentNode[testAttr] is testObj
-			!!deletedImages.shift() if deletedImages[0]?[testAttr] is testObj
-			# tripcode gets wrapped in the email anchor if present
-			(if tripcodes[0] and (if email? then tripcodes[0].parentNode else tripcodes[0])[testAttr] is testObj
-				emails.shift() if emails[0]?[testAttr] is testObj # clear extra linkmail element
-				tripcodes.shift().textContent
-			)
-			# capcodes are hidden within reply posters, even for ops
-			posters[_poster++].textContent if /##/.test(posters[_poster]?textContent)
-			# only applicable on forced anon boards
-			if uids[n] and uids[n].textContent is not '(ID: Heaven)'
-				uids[n].textContent.match /\(ID: ([^)]+)\)/ .1
-		n++
-		return p
+# returns Array of threads
+# TODO combine image regexes 
+parser.board =  (document) ->
+	time "parse board"
+	time "select elements"
+	# everything relevent is in the delform, so we can make queries to it
+	# (probably) faster than the entire document
+	delform = document.querySelector 'form[name="delform"]'
 
-	# ########################################################
-	time "preprocess"
-	# ########################################################
-	if not preview
-		opHash = '#'+board.threadId
-		
-		# classify op and crossthread links
-		time "classify links"
-		for link of context.getElementsByClassName \quotelink
-			unless />>>/.test link.textContent # skip crossboard links
-				if opHash is link.hash
-					link.className += ' oplink'
-				else if link.pathname and link.pathname is not threadPath
-					link.className += ' crossthread'
-		timeEnd "classify links"
-	else # board page
-		omittedposts = Array::slice.call context.getElementsByClassName \omittedposts
-		
-	time "label elements"
-	numThreads = 0
-	for el of context.children # our wonderful parent element
-		break if el.tagName is "CENTER" # the ad at the end of the threads
-		if el.tagName is "HR"
-			numThreads++
-			continue
-		el.threadNum = numThreads # oh so horrible
-	timeEnd "label elements"
+	# to reduce the number of DOM queries, pull out some attribute's elements
+	# separately, instead of nested queries inside each comment
+	# however, attributes that can be gotten through tree walking, like
+	# tripcodes or images, are not queried at all
+
+	# these elements can be selected for easily, since they exist in every post
+	# getElementsBy{Tag|Class}Name is marginally faster than querySelector
+	comments = delform.getElementsByTagName \blockquote
+	times = delform.getElementsByClassName \posttime
+	uids = delform.getElementsByClassName \posteruid
+
+	post = 0 # to avoid Array.shift! calls, keep a common iterator to the above NodeLists
 	
-	fileinfos = context.getElementsByClassName \filesize
-	imageEls = Array::slice.call context.querySelectorAll 'img[md5]'
-	images = for thumb,i of imageEls
-		dimensions = fileinfos[i].innerHTML.match /(\d+)x(\d+)/
-		thumb:
-			url: thumb.src
-			width: thumb.width
-			height: thumb.height
-		url: thumb.parentNode.href
-		
-		width: parseInt dimensions[1], 10
-		height: parseInt dimensions[2], 10
-		
-		size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-		filename: fileinfos[i].innerHTML.match(/title="([^"]+)"/)?[1]
-		md5: thumb.getAttribute 'md5'
-		
-		spoiler: /^Spoiler Image/.test thumb.alt
-	
-	ids = context.querySelectorAll 'input[value="delete"]'
-	times = context.getElementsByClassName \posttime
+	# finding the ids from the delete checkbox values is faster than trying to
+	# select the permalinks, or the named anchors
+	ids = delform.querySelectorAll 'input[value="delete"]'
 
-	uids = context.getElementsByClassName \posteruid # /b/'s forced anon
+	# these things exist only in replies
+	reply_titles = delform.getElementsByClassName \replytitle
 
-	emails = Array::slice.call context.getElementsByClassName('linkmail')
-	tripcodes = Array::slice.call context.getElementsByClassName('postertrip')
-	deletedImages = Array::slice.call context.querySelectorAll('img[alt="File deleted."]')
+	# op titles are inexplicably filetitles
+	op_titles = delform.getElementsByClassName \filetitle
 
-	time "clean comments"
-	comments = for el of context.getElementsByTagName \blockquote
-		parser.enhance el
-		
-	timeEnd "clean comments"
-	
-	posters = context.querySelectorAll '.postername, .commentpostername'
-	titles = context.querySelectorAll '.filetitle, .replytitle'
-	replyEls = context.getElementsByClassName \reply
+	# since stickies are by definition on the top, we'll just grab the count
+	stickies = delform.querySelectorAll 'img[alt="sticky"]' .length
 
-	# stickies are at the top, so we just need the number of them
-	stickies = context.querySelectorAll('img[alt="sticky"]').length
-	# we could probably assume locked threads are too, but we'll be safe
-	closedThreads = Array::slice.call context.querySelectorAll('img[alt="closed"]')
-	timeEnd "preprocess"
-	# ########################################################
+	# locked thread icon, and some bookkeeping
+	locks = delform.querySelectorAll 'img[alt="closed"]'
+	locked_threads = locks.length
+	current_lock = 0
+
+	# reply elements, for all the threads, which will be sorted out later
+	replies = delform.getElementsByClassName \reply
+	num_replies = replies.length
+	current_reply = 0 # idx
+
+	# there is one <a name="0"> for each thread
+	anchors = delform.querySelectorAll 'a[name="0"]'
+
+	timeEnd "select elements"
+
 	time "create objects"
-	# ########################################################
-	threads = for i til numThreads
-		new Thread ids[n].name, preview, ->
-			@op = parsePost this, true, \threadNum, i
-			@replies = for el of replyEls 
-				if el.parentNode.parentNode.parentNode.threadNum is i # walk to table from td
-					parsePost this, false, \parentNode, el 
-			if closedThreads[0]?parentNode.threadNum is i
-				@locked = !!closedThreads.shift()
-			@sticky = !!stickies-- if stickies > 0
 
-			if preview and omittedposts[0]?.threadNum is i
-				omitted = omittedposts.shift().textContent
-				@omitted =
-					replies: parseInt(omitted.match(/\d+(?= posts?)/), 10) or 0
-					imageReplies: parseInt(omitted.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+	threads = []
+	for anchor, thread_num of anchors
+		t = new Thread
+		t.id = ids[post].name # this is also the OP's id
+		t.preview = true
+
+		# after OP:
+		# <blockquote>
+		# <span.omittedposts>
+		if (omitted = comments[post].nextElementSibling)?className is \omittedposts
+			t.omitted = 
+				replies: parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
+				imageReplies: parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+
+		t.sticky = !!stickies-- if stickies > 0 # true if there are more stickies
+		if locked_threads > 0 and current_lock < locked_threads
+			# exploit the fact that locked icon is in the span#nothread<threadid>
+			# node, which we can test against the thread id
+			if locks[current_lock].parentNode.id.substring(8) is t.id
+				t.locked = true
+				++locked_threads
 		
+		t.op = op = new Post
+		op.id = ids[post].name
+		op.op = true 
+		op.thread = t # circular reference for rendering
+		op.time = parser.date times[post].textContent
+		op.title = (title = op_titles[thread_num]).textContent
+		op.poster = (poster = title.nextElementSibling).textContent
+		op.uid = uids[post]?textContent
+		op.comment = parser.enhance comments[post]
+
+		# email is always wrapped in a postername, substring 7 strips 'mailto:'
+		op.email = poster.firstElementChild?href?substring 7
+
+		# image detection:
+		# <span.filesize>
+		# <br>
+		# <a.thumbnail>
+		# <a name="0"> <-- for every thread
+		if (thumb = anchor.previousElementSibling )?href # detect thumbnail link
+			# <span.filesize>
+			info = thumb.previousElementSibling.previousElementSibling.innerHTML
+			thumb.=firstElementChild # img inside link	
+			dimensions = info.match /(\d+)x(\d+)/
+			op.image = 
+				thumb:
+					url: thumb.src
+					width: thumb.width
+					height: thumb.height
+				url: thumb.parentNode.href
+				
+				width: parseInt dimensions[1], 10
+				height: parseInt dimensions[2], 10
+				
+				size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+				filename: info.match(/title="([^"]+)"/)?[1]
+				md5: thumb.getAttribute 'md5'
+				
+				spoiler: /^Spoiler Image/.test thumb.alt
+
+		# TODO op.deletedImage = once I find a deleted image
+
+		# trips always follow posters
+		if (trip = poster.nextElementSibling).className is \postertrip
+			op.tripcode = trip.textContent
+
+		# capcodes follow either postername for Anonymous ## Mod
+		# or tripcode for Moot ## Admin
+		if ( op.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+			op.capcode = cap.textContent
+
+		op.postprocess! # run backlinker and other stuff
+
+		++post # flush OP's attributes
+
+		t.replies = []
+
+		# the next reply's table outer element is either the omitted replies
+		# indicator, or the OP's comment. If it's not, than this thread has no
+		# replies yet
+		before_first_reply_table = replies[current_reply].parentNode.parentNode.parentNode.previousElementSibling
+		if before_first_reply_table is omitted or before_first_reply_table is comments[post - 1]
+			reply_idx = 0 # idx for thread's current replies
+			for ever # this loop breaks at the end of each thread
+				td = replies[current_reply] 
+
+				r = new Post
+				r.id = ids[post].name
+				r.op = false
+				r.thread = t
+				r.time = parser.date times[post].textContent
+				r.title = (title = reply_titles[current_reply]).textContent
+				r.poster = (poster = title.nextElementSibling).textContent
+				r.uid = uids[post]?textContent
+				r.comment = parser.enhance comments[post]
+
+				r.email = poster.firstElementChild?href?substring 7
+
+				#	<span.filesize>
+				#	<br>
+				#	<a.thumbnail>
+				#	<blockquote> <-- comment
+				if (thumb = comments[post].previousElementSibling )?href # detect thumbnail link
+					# <span.filesize>
+					info = thumb.previousElementSibling.previousElementSibling.innerHTML
+					thumb.=firstElementChild # img inside link	
+					dimensions = info.match /(\d+)x(\d+)/
+					r.image = 
+						thumb:
+							url: thumb.src
+							width: thumb.width
+							height: thumb.height
+						url: thumb.parentNode.href
+						
+						width: parseInt dimensions[1], 10
+						height: parseInt dimensions[2], 10
+						
+						size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+						filename: info.match(/title="([^"]+)"/)?[1]
+						md5: thumb.getAttribute 'md5'
+						
+						spoiler: /^Spoiler Image/.test thumb.alt
+
+				# TODO r.deletedImage = once I find a deleted image
+
+				# trips always follow posters
+				if (trip = poster.nextElementSibling).className is \postertrip
+					r.tripcode = trip.textContent
+
+				# capcodes follow either postername for Anonymous ## Mod
+				# or tripcode for Moot ## Admin
+				if ( r.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+					r.capcode = cap.textContent
+				
+				r.postprocess!
+
+				t.replies[reply_idx] = r # add reply to array
+				++post # increment index for attributes
+				++reply_idx
+				++current_reply
+
+				# if <td>.<tr>.<tbody>.<table> is followed by a BR instead of an anchor
+				# it is the last reply for this thread (cool huh)
+				break if td.parentNode.parentNode.parentNode.nextElementSibling.tagName is \BR
+
+		t.postprocess! # thread references and other stuff
+		threads[thread_num] = t
+
 	timeEnd "create objects"
+	timeEnd "parse board"
+	return threads
 
-	thread: threads[0] unless preview
-	threads: threads
-
+/*
+# classify op and crossthread links
+time "classify links"
+for link of context.getElementsByClassName \quotelink
+	unless />>>/.test link.textContent # skip crossboard links
+		if opHash is link.hash
+			link.className += ' oplink'
+		else if link.pathname and link.pathname is not threadPath
+			link.className += ' crossthread'
+timeEnd "classify links"
+*/

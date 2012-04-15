@@ -1,19 +1,6 @@
 class Post
-	(	
-		@id
-		@op
-		@thread
-		@time
-		@title
-		@poster
-		@comment
-		@email
-		@image
-		@deletedImage
-		@tripcode
-		@capcode 
-		@uid
-	) ->
+	# constructor is inlined into parser
+	postprocess: ->
 		@url = if @op then @thread.url else @thread.url+'#'+@id
 		@sage = /^sage$/i.test @email
 		
