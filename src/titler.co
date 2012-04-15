@@ -17,10 +17,10 @@ Object.defineProperties titler,
 			text := it
 			setTitle!
 
-onready (data) ->
+onready (thread, threads) ->
 	# mess with title at start
 	if board.isThread
-		with data.thread.op
+		with thread.op
 			if @title
 				title = truncate that
 			else

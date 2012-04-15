@@ -88,6 +88,9 @@ checkValidity = (e) ->
 
 						# update and show new post, giving some time for 4chan to process it
 						updater.countdown 3sec
+						# reset last_parse to force an update, since 4chan's timestamp
+						# often lies
+						parser.last_parse = 0
 
 					# TODO check for other errors
 					else if /mistyped the verification/.test html.textContent

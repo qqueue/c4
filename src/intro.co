@@ -27,7 +27,7 @@ titler = {}
 # handlers with return, we implement a custom callback queue
 onready = -> onready.handlers.push it
 onready.handlers = []
-onready.execute = !(data) -> fn data for fn of onready.handlers
+onready.execute = !(thread, threads) -> fn thread, threads for fn of onready.handlers
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access

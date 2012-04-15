@@ -136,13 +136,14 @@ parser.board =  (document) ->
 
 		# TODO op.deletedImage = once I find a deleted image
 
-		# trips always follow posters
-		if (trip = poster.nextElementSibling).className is \postertrip
+		# trips always follow posters, unless they have an email, in which case
+		# they are maddening wrapped INSIDE the linkmail
+		if (trip = poster.nextElementSibling).className is \postertrip or trip.className is \linkmail
 			op.tripcode = trip.textContent
 
 		# capcodes follow either postername for Anonymous ## Mod
 		# or tripcode for Moot ## Admin
-		if ( op.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+		if ( op.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or ( !op.tripcode and (cap = poster.nextElementSibling).firstElementChild )
 			op.capcode = cap.textContent
 
 		op.postprocess! # run backlinker and other stuff
@@ -202,13 +203,14 @@ parser.board =  (document) ->
 
 				# TODO r.deletedImage = once I find a deleted image
 
-				# trips always follow posters
-				if (trip = poster.nextElementSibling).className is \postertrip
+				# trips always follow posters, unless they have an email, in which case
+				# they are maddening wrapped INSIDE the linkmail
+				if (trip = poster.nextElementSibling).className is \postertrip or trip.className is \linkmail
 					r.tripcode = trip.textContent
 
 				# capcodes follow either postername for Anonymous ## Mod
 				# or tripcode for Moot ## Admin
-				if ( r.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+				if ( r.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or ( !r.tripcode and (cap = poster.nextElementSibling).firstElementChild )
 					r.capcode = cap.textContent
 				
 				r.postprocess!
@@ -306,13 +308,14 @@ parser.thread = (document) ->
 
 	# TODO op.deletedImage = once I find a deleted image
 
-	# trips always follow posters
-	if (trip = poster.nextElementSibling).className is \postertrip
+	# trips always follow posters, unless they have an email, in which case
+	# they are maddening wrapped INSIDE the linkmail
+	if (trip = poster.nextElementSibling).className is \postertrip or trip.className is \linkmail
 		op.tripcode = trip.textContent
 
 	# capcodes follow either postername for Anonymous ## Mod
 	# or tripcode for Moot ## Admin
-	if ( op.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+	if ( op.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or ( !op.tripcode and (cap = poster.nextElementSibling).firstElementChild )
 		op.capcode = cap.textContent
 
 	op.postprocess! # run backlinker and other stuff
@@ -361,10 +364,12 @@ parser.thread = (document) ->
 
 		# TODO r.deletedImage = once I find a deleted image
 
-		if (trip = poster.nextElementSibling).className is \postertrip
+		# trips always follow posters, unless they have an email, in which case
+		# they are maddening wrapped INSIDE the linkmail
+		if (trip = poster.nextElementSibling).className is \postertrip or trip.className is \linkmail
 			r.tripcode = trip.textContent
 
-		if ( r.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+		if ( r.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or ( !r.tripcode and (cap = poster.nextElementSibling).firstElementChild)
 			r.capcode = cap.textContent
 		
 		r.postprocess!

@@ -33,9 +33,6 @@ updater.update = ->
 				# cache-busting parameter to the URL, forcing a full server response
 				# every time (which along with if-modified-since, allows them to test
 				# for a real 304 response).
-				# TODO yet, cloudflare/4chan sometimes lies about the last-modified
-				# header, so it'd be good to clear parser.last_parse after the user
-				# posts, where I notice the problem.
 				last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
 				if last_modified > parser.last_parse
 					updater.status = "update detected, parsing"
@@ -49,7 +46,7 @@ updater.update = ->
 					html = document.createElement \div
 					html.innerHTML = @response
 
-					{thread} = parser.yotsuba html
+					thread = parser.thread html
 					if thread.new.length > 0
 						document.querySelector '#thread-' + thread.id + ' .replies'
 							.insertAdjacentHTML do
