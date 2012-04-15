@@ -24,6 +24,8 @@ size_regex = /[\d\.]+ [KM]?B/
 filename_regex = /title="([^"]+)"/
 spoiler_regex = /^Spoiler Image/
 
+sage_regex = /^sage$/i
+
 # returns Array of threads
 parser.board =  (document) ->
 	time "parse board"
@@ -100,6 +102,7 @@ parser.board =  (document) ->
 		
 		t.op = op = new Post
 		op.id = ids[post].name
+		op.url = t.url
 		op.op = true 
 		op.thread = t # circular reference for rendering
 		op.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
@@ -110,6 +113,7 @@ parser.board =  (document) ->
 
 		# email is always wrapped in a postername, substring 7 strips 'mailto:'
 		op.email = poster.firstElementChild?href?substring 7
+		op.sage = sage_regex.test op.email
 
 		# image detection:
 		# <span.filesize>
@@ -170,6 +174,7 @@ parser.board =  (document) ->
 
 				r = new Post
 				r.id = ids[post].name
+				r.url = t.url+'#'+r.id
 				r.op = false
 				r.thread = t
 				r.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
@@ -179,6 +184,7 @@ parser.board =  (document) ->
 				r.comment = parser.enhance comments[post]
 
 				r.email = poster.firstElementChild?href?substring 7
+				r.sage = sage_regex.test r.email
 
 				#	<span.filesize>
 				#	<br>
@@ -275,6 +281,7 @@ parser.thread = (document) ->
 	
 	t.op = op = new Post
 	op.id = ids[post].name
+	op.url = t.url
 	op.op = true 
 	op.thread = t # circular reference for rendering
 	op.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
@@ -285,6 +292,7 @@ parser.thread = (document) ->
 
 	# email is always wrapped in a postername, substring 7 strips 'mailto:'
 	op.email = poster.firstElementChild?href?substring 7
+	op.sage = sage_regex.test op.email
 	
 	# image detection:
 	# <delform>
@@ -332,6 +340,7 @@ parser.thread = (document) ->
 	for td, i of replies
 		r = new Post
 		r.id = ids[post].name
+		r.url = t.url+'#'+r.id
 		r.op = false
 		r.thread = t
 		r.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
@@ -341,6 +350,7 @@ parser.thread = (document) ->
 		r.comment = parser.enhance comments[post]
 
 		r.email = poster.firstElementChild?href?substring 7
+		r.sage = sage_regex.test r.email
 
 		#	<span.filesize>
 		#	<br>

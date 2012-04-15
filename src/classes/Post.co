@@ -1,9 +1,6 @@
 class Post
 	# constructor is inlined into parser
 	postprocess: ->
-		@url = if @op then @thread.url else @thread.url+'#'+@id
-		@sage = /^sage$/i.test @email
-		
 		# backlinker, with some fancy logic to detect new ones
 		if quotelinks = @comment.match /&gt;&gt;\d+/g
 			for link of quotelinks
