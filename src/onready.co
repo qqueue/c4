@@ -64,7 +64,6 @@ with board
 	@password = get \password or Math.random!.toString!.substr -8
 
 data = parser.board document
-console.dir data
 /*
 time "render"
 # replace documentElement with new document element

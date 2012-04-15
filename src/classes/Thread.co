@@ -1,7 +1,5 @@
 class Thread
 	postprocess: ->
-		@url = board.threadurl+@id
-		
 		#convenience array including op
 		@posts = [@op].concat @replies
 

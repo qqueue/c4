@@ -74,6 +74,7 @@ parser.board =  (document) ->
 	for anchor, thread_num of anchors
 		t = new Thread
 		t.id = ids[post].name # this is also the OP's id
+		t.url = board.threadurl + t.id
 		t.preview = true
 
 		# after OP:
@@ -148,10 +149,13 @@ parser.board =  (document) ->
 
 		t.replies = []
 
-		# the next reply's table outer element is either the omitted replies
-		# indicator, or the OP's comment. If it's not, than this thread has no
-		# replies yet
-		before_first_reply_table = replies[current_reply].parentNode.parentNode.parentNode.previousElementSibling
+		# the next reply's table outer element's 2nd previous sibling is either
+		# the omitted replies indicator, or the OP's comment. If it's not, 
+		# than this thread has no replies yet:
+		# <omitted> or <blockquote>
+		# <a name="">
+		# <first reply table>
+		before_first_reply_table = replies[current_reply].parentNode.parentNode.parentNode.previousElementSibling.previousElementSibling
 		if before_first_reply_table is omitted or before_first_reply_table is comments[post - 1]
 			reply_idx = 0 # idx for thread's current replies
 			for ever # this loop breaks at the end of each thread
