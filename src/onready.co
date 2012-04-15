@@ -1,5 +1,6 @@
 <-! document.addEventListener \DOMContentLoaded
 
+time "render"
 # force https: protocol, so ajax posting will work
 #if window.location.protocol is \http:
 	# window.location has its own 'replace' method which is weird
@@ -66,17 +67,15 @@ with board
 if board.isThread then 
 	thread = parser.thread document 
 	threads = [thread] # for rendering conformity
-	console.dir thread
 else 
 	threads = parser.board document
-	console.dir threads
 
-time "render"
 # replace documentElement with new document element
 # to avoid multiple reflows of removing old styles, adding new content, etc
 # not using my DOM creation helper because it's slower, and speed is of the
 # essence here (also no $ shortcut)
 do ->
+	time "create elements"
 	html = document.createElement \html
 
 	head = document.createElement \head
@@ -108,6 +107,7 @@ do ->
 
 	html.appendChild body
 
+	timeEnd "create elements"
 	# replace documentElement
 	time "replace documentElement"
 	document.replaceChild html, document.documentElement
