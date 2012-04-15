@@ -17,8 +17,7 @@ log = do ->
 # so that the parts of the script can
 # access each other since this file
 # is compiled without the IEFE wrapper
-parser = {} # holds parsing functions
-features = {}
+parser = {} 
 board = {}
 updater = {}
 titler = {}

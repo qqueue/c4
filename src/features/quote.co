@@ -1,16 +1,8 @@
-# TODO figure out how to constrain the selection to just
-# the post selected, for kicks
-quote = ->
-	selection = window.getSelection!toString!trim!
-	selection = ">#selection\n" if(selection) 
-	$ \comment .value += ">>#{@textContent}\n#selection"
-	$ \comment .focus!
-	return false
+<- onready
+<- listen $ \threads .on \click '.permalink .id'
 
-features.quote =
-	on: ->
-		listen document.getElementById \threads
-			.on \click '.permalink .id' quote
-	off: ->
-		listen document.getElementById \threads
-			.off \click quote
+selection = window.getSelection!toString!trim!
+selection = ">#selection\n" if(selection) 
+$ \comment .value += ">>#{@textContent}\n#selection"
+$ \comment .focus!
+return false

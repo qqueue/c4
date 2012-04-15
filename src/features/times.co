@@ -1,13 +1,9 @@
-timeout = null
-
-features.times =
-	on: ->
-		timeout := setTimeout do
-			function updateTimes
-				for el of document.getElementsByTagName \time 
-					el.textContent = new Date el.getAttribute \datetime .prettyRelative!
-				timeout := setTimeout updateTimes, 60000ms
-			60000ms
-	off: ->
-		clearTimeout timeout
-
+# update relative post times every minute
+<- onready
+timeout = void # so coco recognizes this variable in this scope
+timeout = setTimeout do
+	function updateTimes
+		for el of document.getElementsByTagName \time 
+			el.textContent = new Date el.getAttribute \datetime .prettyRelative!
+		timeout := setTimeout updateTimes, 60000ms
+	60000ms

@@ -1,7 +1,3 @@
-# TODO fix styling in chrome by switching to 
-# background-image-based approach
-# also makes the > play button easier without weird
-# psuedoelements
 # TODO add close button somehow
 # embed youtube links on click
 embed = (e) ->
@@ -13,6 +9,10 @@ embed = (e) ->
 fetch_link = ->
 	link = this # called as event handler
 	unless @title # this prevents multiple xhrs from being created
+		# this is a sad workaround for firefox, which doesn't display a new tooltip
+		# if the tooltip changes after it is displayed
+		# TODO instead of titles, use a custom js-based tooltip
+		# or man up and fetch all video titles an load, in batches of 50
 		@title = 'Loading video title... (mouse over preview again to refresh)'
 		with new XMLHttpRequest
 			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
@@ -20,25 +20,24 @@ fetch_link = ->
 			# @responseType = \json
 			listen this
 				.on \load -> 
-					data = JSON.parse @responseText
-					link.title = 
-						"
-						#{data.entry.title.\$t}
-						\n\n
-						#{data.entry.'yt$statistics'.viewCount} views.
-						\n\n
-						#{truncate data.entry.'media$group'.'media$description'.\$t , 200}
-						"
-				.on \error -> link.title = "Youtube [#{link.dataset.id}]"
+					try
+						data = JSON.parse @responseText
+						link.title = 
+							"
+							#{data.entry.title.\$t}
+							\n\n
+							#{data.entry.'yt$statistics'.viewCount} views.
+							\n\n
+							#{truncate data.entry.'media$group'.'media$description'.\$t , 200}
+							"
+					catch 
+						link.title = "Couldn't load video information."
+				.on \error -> link.title = "Couldn't load video information."
 				.on \loadend -> listen link .off \mouseenter fetch_link
 			@send!
 
-features.youtube =
-	on: ->
-		listen document.getElementById \threads
-			.on \click \a.youtube embed
-			.on \mouseenter \a.youtube fetch_link
+<- onready
 
-	off: ->
-		listen document.getElementById \threads
-			.off \click embed
+listen document.getElementById \threads
+	.on \click \a.youtube embed
+	.on \mouseover \a.youtube fetch_link

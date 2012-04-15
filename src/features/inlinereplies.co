@@ -74,12 +74,8 @@ toggle = (e) ->
 bypass = -> # bypass inline replies on dblclick
 	window.location.hash = that if @hash  # actually follow link
 
-features.inlinereplies =
-	on: ->
-		listen $ \threads
-			.on \click 'a.quotelink:not(.hiddenlink)' toggle
-			.on \dblclick \a.quotelink bypass
-	off: ->
-		listen $ \threads
-			.off \click toggle
-			.off \dblclick bypass
+<- onready
+
+listen $ \threads
+	.on \click 'a.quotelink:not(.hiddenlink)' toggle
+	.on \dblclick \a.quotelink bypass

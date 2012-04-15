@@ -147,16 +147,10 @@ if window.location.hash and not sget document.URL
 		sset (document.URL): true
 		window.removeEventListener \scroll registerPage
 
-
 timeEnd "render"
 
 # run other onready handlers
 onready.execute thread, threads
-
-# enable all features
-# FIXME not really using the feature hash, so remove this
-for key, feature in features
-	feature.on! unless key is \postpreview
 
 # trying catalog-like loading
 # fascinating, it works pretty much as expected

@@ -34,38 +34,33 @@ changeDisplay = ->
 	$ \img-style 
 		.textContent = if @value is \full then "" else "img.full { max-width: 100%; }"
 
-features.imgexpansion =
-	on: ->
-		document.head.appendChild kup \style ->
-			@id = \img-style
-			@textContent = if get \img-display is \full then "" else "img.full { max-width: 100%; }"
+<- onready
 
-		listen $ \threads
-			.on \click \a.file toggleExpand
-		listen $ \preload-all .on \click ->
-			! := preloading
-			if preloading
-				preloadAll!
-				@textContent = "Stop Preloading"
-			else
-				@textContent = "Preload all"
-		listen $ \collapse-all .on \click collapseAll
-		listen $ \expand-all .on \click ->
-			! := expanding
-			if expanding
-				expandAll!
-				preloading = false
-				@textContent = "Stop expanding"
-			else
-				@textContent = "Expand all"
-		listen $ \img-display .on \change changeDisplay
+document.head.appendChild kup \style ->
+	@id = \img-style
+	@textContent = if get \img-display is \full then "" else "img.full { max-width: 100%; }"
 
-		updater.after_update ->
-			preloadAll! if preloading
-			if expanding
-				expand img for img of $$ '.new a.file'
+listen $ \threads
+	.on \click \a.file toggleExpand
+listen $ \preload-all .on \click ->
+	! := preloading
+	if preloading
+		preloadAll!
+		@textContent = "Stop Preloading"
+	else
+		@textContent = "Preload all"
+listen $ \collapse-all .on \click collapseAll
+listen $ \expand-all .on \click ->
+	! := expanding
+	if expanding
+		expandAll!
+		preloading = false
+		@textContent = "Stop expanding"
+	else
+		@textContent = "Expand all"
+listen $ \img-display .on \change changeDisplay
 
-	off: ->
-		listen $ \threads
-			.off \click toggleExpand
-		# TODO off stuff
+updater.after_update ->
+	preloadAll! if preloading
+	if expanding
+		expand img for img of $$ '.new a.file'
