@@ -19,8 +19,12 @@ time_replace = '$120$2 $4$5' # adds 21st century to year and removes weekday
 # this function is manually inlined
 # parser.date = -> new Date( Date.parse( it.replace time_regex, time_replace ) + timezone )
 
+dimension_regex = /(\d+)x(\d+)/
+size_regex = /[\d\.]+ [KM]?B/
+filename_regex = /title="([^"]+)"/
+spoiler_regex = /^Spoiler Image/
+
 # returns Array of threads
-# TODO combine image regexes 
 parser.board =  (document) ->
 	time "parse board"
 	time "select elements"
@@ -116,7 +120,8 @@ parser.board =  (document) ->
 			# <span.filesize>
 			info = thumb.previousElementSibling.previousElementSibling.innerHTML
 			thumb.=firstElementChild # img inside link	
-			dimensions = info.match /(\d+)x(\d+)/
+		
+			dimensions = dimension_regex.exec info
 			op.image = 
 				thumb:
 					url: thumb.src
@@ -124,15 +129,15 @@ parser.board =  (document) ->
 					height: thumb.height
 				url: thumb.parentNode.href
 				
-				width: parseInt dimensions[1], 10
-				height: parseInt dimensions[2], 10
+				width: parseInt dimensions.1, 10
+				height: parseInt dimensions.2, 10
 				
-				size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-				filename: info.match(/title="([^"]+)"/)?[1]
-				md5: thumb.getAttribute 'md5'
+				size: size_regex.exec thumb.alt .0
+				filename: filename_regex.exec(info)?1
+				md5: thumb.getAttribute \md5
 				
-				spoiler: /^Spoiler Image/.test thumb.alt
-
+				spoiler: spoiler_regex.test thumb.alt
+	
 		# TODO op.deletedImage = once I find a deleted image
 
 		# trips always follow posters, unless they have an email, in which case
@@ -183,7 +188,7 @@ parser.board =  (document) ->
 					# <span.filesize>
 					info = thumb.previousElementSibling.previousElementSibling.innerHTML
 					thumb.=firstElementChild # img inside link	
-					dimensions = info.match /(\d+)x(\d+)/
+					dimensions = dimension_regex.exec info
 					r.image = 
 						thumb:
 							url: thumb.src
@@ -191,14 +196,14 @@ parser.board =  (document) ->
 							height: thumb.height
 						url: thumb.parentNode.href
 						
-						width: parseInt dimensions[1], 10
-						height: parseInt dimensions[2], 10
+						width: parseInt dimensions.1, 10
+						height: parseInt dimensions.2, 10
 						
-						size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-						filename: info.match(/title="([^"]+)"/)?[1]
-						md5: thumb.getAttribute 'md5'
+						size: size_regex.exec thumb.alt .0
+						filename: filename_regex.exec(info)?1
+						md5: thumb.getAttribute \md5
 						
-						spoiler: /^Spoiler Image/.test thumb.alt
+						spoiler: spoiler_regex.test thumb.alt
 
 				# TODO r.deletedImage = once I find a deleted image
 
@@ -289,7 +294,7 @@ parser.thread = (document) ->
 	if (filesize = delform.firstElementChild )?className is \filesize # detect filesize
 		info = filesize.innerHTML
 		thumb = filesize.nextElementSibling.nextElementSibling.firstElementChild # img inside link
-		dimensions = info.match /(\d+)x(\d+)/
+		dimensions = dimension_regex.exec info
 		op.image = 
 			thumb:
 				url: thumb.src
@@ -297,14 +302,14 @@ parser.thread = (document) ->
 				height: thumb.height
 			url: thumb.parentNode.href
 			
-			width: parseInt dimensions[1], 10
-			height: parseInt dimensions[2], 10
+			width: parseInt dimensions.1, 10
+			height: parseInt dimensions.2, 10
 			
-			size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-			filename: info.match(/title="([^"]+)"/)?[1]
-			md5: thumb.getAttribute 'md5'
+			size: size_regex.exec thumb.alt .0
+			filename: filename_regex.exec(info)?1
+			md5: thumb.getAttribute \md5
 			
-			spoiler: /^Spoiler Image/.test thumb.alt
+			spoiler: spoiler_regex.test thumb.alt
 
 	# TODO op.deletedImage = once I find a deleted image
 
@@ -346,6 +351,7 @@ parser.thread = (document) ->
 			info = thumb.previousElementSibling.previousElementSibling.innerHTML
 			thumb.=firstElementChild # img inside link	
 			dimensions = info.match /(\d+)x(\d+)/
+			dimensions = dimension_regex.exec info
 			r.image = 
 				thumb:
 					url: thumb.src
@@ -353,14 +359,14 @@ parser.thread = (document) ->
 					height: thumb.height
 				url: thumb.parentNode.href
 				
-				width: parseInt dimensions[1], 10
-				height: parseInt dimensions[2], 10
+				width: parseInt dimensions.1, 10
+				height: parseInt dimensions.2, 10
 				
-				size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
-				filename: info.match(/title="([^"]+)"/)?[1]
-				md5: thumb.getAttribute 'md5'
+				size: size_regex.exec thumb.alt .0
+				filename: filename_regex.exec(info)?1
+				md5: thumb.getAttribute \md5
 				
-				spoiler: /^Spoiler Image/.test thumb.alt
+				spoiler: spoiler_regex.test thumb.alt
 
 		# TODO r.deletedImage = once I find a deleted image
 
