@@ -17,6 +17,8 @@ parser.date = do ->
 # * no conversion of NodeList to Array
 # * as few method calls as possible
 # * use indices instead of Array.push/shift
+#
+# and no, I don't trust spidermonkey/v8 to inline my shit automatically
 
 # returns Array of threads
 # TODO combine image regexes 
@@ -227,14 +229,151 @@ parser.board =  (document) ->
 	timeEnd "parse board"
 	return threads
 
-/*
-# classify op and crossthread links
-time "classify links"
-for link of context.getElementsByClassName \quotelink
-	unless />>>/.test link.textContent # skip crossboard links
-		if opHash is link.hash
-			link.className += ' oplink'
-		else if link.pathname and link.pathname is not threadPath
-			link.className += ' crossthread'
-timeEnd "classify links"
-*/
+# copypasta, copypasta everywhere
+# returns the Thread
+parser.thread = (document) ->
+	/*
+	# classify op and crossthread links
+	time "classify links"
+	for link of context.getElementsByClassName \quotelink
+		unless />>>/.test link.textContent # skip crossboard links
+			if opHash is link.hash
+				link.className += ' oplink'
+			else if link.pathname and link.pathname is not threadPath
+				link.className += ' crossthread'
+	timeEnd "classify links"
+	*/
+	time "parse thread"
+	time "select elements"
+	delform = document.querySelector 'form[name="delform"]'
+
+	comments = delform.getElementsByTagName \blockquote
+	times = delform.getElementsByClassName \posttime
+	uids = delform.getElementsByClassName \posteruid
+	post = 0 
+	
+	ids = delform.querySelectorAll 'input[value="delete"]'
+
+	replies = delform.getElementsByClassName \reply
+	reply_titles = delform.getElementsByClassName \replytitle
+
+	timeEnd "select elements"
+
+	time "create objects"
+	t = new Thread
+	t.id = ids[post].name # this is also the OP's id
+	t.url = board.threadurl + t.id
+
+	t.locked = !!delform.querySelector 'img[alt="closed"]'
+	
+	t.op = op = new Post
+	op.id = ids[post].name
+	op.op = true 
+	op.thread = t # circular reference for rendering
+	op.time = parser.date times[post].textContent
+	op.title = (title = delform.getElementsByClassName('filetitle').0).textContent
+	op.poster = (poster = title.nextElementSibling).textContent
+	op.uid = uids[post]?textContent
+	op.comment = parser.enhance comments[post]
+
+	# email is always wrapped in a postername, substring 7 strips 'mailto:'
+	op.email = poster.firstElementChild?href?substring 7
+	
+	# image detection:
+	# <delform>
+	#   <span.filesize>
+	#   <br>
+	#   <a.thumbnail>
+	if (filesize = delform.firstElementChild )?className is \filesize # detect filesize
+		info = filesize.innerHTML
+		thumb = filesize.nextElementSibling.nextElementSibling.firstElementChild # img inside link
+		dimensions = info.match /(\d+)x(\d+)/
+		op.image = 
+			thumb:
+				url: thumb.src
+				width: thumb.width
+				height: thumb.height
+			url: thumb.parentNode.href
+			
+			width: parseInt dimensions[1], 10
+			height: parseInt dimensions[2], 10
+			
+			size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+			filename: info.match(/title="([^"]+)"/)?[1]
+			md5: thumb.getAttribute 'md5'
+			
+			spoiler: /^Spoiler Image/.test thumb.alt
+
+	# TODO op.deletedImage = once I find a deleted image
+
+	# trips always follow posters
+	if (trip = poster.nextElementSibling).className is \postertrip
+		op.tripcode = trip.textContent
+
+	# capcodes follow either postername for Anonymous ## Mod
+	# or tripcode for Moot ## Admin
+	if ( op.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+		op.capcode = cap.textContent
+
+	op.postprocess! # run backlinker and other stuff
+
+	++post # flush OP's attributes
+
+	t.replies = []
+
+	for td, i of replies
+		r = new Post
+		r.id = ids[post].name
+		r.op = false
+		r.thread = t
+		r.time = parser.date times[post].textContent
+		r.title = (title = reply_titles[i]).textContent
+		r.poster = (poster = title.nextElementSibling).textContent
+		r.uid = uids[post]?textContent
+		r.comment = parser.enhance comments[post]
+
+		r.email = poster.firstElementChild?href?substring 7
+
+		#	<span.filesize>
+		#	<br>
+		#	<a.thumbnail>
+		#	<blockquote> <-- comment
+		if (thumb = comments[post].previousElementSibling )?href # detect thumbnail link
+			# <span.filesize>
+			info = thumb.previousElementSibling.previousElementSibling.innerHTML
+			thumb.=firstElementChild # img inside link	
+			dimensions = info.match /(\d+)x(\d+)/
+			r.image = 
+				thumb:
+					url: thumb.src
+					width: thumb.width
+					height: thumb.height
+				url: thumb.parentNode.href
+				
+				width: parseInt dimensions[1], 10
+				height: parseInt dimensions[2], 10
+				
+				size: thumb.alt.match(/[\d\.]+ [KM]?B/)[0]
+				filename: info.match(/title="([^"]+)"/)?[1]
+				md5: thumb.getAttribute 'md5'
+				
+				spoiler: /^Spoiler Image/.test thumb.alt
+
+		# TODO r.deletedImage = once I find a deleted image
+
+		if (trip = poster.nextElementSibling).className is \postertrip
+			r.tripcode = trip.textContent
+
+		if ( r.tripcode and (cap = trip.nextElementSibling).firstElementChild ) or (cap = poster.nextElementSibling).firstElementChild
+			r.capcode = cap.textContent
+		
+		r.postprocess!
+		++post
+
+		t.replies[i] = r # add reply to array
+
+	t.postprocess! # thread references and other stuff
+
+	timeEnd "create objects"
+	timeEnd "parse thread"
+	return t

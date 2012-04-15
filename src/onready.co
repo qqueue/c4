@@ -63,7 +63,8 @@ with board
 	# delete password
 	@password = get \password or Math.random!.toString!.substr -8
 
-data = parser.board document
+data = if board.isThread then parser.thread document else parser.board document
+console.dir data
 /*
 time "render"
 # replace documentElement with new document element
