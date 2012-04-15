@@ -154,11 +154,11 @@ parser.board =  (document) ->
 
 		# the next reply's table outer element's 2nd previous sibling is either
 		# the omitted replies indicator, or the OP's comment. If it's not, 
-		# than this thread has no replies yet:
+		# than this thread has no replies:
 		# <omitted> or <blockquote>
 		# <a name="">
 		# <first reply table>
-		before_first_reply_table = replies[current_reply].parentNode.parentNode.parentNode.previousElementSibling.previousElementSibling
+		before_first_reply_table = replies[current_reply]?parentNode.parentNode.parentNode.previousElementSibling.previousElementSibling
 		if before_first_reply_table is omitted or before_first_reply_table is comments[post - 1]
 			reply_idx = 0 # idx for thread's current replies
 			for ever # this loop breaks at the end of each thread
@@ -245,6 +245,7 @@ parser.thread = (document) ->
 				link.className += ' crossthread'
 	timeEnd "classify links"
 	*/
+	parser.last_parse = Date.now!
 	time "parse thread"
 	time "select elements"
 	delform = document.querySelector 'form[name="delform"]'
