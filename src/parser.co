@@ -1,24 +1,23 @@
-parser.date = do ->
-	# convert from EST (4chan time) to local time
-	# using explicitly set date in july, to ensure
-	# no daylight savings, which EST offset = 4 assumes
-	timezone = 4 - new Date( new Date!.setMonth(6) ).getTimezoneOffset! / 60
-	->
-		unless match = it.match /(\d{2})\/(\d{2})\/(\d{2})\(\w+\)(\d{2}):(\d{2})/
-			throw "Couldn't parse date: #{date}"
-		new Date do
-			parseInt( match.3, 10 ) + 2000
-			parseInt( match.1, 10 ) - 1
-			parseInt( match.2, 10 )
-			( parseInt( match.4, 10 ) + timezone ) % 24
-			parseInt( match.5, 10 )
-
 # lots of repetition in the interest of speed:
 # * no conversion of NodeList to Array
 # * as few method calls as possible
 # * use indices instead of Array.push/shift
 #
 # and no, I don't trust spidermonkey/v8 to inline my shit automatically
+
+# convert from EST (4chan time) to local time
+# using explicitly set date in july, to ensure
+# no daylight savings, which EST offset = 4 assumes
+# in milliseconds so it can be subtracted from unix time
+timezone =  (4*60min - new Date( new Date!.setMonth(6) ).getTimezoneOffset! )*60sec*1000ms
+# this exploits the format of 4chan dates:
+# MM/DD/YY(weekday)HH:MM, which V8/Chrome will parse outright
+# but firefox won't, so we have to regex it into a form that will work in
+# both engines: MM/DD/YYYY HH:MM, as well as add the timezone
+time_regex = /(\d{2}\/\d{2}\/)(\d{2})(\(\w+\))(\d{2})(:\d{2})/
+time_replace = '$120$2 $4$5' # adds 21st century to year and removes weekday
+# this function is manually inlined
+# parser.date = -> new Date( Date.parse( it.replace time_regex, time_replace ) + timezone )
 
 # returns Array of threads
 # TODO combine image regexes 
@@ -99,7 +98,7 @@ parser.board =  (document) ->
 		op.id = ids[post].name
 		op.op = true 
 		op.thread = t # circular reference for rendering
-		op.time = parser.date times[post].textContent
+		op.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
 		op.title = (title = op_titles[thread_num]).textContent
 		op.poster = (poster = title.nextElementSibling).textContent
 		op.uid = uids[post]?textContent
@@ -168,7 +167,7 @@ parser.board =  (document) ->
 				r.id = ids[post].name
 				r.op = false
 				r.thread = t
-				r.time = parser.date times[post].textContent
+				r.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
 				r.title = (title = reply_titles[current_reply]).textContent
 				r.poster = (poster = title.nextElementSibling).textContent
 				r.uid = uids[post]?textContent
@@ -273,7 +272,7 @@ parser.thread = (document) ->
 	op.id = ids[post].name
 	op.op = true 
 	op.thread = t # circular reference for rendering
-	op.time = parser.date times[post].textContent
+	op.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
 	op.title = (title = delform.getElementsByClassName('filetitle').0).textContent
 	op.poster = (poster = title.nextElementSibling).textContent
 	op.uid = uids[post]?textContent
@@ -330,7 +329,7 @@ parser.thread = (document) ->
 		r.id = ids[post].name
 		r.op = false
 		r.thread = t
-		r.time = parser.date times[post].textContent
+		r.time = new Date( Date.parse( times[post].textContent.replace time_regex, time_replace ) + timezone )
 		r.title = (title = reply_titles[i]).textContent
 		r.poster = (poster = title.nextElementSibling).textContent
 		r.uid = uids[post]?textContent
