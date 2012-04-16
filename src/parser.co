@@ -137,7 +137,9 @@ parser.board =  (document) ->
 				height: parseInt dimensions.2, 10
 				
 				size: size_regex.exec thumb.alt .0
-				filename: filename_regex.exec(info)?1
+				# board pages don't reveal actual filenames, so we'll just get the
+				# extension from the source (the filename is unimportant)
+				filename: thumb.parentNode.href.substr -3, 3
 				md5: thumb.getAttribute \md5
 				
 				spoiler: spoiler_regex.test thumb.alt
@@ -206,7 +208,9 @@ parser.board =  (document) ->
 						height: parseInt dimensions.2, 10
 						
 						size: size_regex.exec thumb.alt .0
-						filename: filename_regex.exec(info)?1
+						# board pages don't reveal actual filenames, so we'll just get the
+						# extension from the source (the filename is unimportant)
+						filename: thumb.parentNode.href.substr -3, 3
 						md5: thumb.getAttribute \md5
 						
 						spoiler: spoiler_regex.test thumb.alt
