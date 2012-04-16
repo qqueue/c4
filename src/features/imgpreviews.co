@@ -1,37 +1,83 @@
+# show a centered image preview when hovering over an image after a
+# short delay, like a tooltip
+delay = 200ms 
+dead_zone = 10px
+
 <- onready
-<- listen $ \threads .on \mouseover 'img.thumb' 
+listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
+	remove $ \imgpreview # just in case
 
-remove $ \imgpreview # just in case
+	width = @parentElement.getAttribute \data-width
+	height = @parentElement.getAttribute \data-height
+	src = @parentElement.href
 
-width = @parentElement.getAttribute \data-width
-height = @parentElement.getAttribute \data-height
-src = @parentElement.href
+	docheight = window.innerHeight - 20
+	# using clientWidth to account for scrollbars
+	# can't use it for height because it would be the entire
+	# document height
+	# plus, ff uses quirks mode on 4chan:
+	# http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
+	docwidth = document.documentElement.clientWidth - 20
 
-docheight = window.innerHeight - 20
-# using clientWidth to account for scrollbars
-# can't use it for height because it would be the entire
-# document height
-# plus, ff uses quirks mode on 4chan:
-# http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
-docwidth = document.documentElement.clientWidth - 20
+	ratio = Math.min 1, docheight/height, docwidth/width
+	width *= ratio
+	height *= ratio
 
-ratio = Math.min 1, docheight/height, docwidth/width
-width *= ratio
-height *= ratio
+	l = $ \lightbox
 
-l = $ \lightbox
-l.classList.add \dark
-l.appendChild kup \img {id: \imgpreview alt: "Loading...", src, width, height } ->
-	@on \load -> @removeAttribute \alt
-	@on \error -> @alt = "Unable to load image."
+	timeout = void # so coco will pick up scope
+	# until the image is displayed, continually reset
+	# timeout on mousemovement
+	reset_image = (e) ->
+		clearTimeout timeout # previous countdown gone
+		timeout := setTimeout create_image, delay
 
-	@css do
-		position: \absolute
-		top: 10 + (docheight - height) / 2
-		left: 10 + (docwidth - width) / 2
+		# store the new current mouse position
+		x := e.clientX
+		y := e.clientY
+	
+	create_image = ~>
+		l.classList.add \dark
+		l.appendChild kup \img {id: \imgpreview alt: "Loading...", src, width, height } ->
+			@on \load -> @removeAttribute \alt
+			@on \error -> @alt = "Unable to load image."
 
-listen this .on \mouseout function destroy
-	remove $ \imgpreview
-	$ \lightbox .classList.remove \dark
-	listen this .off \mouseout destroy
+			@css do
+				position: \absolute
+				top: 10 + (docheight - height) / 2
+				left: 10 + (docwidth - width) / 2
 
+		# once the image is shown, stop resetting timeout
+		# and instead check that the user moused out of the dead-zone
+		# around image, and destroy the image then
+		# this is similar to how tooltips are handled in firefox
+		listen this 
+			.off \mousemove reset_image
+			.on \mousemove remove_image
+
+	remove_image = ({clientX: cx, clientY: cy}) ->
+		if Math.abs(x - cx) > dead_zone or Math.abs(y - cy) > dead_zone
+			l.classList.remove \dark
+			remove $ \imgpreview
+			# restart tooltip timeout
+			timeout := setTimeout create_image, delay
+			listen this 
+				.on \mousemove reset_image
+				.off \mousemove remove_image
+
+
+
+	# start initial timeout
+	timeout = setTimeout create_image, delay
+
+	# add handlers
+	listen this 
+		.on \mousemove reset_image
+		.on \mouseout function destroy
+			remove $ \imgpreview
+			clearTimeout timeout # stop image from appearing
+			l.classList.remove \dark
+			listen this # remove handlers
+				.off \mouseout destroy
+				.off \mousemove reset_image
+				.off \mousemove remove_image
