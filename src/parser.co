@@ -60,10 +60,10 @@ parser.board =  (document) ->
 	# since stickies are by definition on the top, we'll just grab the count
 	stickies = delform.querySelectorAll 'img[alt="sticky"]' .length
 
-	# locked thread icon, and some bookkeeping
-	locks = delform.querySelectorAll 'img[alt="closed"]'
-	locked_threads = locks.length
-	current_lock = 0
+	# closed thread icon, and some bookkeeping
+	closes = delform.querySelectorAll 'img[alt="closed"]'
+	closed_threads = closes.length
+	current_close = 0
 
 	# reply elements, for all the threads, which will be sorted out later
 	replies = delform.getElementsByClassName \reply
@@ -93,12 +93,12 @@ parser.board =  (document) ->
 				imageReplies: parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 
 		t.sticky = !!stickies-- if stickies > 0 # true if there are more stickies
-		if locked_threads > 0 and current_lock < locked_threads
-			# exploit the fact that locked icon is in the span#nothread<threadid>
+		if closed_threads > 0 and current_close < closed_threads
+			# exploit the fact that closed icon is in the span#nothread<threadid>
 			# node, which we can test against the thread id
-			if locks[current_lock].parentNode.id.substring(8) is t.id
-				t.locked = true
-				++locked_threads
+			if closes[current_close].parentNode.id.substring(8) is t.id
+				t.closed = true
+				++current_close
 		
 		t.op = op = new Post
 		op.id = ids[post].name
