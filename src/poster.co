@@ -141,7 +141,7 @@ cooldown = ->
 # persist entered name and tripcode
 listen $ \name .on \input ->
 	set name: @value
-$ \name .value = get \name or ''
+$ \name ?.value = get \name or ''
 
 listen window .on \scroll ->
 	y = window.scrollMaxY - window.scrollY
@@ -151,14 +151,14 @@ listen window .on \scroll ->
 		hideform!
 
 # if form is focused, don't hide
-$ \postform .addEventListener do
+$ \postform ?.addEventListener do
 	\focus
 	->
 		visible := true
 		showform!
 	true # have to use capture for non-bubbling focus events
 
-$ \postform .addEventListener do
+$ \postform ?.addEventListener do
 	\blur
 	->
 		visible := false
