@@ -1,5 +1,8 @@
 # html5chan: an (incomplete) userscript
 
+*Development is suspended until moot gets off his lazy ass and deploys
+the new HTML.*
+
 Too hipster to use 4chanX? Have a craving for the *bleeding edge*? Try out my 4chan userscript, and submit some bug reports! 
 
 html5chan is alpha software; features and bugs will be added, changed, or removed without any notice. It probably works on Firefox >=11.
