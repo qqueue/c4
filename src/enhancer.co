@@ -5,9 +5,9 @@
 # before taking the HTML would be slower
 parser.enhance = ->
 	it.innerHTML 
-		# strip 4chan's old js-based spoilers and old reply highlights
-		.replace /onmouseover="this\.style\.color='#FFF';" onmouseout="this\.style\.color=this\.style\.backgroundColor='#000'" style="color:#000;background:#000"|onclick="replyhl\('\d+'\);"/g ''
-		
+		# fix quotelink refs
+		.replace /(href="[\w\/]+#)p(\d+)/g '$1$2'
+
 		# unsplits urls (probably) split at 100 characters
 		.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
 

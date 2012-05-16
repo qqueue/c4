@@ -44,8 +44,8 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 
 			@css do
 				position: \absolute
-				top: 10 + (docheight - height) / 2
-				left: 10 + (docwidth - width) / 2
+				top: "#{10 + (docheight - height) / 2}px"
+				left: "#{10 + (docwidth - width) / 2}px"
 
 		# once the image is shown, stop resetting timeout
 		# and instead check that the user moused out of the dead-zone

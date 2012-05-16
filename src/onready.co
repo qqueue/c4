@@ -31,19 +31,17 @@ if /404/.test document.title and board.archive
 
 # get other useful information
 with board
-	logoEl = document.getElementsByClassName \logo .0
-	centerEls = document.getElementsByTagName \center
-
-	@title = logoEl.children.2.children.0.children.0.textContent
-	@subtitle = logoEl.children.4?innerHTML or ''
+	@title = document.querySelector \.boardTitle .textContent
+	@subtitle = document.querySelector \.boardSubtitle ?.innerHTML or ''
 
 	# detect based on the blue theme
 	@sfw = /yotsublue/.test document.styleSheets.0.href
-	@nav = document.getElementById \navtop .innerHTML # I could hard code it, but then I'd miss updates
+
+	@nav = document.getElementById \boardNavDesktop .innerHTML # I could hard code it, but then I'd miss updates
 	@banner = document.getElementsByTagName \img .0.src
 	
 	# the captcha, 2 ads, and footer tag are also in center tags
-	@motd = centerEls.2.innerHTML if centerEls.length > 4
+	@motd = document.querySelector \.globalMessage .innerHTML
 	@url = "//boards.4chan.org/#{@name}/"
 	@threadurl = "#{@url}res/"
 	
@@ -69,6 +67,8 @@ if board.isThread then
 	threads = [thread] # for rendering conformity
 else 
 	threads = parser.board document
+
+console.log threads
 
 # replace documentElement with new document element
 # to avoid multiple reflows of removing old styles, adding new content, etc
