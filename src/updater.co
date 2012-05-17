@@ -1,4 +1,4 @@
-
+last_update = Date.now!
 
 updater.update = ->
 	clearTimeout timeout # clear any other running countdowns
@@ -34,8 +34,9 @@ updater.update = ->
 				# every time (which along with if-modified-since, allows them to test
 				# for a real 304 response).
 				last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
-				if last_modified > parser.last_parse
+				if last_modified > last_update
 					updater.status = "update detected, parsing"
+					last_update := last_modified
 
 					# html5... ;_;
 					# can't use createHTMLDocument because all relative links
@@ -60,6 +61,9 @@ updater.update = ->
 								\beforeend
 								Post[backlinks.parentNode.id.split \- .pop!].backlinks true
 
+						# call after_update hooks
+						fn! for fn of updater.callbacks
+
 						# update title
 						titler.number += thread.new.length
 
@@ -78,8 +82,6 @@ updater.update = ->
 						document.querySelector "\#thread-#{thread.id} .thread-info"
 							.textContent = "#{thread.replies.length} replies and #{thread.imageReplies.length} image replies."
 
-						# call after_update hooks
-						fn! for fn of updater.callbacks
 				updater.countdown!
 			.on \timeout ->
 				updater.status = "request timed out..."
