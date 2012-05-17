@@ -1,9 +1,31 @@
-# update relative post times every minute
-<- onready
-timeout = void # so coco recognizes this variable in this scope
-timeout = setTimeout do
-	function updateTimes
-		for el of document.getElementsByTagName \time 
-			el.textContent = new Date el.getAttribute \datetime .prettyRelative!
-		timeout := setTimeout updateTimes, 60000ms
-	60000ms
+# update relative post times periodically
+# originally meant to keep times exactly current
+# to the second, updating every relative time change,
+# but that was too expensive to have DOM reflows every update
+# so posts now update every hour/5minutes/1minute
+
+set_update = (el) ->
+	# stupid ff doesn't have the HTMLTimeElement's datetime attribute yet
+	time = new Date( el.getAttribute \datetime )
+	
+	# if the difference is less than a day, we'll add a timeout
+	# to update the element once it changes
+	if (diff = Date.now! - time.getTime! ) < 8_640_000ms
+		setTimeout do
+			->
+				el.textContent = time.relative_time!
+				set_update el # set next update
+
+			if diff > 3_600_000ms # one hour
+				diff % 3_600_000ms # time til the next whole hour diff
+			else if diff > 60_000ms # one minute
+				300_000ms # every 5 minutes
+				# diff % 60_000ms caused too many little DOM updates
+				# which made scrolling jerky and so on
+				# since most posts fall into 1 minute -- 1 hour,
+				# there will be a big update every 5 minutes
+			else # under a minute ( or in the future )
+				60_000ms # one minute
+
+onready -> set_update time for time of document.getElementsByTagName \time
+updater.after_update -> set_update time for time of $$ '.new time'
