@@ -53,7 +53,7 @@ parse_post = (el, thread) ->
 	else
 		"#{thread.url}##{p.id}"
 	p.time = new Date( parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms )
-	p.title = el.querySelector \.subject .textContent
+	p.title = el.querySelector '.postInfo.desktop .subject' .textContent
 	p.poster = el.querySelector \.name .textContent
 	p.tripcode = el.querySelector \.postertrip ?.textContent
 	p.email = el.querySelector \.useremail ?.href
@@ -73,8 +73,8 @@ parse_post = (el, thread) ->
 			p.image =
 				thumb:
 					url: thumb.src
-					width: thumb.width
-					height: thumb.height
+					width: parseInt thumb.style.width, 10
+					height: parseInt thumb.style.height, 10
 				url: thumb.parentNode.href
 				
 				width: parseInt dimensions.1, 10
