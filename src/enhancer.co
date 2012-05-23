@@ -5,6 +5,9 @@
 # before taking the HTML would be slower
 parser.enhance = ->
 	it.innerHTML 
+
+		# stupid, painful regex for fenced code blocks
+		#.replace />```(.*?)```/gm '><pre><code>$1</code></pre>'
 		# fix quotelink refs
 		.replace /(href="[\w\/]+#)p(\d+)/g '$1$2'
 

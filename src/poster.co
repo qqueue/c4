@@ -59,6 +59,15 @@ checkValidity = (e) ->
 		# if that was used to submit
 		if this is $ \sage # sage button clicked
 			data.append \email \sage
+
+		data.append do
+			\com 
+			comment.value
+				# replace spaces after a newline or another space with non-breaking
+				# spaces. coco thinks / /g is a syntax error ;_;
+				.replace /^ +| {2,}/gm, -> it.replace `/ /g`, '\xa0'
+				# tabs replaced by 4 spaces
+				.replace /\t/g, '\xa0\xa0\xa0\xa0'
 		#ajax time!
 		with new XMLHttpRequest
 			@open \POST form.action
