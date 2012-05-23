@@ -86,6 +86,35 @@ do ->
 		%hakase.css%
 		'''
 	head.appendChild style
+	# because Recaptcha document.write's itself to the page
+	# in some weird way, we have to attach the script here again
+	recaptchaState = document.createElement \script
+	recaptchaState.src = \//www.google.com/recaptcha/api/challenge?k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc
+	recaptchaState.addEventListener \load ->
+		if that = document.getElementById \captcha
+			# for some reason, the recaptchaState script's document.write line
+			# doesn't fire, so I'll just include it myself
+			recaptcha = document.createElement \script
+			recaptcha.src = \//www.google.com/recaptcha/api/js/recaptcha.js
+			recaptcha.addEventListener \load ->
+				# use unsafe form of setTimeout to inject script into
+				# global scope, using existing recaptcha info
+				# had to pick apart recaptcha's internal api to get it to work without theming
+				setTimeout do
+					"
+					console.log('init recaptcha');
+					Recaptcha._init_options({
+						theme: 'custom',
+						custom_theme_widget: document.getElementById('captcha')
+					});
+					Recaptcha.theme = 'custom';
+					Recaptcha.widget = document.getElementById('captcha');
+					Recaptcha._finish_widget();
+					"
+					0
+			document.head.appendChild recaptcha
+	head.appendChild recaptchaState
+
 	title = document.createElement \title
 	title.textContent = board.title
 	head.appendChild title
@@ -112,24 +141,6 @@ do ->
 	time "replace documentElement"
 	document.replaceChild html, document.documentElement
 	timeEnd "replace documentElement"
-
-# create recaptcha with script already included on page (using 4chan's public key)
-# had to pick apart recaptcha's internal api to get it to work without theming
-recaptcha = document.createElement \script
-recaptcha.textContent = "
-(function() {
-	var that;
-	if( that = document.getElementById('captcha') ) {
-		Recaptcha._init_options({
-			theme: 'custom',
-			custom_theme_widget: that
-		});
-		Recaptcha.theme = 'custom';
-		Recaptcha.widget = that;
-		Recaptcha._finish_widget();
-	}
-})();"
-document.head.appendChild recaptcha
 
 # disable 4chan's onload functions
 # we can do this because onload has to wait
