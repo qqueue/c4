@@ -65,9 +65,13 @@ checkValidity = (e) ->
 			comment.value
 				# replace spaces after a newline or another space with non-breaking
 				# spaces. coco thinks / /g is a syntax error ;_;
-				.replace /^ +| {2,}/gm, -> it.replace `/ /g`, '\xa0'
-				# tabs replaced by 4 spaces
-				.replace /\t/g, '\xa0\xa0\xa0\xa0'
+				.replace /^ +| {2,}/gm -> it.replace `/ /g`, '\xa0'
+				# tabs replaced by 8 spaces
+				.replace /\t/g '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'
+				# retain 3+ consecutive newlines by adding a NEL character inbetween
+				# them, which prevents 4chan from collapsing them, yet they don't
+				# output in the resulting HTML
+				.replace /\n{3,}/g -> it.replace /\n/g, '\n\x85' # NEL
 		#ajax time!
 		with new XMLHttpRequest
 			@open \POST form.action
