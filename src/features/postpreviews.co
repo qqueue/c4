@@ -22,7 +22,7 @@ if @hash
 		else
 			preview.style.left = "#{bounds.left}px"
 		if @classList.contains \backlink
-				preview.style.top = "#{bounds.top + bounds.height + 5}px"
+			preview.style.top = "#{bounds.top + bounds.height + 5}px"
 		else
 			preview.style.bottom = "#{window.innerHeight - bounds.top + 5}px"
 
@@ -33,10 +33,10 @@ if @hash
 			listen this .off \mouseout destroy
 
 	# highlight hovered replies
-	for post of document.getElementsByClassName	"post#{@hash.substring 1}"
+	for post of document.getElementsByClassName "post#{@hash.substring 1}"
 		post.classList.add \hovered
 
 	listen this .on \mouseout function unhighlight
-		for post of document.getElementsByClassName	"post#{@hash.substring 1}"
+		for post of document.getElementsByClassName "post#{@hash.substring 1}"
 			post.classList.remove \hovered
 		listen this .off \mouseout unhighlight

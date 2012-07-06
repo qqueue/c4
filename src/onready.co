@@ -41,7 +41,7 @@ with board
 	@banner = document.getElementsByTagName \img .0.src
 	
 	# the captcha, 2 ads, and footer tag are also in center tags
-	@motd = document.querySelector \.globalMessage .innerHTML
+	@motd = document.querySelector(\.globalMessage)?innerHTML
 	@url = "//boards.4chan.org/#{@name}/"
 	@threadurl = "#{@url}res/"
 	
