@@ -9,15 +9,15 @@
 </header>
 #{if board.isThread 
 	"""
-	<a href="#{board.url}">[Return]</a>
-	<a href="\#bottom">[Bottom]</a>
+	<a href="#{board.url}">Return</a>
+	<a href="\#bottom">Bottom</a>
 	"""
 else ''}
 <div id="threads">#{render_all threads, \article}</div>
 #{if board.isThread 
 	"""
-	<a href="#{board.url}">[Return]</a>
-	<a href="#">[Top]</a>
+	<a href="#{board.url}">Return</a>
+	<a href="#">Top</a>
 	"""
 else
 	"""
@@ -91,9 +91,9 @@ else
 }
 
 	<div id="controls">
-	#{if board.isThread then """<a href="#{board.url}">[Return]</a>""" else ''}
-		<a href="#">[Top]</a>
-		<a href="\#bottom">[Bottom]</a>
+	#{if board.isThread then """<a href="#{board.url}">Return</a>""" else ''}
+		<a href="#">Top</a>
+		<a href="\#bottom">Bottom</a>
 
 		<span id="updater">
 			<span id="update-status"></span>
