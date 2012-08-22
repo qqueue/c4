@@ -47,6 +47,8 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 				top: "#{10 + (docheight - height) / 2}px"
 				left: "#{10 + (docwidth - width) / 2}px"
 
+		this.classList.add \hovered-img
+
 		# once the image is shown, stop resetting timeout
 		# and instead check that the user moused out of the dead-zone
 		# around image, and destroy the image then
@@ -58,14 +60,13 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 	remove_image = ({clientX: cx, clientY: cy}) ->
 		if Math.abs(x - cx) > dead_zone or Math.abs(y - cy) > dead_zone
 			l.classList.remove \dark
+			this.classList.remove \hovered-img
 			remove $ \imgpreview
 			# restart tooltip timeout
 			timeout := setTimeout create_image, delay
 			listen this 
 				.on \mousemove reset_image
 				.off \mousemove remove_image
-
-
 
 	# start initial timeout
 	timeout = setTimeout create_image, delay
