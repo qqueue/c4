@@ -1,71 +1,95 @@
 # adds features at the comment html level
-		
-# taking the regex approach with innerHTML
-# because I believe that cloning the element and working with the DOM
-# before taking the HTML would be slower
+
+# taking the regex approach with innerHTML because I believe that cloning the
+# element and working with the DOM before taking the HTML would be slower
 parser.enhance = ->
-	it.innerHTML 
+  it.innerHTML
 
-		# stupid, painful regex for fenced code blocks
-		#.replace />```(.*?)```/gm '><pre><code>$1</code></pre>'
-		# fix quotelink refs
-		.replace /(href="[\w\/]+#)p(\d+)/g '$1$2'
+    # fix quotelink refs
+    .replace /(href="[\w\/]+#)p(\d+)/g '$1$2'
 
-		# unsplits urls (probably) split at 100 characters
-		.replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
+    # unsplits urls (probably) split at 100 characters
+    .replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
 
-		#youtube thumbnails
-		.replace do 
-			//
-				(?:https?:\/\/)? # optional protocol
-				(
-					youtu\.be\/ # short links
-						([\w\-_]+) # video id
-						(\?[&=\w\-_;\#]*)? # options
-					| 
-					(?:www\.)youtube\.com\/watch\?
-						([&=\w\-_;\?\#\%]*) # pre video id options (annoying, since this will have to give up matches)
-						v=([\w\-_]+) # video id
-						([&=\w\-_;\?\#\%]*) # post vieo id options
-				)
-			//g
-			# using background-image so browsers will correctly draw rounded corners
-			# and other stuff http://webdesignerwall.com/tutorials/css3-image-styles
-			'<a href="https://$1" class="youtube" data-id="$2$5" data-params="$3$4$6" target="_blank" style="display: inline-block; width: 120px; height: 90px; background-image: url(\'//img.youtube.com/vi/$2$5/2.jpg\')"></a>'
+    #youtube thumbnails
+    .replace do
+      //
+        (?:https?:\/\/)? # optional protocol
+        (
+          youtu\.be\/ # short links
+            ([\w\-_]+) # video id
+            (\?[&=\w\-_;\#]*)? # options
+          |
+          (?:www\.)youtube\.com\/watch\?
+            ([&=\w\-_;\?\#\%]*) # pre video id options (annoying, since this
+                                # will have to give up matches)
+            v=([\w\-_]+) # video id
+            ([&=\w\-_;\?\#\%]*) # post vieo id options
+        )
+      //g
 
-		# specialcase linkify urls without internal parenthesis surrounded by
-		# parenthesis like (http://google.com)
-		.replace do
-			/\((https?:\/\/)([^<\s\)]+)\)/g ' 
-			<a class="external" rel="noreferrer" href="$1$2" title="$1$2" target="_blank">[$2]</a> '
+      # using background-image so browsers will correctly draw rounded corners
+      # and other stuff http://webdesignerwall.com/tutorials/css3-image-styles
+      '<a href="https://$1"
+          class="youtube"
+          data-id="$2$5"
+          data-params="$3$4$6"
+          target="_blank"
+          style="display: inline-block;
+                 width: 120px;
+                 height: 90px;
+                 background-image:
+                   url(\'//img.youtube.com/vi/$2$5/2.jpg\')"></a>'
 
-		# linkify links not preceded by a quote or double-quote (should avoid relinkifying href= urls)
-		.replace do
-			/([^"']|^)(https?:\/\/)([^<\s]+)/g
-			'$1<a class="external" rel="noreferrer" href="$2$3" title="$2$3" target="_blank">[$3]</a>'
+    # specialcase linkify urls without internal parenthesis surrounded by
+    # parenthesis like (http://google.com)
+    .replace do
+      /\((https?:\/\/)([^<\s\)]+)\)/g
+      '(<a class="external"
+           rel="noreferrer"
+           href="$1$2"
+           title="$1$2"
+           target="_blank">$2</a>)'
 
-		# specialcase linkify urls without a protocol but with a common tld
-		.replace do
-			//
-			(^|>|;|\s) # to avoid linking parts of urls inside hrefs, must start with one of these
-			(
-				[\w\.\-]+\. # domain
-				(?:com|net|org|eu|jp) # non-exhaustive
-				(?![\w\.]) # not immediately followed by more words or periods ( like 'euuugh'
-				[^<\s]* # rest of the url until space or <br>
-			)
-			//g
-			'$1<a class="external" rel="noreferrer" href="http://$2" title="$2" target="_blank">[$2]</a>'
+    # linkify links not preceded by a quote or double-quote (should avoid
+    # relinkifying href= urls)
+    .replace do
+      /([^"']|^)(https?:\/\/)([^<\s]+)/g
+      '$1<a class="external"
+            rel="noreferrer"
+            href="$2$3"
+            title="$2$3"
+            target="_blank">$3</a>'
 
-		# attempt to redirect broken post links to the archive
-		# uses ultra clever atomic group mimickry with lookahead
-		# http://blog.stevenlevithan.com/archives/mimic-atomic-groups
-		# not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
-		.replace do
-			//
-			(^|[^;]) # avoid >>> (the first ';' of '&gt;&gt;&gt;')
-			&gt;&gt; # >>
-			(?=(\d+))\2 # \2 is the post number, which must be entirely matched
-			(?!<\/a>) # avoid already linked posts
-			//g
-			board.archivelink
+    # specialcase linkify urls without a protocol but with a common tld
+    .replace do
+      //
+      (^|[^a]>|;|\s) # to avoid linking parts of urls inside hrefs, must start
+                 # with one of these
+      (
+        [\w\.\-]+\. # domain
+        (?:com|net|org|eu|jp) # non-exhaustive
+        (?![\w\.]) # not immediately followed by more words or periods
+                   # e.g. 'euuugh'
+        [^<\s]* # rest of the url until space or <br>
+      )
+      //g
+      '$1<a class="external"
+            rel="noreferrer"
+            href="http://$2"
+            title="$2"
+            target="_blank">$2</a>'
+
+    # attempt to redirect broken post links to the archive
+    # uses ultra clever atomic group mimickry with lookahead
+    # http://blog.stevenlevithan.com/archives/mimic-atomic-groups
+    # not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
+    .replace do
+      //
+      (^|[^;]) # avoid >>> (the first ';' of '&gt;&gt;&gt;')
+      &gt;&gt; # >>
+      (?=(\d+))\2 # \2 is the post number, which must be entirely matched
+      (?!<\/a>) # avoid already linked posts
+      //g
+      board.archivelink
+
