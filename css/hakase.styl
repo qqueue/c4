@@ -2,7 +2,7 @@
 
 html 
 	min-height 100%
-	font-family sans-serif
+	font-family Georgia, serif
 	font-size 10pt
 
 body.sfw
@@ -220,8 +220,11 @@ button.report
 	margin 0
 	outline 0
 
-a.quotelink.hiddenlink 
-	text-decoration line-through
+
+a.quotelink
+	text-decoration none
+	&.hiddenlink 
+		text-decoration line-through
 
 .oplink:after 
 	content " (OP)"
@@ -233,6 +236,9 @@ a,strong
 	&.quotelink.inlinedlink
 		font-weight bold
 		color #000
+
+a.replylink
+	text-decoration none
 
 a.permalink 
 	text-decoration none
