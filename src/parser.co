@@ -56,6 +56,7 @@ parse_post = (el, thread) ->
 	p.title = el.querySelector '.postInfo.desktop .subject' .textContent
 	p.poster = el.querySelector \.name .textContent
 	p.tripcode = el.querySelector \.postertrip ?.textContent
+	p.capcode = el.querySelector \.capcode ?.textContent
 	p.email = el.querySelector \.useremail ?.href
 	p.sage = sage_regex.test p.email
 
@@ -85,10 +86,6 @@ parse_post = (el, thread) ->
 				md5: thumb.dataset.md5
 				
 				spoiler: spoiler_regex.test thumb.alt
-
-	
-	# TODO capcode
-
 	p.postprocess!
 
 	return p

@@ -176,16 +176,25 @@ img.full
 	// seems to fix weird left-margin in firefox
 	display block
 
+
 .capcode 
 	font-weight 800
+
+.mod, .admin
+	.capcode:hover
+		cursor pointer
 
 .admin 
 	.poster, .capcode, .tripcode
 		color #f00
+	.capcode:after
+		content url(https://static.4chan.org/image/adminicon.gif)
 
 .mod
 	.poster, .capcode
-		color 800080
+		color #800080
+	.capcode:after
+		content url(https://static.4chan.org/image/modicon.gif)
 
 button:enabled
 	cursor pointer
@@ -223,6 +232,8 @@ button.report
 	margin 0
 	outline 0
 
+.post.highlighted
+	background-color #D6BAD0 !important
 
 a.quotelink
 	text-decoration none
