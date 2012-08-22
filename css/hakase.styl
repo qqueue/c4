@@ -260,6 +260,7 @@ a.permalink .id, a.saucelink
 
 .archivelink
 	color gray
+	text-decoration none
 	&:after
 		content " (archive)"
 		
@@ -270,6 +271,7 @@ a.permalink .id, a.saucelink
 .comment 
 	margin 1em 1em 1em 40px
 	word-wrap break-word
+	line-height 1.8em
 
 .quote 
 	font-weight normal
@@ -278,13 +280,13 @@ a.permalink .id, a.saucelink
 .spoiler 
 	text-decoration none
 	cursor none
-	color #000
-	background #000
-	// weird CSS nesting doesn't extend to child elements
-	*:not(:hover)
-		color #000
+	color rgba(0,0,0,0) !important
+	text-shadow 0 0 7px black
+	transition-duration 1s
 	&:hover
-		color #fff
+		text-shadow none
+		color black !important
+
 
 .youtube 
 	position relative
