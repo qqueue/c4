@@ -57,7 +57,7 @@ parse_post = (el, thread) ->
 	p.poster = el.querySelector \.name .textContent
 	p.tripcode = el.querySelector \.postertrip ?.textContent
 	p.capcode = el.querySelector \.capcode ?.textContent
-	p.email = el.querySelector \.useremail ?.href
+	p.email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
 	p.sage = sage_regex.test p.email
 
 	p.comment = parser.enhance el.querySelector \.postMessage
