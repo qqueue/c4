@@ -279,9 +279,12 @@ a.permalink .id, a.saucelink
 
 .spoiler 
 	text-decoration none
-	color rgba(0,0,0,0) !important
+	color transparent !important
 	text-shadow 0 0 7px black
 	transition-duration 1s
+	// what the fuck, css
+	*:not(:hover)
+		color transparent !important
 	&:hover
 		text-shadow none
 		color black !important
