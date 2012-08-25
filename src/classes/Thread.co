@@ -34,7 +34,7 @@ class Thread
 			#{@op.render \div \op}
 			<div class="thread-info">
 				#{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images. 
-				#{if @preview then """<a class="expand-link" href="#{@id}">Expand</a>""" else ''}
+				#{if @preview then """<a class="expand-link" href="#{@url}">Expand</a>""" else ''}
 			</div>
 			<div class="replies">#{render_all @replies, \article \reply}</div>
 		</#container>

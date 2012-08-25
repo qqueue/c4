@@ -24,6 +24,12 @@ set_update = (el) ->
 				# which made scrolling jerky and so on
 				# since most posts fall into 1 minute -- 1 hour,
 				# there will be a big update every 5 minutes
+        #
+        # TODO some sort of onscroll sentinel that, as long as the user is
+        # currently scrolling + a short timeout, batch all the time updates
+        # until the user stops. This would allow times to update in realtime
+        # without making scrolling all jerky and stuff. 'Twoud still waste
+        # a fair amount of CPU time for reflows however.
 			else # under a minute ( or in the future )
 				60_000ms # one minute
 

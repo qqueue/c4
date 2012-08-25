@@ -1,0 +1,15 @@
+# highlight posts by capcode
+# same as vanilla 4chan js
+# TODO highlight by UID too
+
+
+highlight = (klass) ->
+	!-> for post of $$ ".#klass"
+		post.classList.toggle \highlighted
+
+<- onready
+
+listen $ \threads
+	.on \click '.admin .capcode' highlight \admin
+	.on \click '.mod .capcode' highlight \mod
+
