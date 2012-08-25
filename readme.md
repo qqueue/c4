@@ -4,7 +4,7 @@ Too hipster to use 4chanX? Have a craving for the *bleeding edge*? Try out my 4c
 
 html5chan is alpha software; features and bugs will be added, changed, or removed without any notice. It probably works on Firefox >=11.
 
-# [Install html5chan alpha](http://queue-.github.com/html5chan/html5chan@httpsgithubcomqueue-html5chan.user.js)
+# [Install html5chan alpha](https://dl.dropbox.com/u/123900/html5chan%40httpsgithubcomqueue-html5chan.user.js)
 
 Be sure to to disable any other userscripts, like 4ChanX, when testing.
 
