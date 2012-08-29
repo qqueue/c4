@@ -1,81 +1,114 @@
 class Post
-	# constructor is inlined into parser
-	postprocess: ->
-		# backlinker, with some fancy logic to detect new ones
-		if quotelinks = @comment.match /&gt;&gt;\d+/g
-			for link of quotelinks
-				quoted = link.substring 8
-				backlinks = Post.backlinks@[quoted]
-				if not backlinks[@id] #it's new
-					Post.new_backlinks@[quoted][@id] = true
-					backlinks[@id] = true
+  # constructor is inlined into parser
+  postprocess: ->
+    # backlinker, with some fancy logic to detect new ones
+    if @comment.match /&gt;&gt;\d+/g
+      for link of that
+        quoted = link.substring 8
+        backlinks = Post.backlinks@[quoted]
+        if not backlinks[@id] #it's new
+          Post.new_backlinks@[quoted][@id] = true
+          backlinks[@id] = true
 
-		Post[@id] = this # register this post has having been parsed
-	
-	backlinks: (only_new) -> # renders backlinks
-		html = ""
-		if backlinks = (if only_new then Post.new_backlinks else Post.backlinks)[@id]
-			for post in backlinks
-				html += "<a href=\"##post\" class=\"backlink quotelink\">&lt;&lt;#post</a> "
-		Post.new_backlinks[@id] = {} 
-		return html
-	
-	className: -> # generates the correct classes to use
-		c = "post post#{@id} " 
-		c += 'imagepost ' if @image
-		c += 'sage ' if @sage
-		c += "tripcoded #that " if @tripcode
-		if @capcode
-			c += if @capcode is "## Admin" then 'admin ' else 'mod '
-		if @uid
-			c += "uid #that"
-		return c
+    Post[@id] = this # register this post as having been parsed
 
-	render: (container, classes = '', id)->
-		"""
-		<#container class="#classes #{@className!}" id="#{id or @id}">
-			<h1>
-				<input type="checkbox" value="delete" name="#{@id}" form="delform">
-				<button type="button" class="hide" value="#{@id}">&times;</button>
-				<button type="submit" form="reportform" class="report" name="no" value="#{@id}">!</button>
-				<a href="#{@url}" class="title">#{@title or ''}</a>
-				<a class="poster" #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
+  backlinks: (only_new) -> # renders backlinks
+    html = ""
+    backlinks = if only_new then Post.new_backlinks else Post.backlinks
+    if backlinks[@id]
+      for post in backlinks[@id]
+        html +=
+          "<a href=\"##post\" class=\"backlink quotelink\">&lt;&lt;#post</a> "
+    Post.new_backlinks[@id] = {}
+    return html
 
-				<span class="tripcode">#{@tripcode or ''}</span>
-				<span class="capcode">#{@capcode or ''}</span>
-				<span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
-				<time pubdate datetime="#{@time.toISOString!}" title="#{@time}">#{@time.relative_time!}</time>
-				#{if @op and @thread.sticky then '<img alt="sticky" src="//static.4chan.org/image/sticky.gif">' else ''}
-				#{if @op and @thread.closed then '<img alt="closed" src="//static.4chan.ork/image/closed.gif">' else ''}
-				<a href="#{@url}" class="permalink">No.<span class="id">#{@id}</span></a>
-			</h1>
-			#{if @image
-				"""			
-				<div class="fileinfo">
-					<span class="dimensions">#{@image.width}x#{@image.height}</span>
-					<span class="size">#{@image.size}</span>
-					<span class="filename">#{@image.filename or ''}</span>
-					<a class="saucelink" href="http://iqdb.org/?url=#{@image.url}" target="_blank">iqdb</a>
-					<a class="saucelink" href="http://google.com/searchbyimage?image_url=#{@image.url}" target="_blank">google</a>
-					<a class="saucelink" href="http://regex.info/exif.cgi/exif.cgi?imgurl=#{@image.url}" target="_blank">exif</a>
-				</div>
-				<a class="file" target="_blank" href="#{@image.url}" data-width="#{@image.width}" data-height="#{@image.height}">
-					<img class="thumb" src="#{@image.thumb.url}" width="#{@image.thumb.width}" height="#{@image.thumb.height}">
-				</a>
-				"""
-			else ''
-			}
-			#{if @deletedImage then '<img class="deleted-image" alt="File deleted." src="//static.4chan.org/image/filedeleted.gif">' else ''}
-			<div class="comment">#{@comment}</div>
-			<footer class="backlinks">#{@backlinks!}</footer>
-		</#container>
-		"""
-	element: (container, classes = '', id) ->
-		wrapper = document.createElement \div
-		wrapper.innerHTML = @render container, classes, id
-		return wrapper.firstElementChild
-	
-	Post.backlinks = {} 
-	Post.new_backlinks = {}
-	Post.tripcodes = {}
-	Post.uids = {}
+  className: -> # generates the correct classes to use
+    c = "post post#{@id} "
+    c += 'imagepost ' if @image
+    c += 'sage ' if @sage
+    c += "tripcoded #that " if @tripcode
+    if @capcode
+      c += if @capcode is "## Admin" then 'admin ' else 'mod '
+    if @uid
+      c += "uid #that"
+    return c
+
+  render: (container, classes = '', id)->
+    """
+    <#container class="#classes #{@className!}" id="#{id or @id}">
+      <h1>
+        <input type="checkbox" value="delete" name="#{@id}" form="delform">
+        <button type="button" class="hide" value="#{@id}">&times;</button>
+        <button type="submit"
+                form="reportform"
+                class="report"
+                name="no"
+                value="#{@id}">!</button>
+        <a href="#{@url}" class="title">#{@title or ''}</a>
+        <a class="poster"
+           #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
+
+        <span class="tripcode">#{@tripcode or ''}</span>
+        <span class="capcode">#{@capcode or ''}</span>
+        <span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
+        <time pubdate
+              datetime="#{@time.toISOString!}"
+              title="#{@time}">#{@time.relative_time!}</time>
+        #{if @op and @thread.sticky
+            '<img alt="sticky" src="//static.4chan.org/image/sticky.gif">'
+          else ''}
+        #{if @op and @thread.closed
+            '<img alt="closed" src="//static.4chan.ork/image/closed.gif">'
+          else ''}
+        <a href="#{@url}" class="permalink">
+          No.<span class="id">#{@id}</span>
+        </a>
+      </h1>
+      #{if @image
+        """
+        <div class="fileinfo">
+          <span class="dimensions">#{@image.width}x#{@image.height}</span>
+          <span class="size">#{@image.size}</span>
+          <span class="filename">#{@image.filename or ''}</span>
+          <a class="saucelink"
+             href="http://iqdb.org/?url=#{@image.url}"
+             target="_blank">iqdb</a>
+          <a class="saucelink"
+             href="http://google.com/searchbyimage?image_url=#{@image.url}"
+             target="_blank">google</a>
+          <a class="saucelink"
+             href="http://regex.info/exif.cgi/exif.cgi?imgurl=#{@image.url}"
+             target="_blank">exif</a>
+        </div>
+        <a class="file"
+           target="_blank"
+           href="#{@image.url}"
+           data-width="#{@image.width}"
+           data-height="#{@image.height}">
+          <img class="thumb"
+               src="#{@image.thumb.url}"
+               width="#{@image.thumb.width}"
+               height="#{@image.thumb.height}">
+        </a>
+        """
+      else ''
+      }
+      #{if @deletedImage
+          '<img class="deleted-image"
+                alt="File deleted."
+                src="//static.4chan.org/image/filedeleted.gif">'
+        else ''}
+      <div class="comment">#{@comment}</div>
+      <footer class="backlinks">#{@backlinks!}</footer>
+    </#container>
+    """
+  element: (container, classes = '', id) ->
+    wrapper = document.createElement \div
+    wrapper.innerHTML = @render container, classes, id
+    return wrapper.firstElementChild
+
+  Post.backlinks = {}
+  Post.new_backlinks = {}
+  Post.tripcodes = {}
+  Post.uids = {}
+
