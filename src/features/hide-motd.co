@@ -1,0 +1,23 @@
+# Hide MOTD until it changes
+
+<- onready
+
+# unlikely to be 2 consecutive messages with the same length
+hash = -> it.innerHTML.length
+
+if $ \motd
+  msg = $ \message
+  btn = $ \hide-motd
+
+  # hide previously hidden message if same
+  if get(\motd-hash) is hash msg
+    msg.hidden = get \motd-hidden
+    btn.textContent = "#{if msg.hidden then "Show" else "Hide"} News"
+  else
+    set \motd-hash hash msg
+
+  listen btn .on \click ->
+    ! = msg.hidden
+    set \motd-hidden msg.hidden
+    btn.textContent = "#{if msg.hidden then "Show" else "Hide"} News"
+

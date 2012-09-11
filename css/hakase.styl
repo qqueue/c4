@@ -7,7 +7,7 @@ html
 
 body.sfw
 	background linear-gradient( top, #d1d5ee, #eef2ff 200px )
-	& > header a, & > footer a
+	& > header a, & > footer a, .boardlinks a
 		color #34345c
 	.boardlinks
 		color #89a
@@ -29,7 +29,7 @@ body.sfw
 body.nsfw 
 	background linear-gradient( top, #fed7af, #ffe 200px )
 	color #800000
-	& > header a, & > footer a
+	& > header a, & > footer a, .boardlinks a
 		color #800
 	.boardlinks
 		color #b86
@@ -57,11 +57,23 @@ selection = #29df75
 	background selection
 	color #000
 
-body > header
+.boardlinks
+	font-size 9pt
 	text-align center
+
+// squish the board links into the top right corner
+// looks just fine for my fonts. good thing nobody else uses this
+#toplinks
+	float right
+	width 300px
+
+#bottomlinks
+	clear both
+
+body > header
+	margin 1em 0
 	color #af0a0f
 	h1
-		font-family "Tahoma"
 		font-size 24pt
 		margin 0
 		a
@@ -73,19 +85,24 @@ body > header
 		font-size 10px
 		font-weight normal
 
-.boardlinks
-	font-size 9pt
-
 #banner
+	margin-right 1em
+	float left
+
+#motd 
 	margin 1em 0
+
+#hide-motd
+	text-align right
+	font-size 10pt
+
+#message
+	clear both
 
 #boards a
 	font-weight normal
 	padding 1px
 	text-decoration none
-
-#motd 
-	margin 1em 0
 
 .thread
 	padding-bottom 5px
