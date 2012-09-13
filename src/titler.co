@@ -2,36 +2,36 @@ number = null
 text = null
 
 setTitle = ->
-	document.title = 
-		if number then "(#number) #text" else text
+  document.title =
+    if number then "(#number) #text" else text
 
 Object.defineProperties titler,
-	number:
-		get: -> number
-		set: ->
-			number := it
-			setTitle!
-	text:
-		get: -> text
-		set: -> 
-			text := it
-			setTitle!
+  number:
+    get: -> number
+    set: ->
+      number := it
+      setTitle!
+  text:
+    get: -> text
+    set: ->
+      text := it
+      setTitle!
 
 onready (thread, threads) ->
-	# mess with title at start
-	if board.isThread
-		with thread.op
-			if @title
-				title = truncate that
-			else
-				title = ''
-				title += "#{@poster} - " if @poster is not \Anonymous
-				# poor man's textContent
-				if ( op = @comment.replace /<[^>]+>/g '' .replace /&gt;/g '>' ).length > 0
-					title += truncate op
-				else if @image
-					title += truncate that.filename
-				else
-					title = @time.prettyPrint!
-			title += " - /#{board.name}/" 
-			titler.text = title
+  # mess with title at start
+  if board.isThread
+    with thread.op
+      if @title
+        title = truncate that
+      else
+        title = ''
+        title += "#{@poster} - " if @poster is not \Anonymous
+        # poor man's textContent
+        if ( op = @comment.replace /<[^>]+>/g '' .replace /&gt;/g '>' ).length > 0
+          title += truncate op
+        else if @image
+          title += truncate that.filename
+        else
+          title = @time.prettyPrint!
+      title += " - /#{board.name}/"
+      titler.text = title

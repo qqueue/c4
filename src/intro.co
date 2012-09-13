@@ -1,17 +1,17 @@
 "use strict"
 log = do ->
-	beginning = Date.now()
-	log = -> log.messages += "\n[t+#{Date.now() - beginning}] #it"
-	log.messages = "[t-0]: html5chan"
-	return log
+  beginning = Date.now()
+  log = -> log.messages += "\n[t+#{Date.now() - beginning}] #it"
+  log.messages = "[t-0]: html5chan"
+  return log
 
 {time, timeEnd} = do ->
-	times = {}
-	time: (name) ->
-		times[name] = Date.now()
-		log "#{name} [start]"
-	timeEnd: (name) ->
-		log "#{name} [end: #{Date.now() - times[name]}ms]"
+  times = {}
+  time: (name) ->
+    times[name] = Date.now()
+    log "#{name} [start]"
+  timeEnd: (name) ->
+    log "#{name} [end: #{Date.now() - times[name]}ms]"
 
 # sets up global variables
 # so that the parts of the script can

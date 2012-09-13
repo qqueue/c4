@@ -11,155 +11,155 @@ $$ = -> document.querySelectorAll it
 # but scriptish/Greasemonkey don't expose the real
 # prototype, so DOM patching is impossible ;_;
 matchesSelector = unless Element.prototype
-	\mozMatchesSelector
+  \mozMatchesSelector
 else
-	\webkitMatchesSelector
+  \webkitMatchesSelector
 
 # special prefixed getters and setters
 # to avoid a possible collision with other userscripts
 # uses the nice property that JSON.stringify(string) is still reversible with
 # JSON.parse, since it adds the necessary double quotes
 [set, get, sset, sget] = do ->
-	setter = (storage) -> !(key, val) -> 
-		obj = (key): val if val # support both hash and key,val syntax
-		for key, val in obj or key
-			storage.setItem "html5chan-#key", JSON.stringify val
-	getter = (storage) -> -> try JSON.parse storage.getItem "html5chan-#it"
+  setter = (storage) -> !(key, val) ->
+    obj = (key): val if val # support both hash and key,val syntax
+    for key, val in obj or key
+      storage.setItem "html5chan-#key", JSON.stringify val
+  getter = (storage) -> -> try JSON.parse storage.getItem "html5chan-#it"
 
-	return 
-		setter localStorage
-		getter localStorage
-		setter sessionStorage
-		getter sessionStorage
+  return
+    setter localStorage
+    getter localStorage
+    setter sessionStorage
+    getter sessionStorage
 
 render_all = (objects, ...options) ->
-	(obj.render.apply obj, options for obj of objects).join ''
+  (obj.render.apply obj, options for obj of objects).join ''
 
 listen = do ->
-	mouse = mouseenter: \mouseover, mouseleave: \mouseout
-	(element) -> new # chainable wrapper for addEventListener
-		@on = (event, selector, handler) ->
-			return this unless element
-			if (events = event.split ' ').length > 1 # handle space separated events
-				@on e, selector, handler for e of events
-				return this
-			if typeof selector is \function
-				handler = selector
-				selector = null
-			# replace non-bubbling events with those that do
-			event = that if mouse[event]
-			element.addEventListener do
-				event
-				if selector then !({target}: event) ->
-					return unless target # sometimes target disappears, weird
-					# if actual selector, or child of selector
-					# this offloads the usual strategy of walking up parentElements
-					# to the internal browser query engine
-					if target[matchesSelector] "#selector, #selector *" 
-						# but if it does match, still need to walk up tree to find target context
-						target.=parentElement until target[matchesSelector] selector
-						if handler.call(target, event) is false
-							event.stopPropagation!
-							event.preventDefault!
-						return 
-				# TODO add same wrapper for return false, without breaking @off
-				# functionality
-				else handler # just plain callback
-			return this
-		# TODO this doesn't handle delegated events, since they are proxied
-		@off = (event, handler) ->
-			return this unless element
-			if (events = event.split ' ').length > 1 # handle space separated events
-				@off e, handler for e of events
-				return
-			element.removeEventListener event, handler
-			return this
+  mouse = mouseenter: \mouseover, mouseleave: \mouseout
+  (element) -> new # chainable wrapper for addEventListener
+    @on = (event, selector, handler) ->
+      return this unless element
+      if (events = event.split ' ').length > 1 # handle space separated events
+        @on e, selector, handler for e of events
+        return this
+      if typeof selector is \function
+        handler = selector
+        selector = null
+      # replace non-bubbling events with those that do
+      event = that if mouse[event]
+      element.addEventListener do
+        event
+        if selector then !({target}: event) ->
+          return unless target # sometimes target disappears, weird
+          # if actual selector, or child of selector
+          # this offloads the usual strategy of walking up parentElements
+          # to the internal browser query engine
+          if target[matchesSelector] "#selector, #selector *"
+            # but if it does match, still need to walk up tree to find target context
+            target.=parentElement until target[matchesSelector] selector
+            if handler.call(target, event) is false
+              event.stopPropagation!
+              event.preventDefault!
+            return
+        # TODO add same wrapper for return false, without breaking @off
+        # functionality
+        else handler # just plain callback
+      return this
+    # TODO this doesn't handle delegated events, since they are proxied
+    @off = (event, handler) ->
+      return this unless element
+      if (events = event.split ' ').length > 1 # handle space separated events
+        @off e, handler for e of events
+        return
+      element.removeEventListener event, handler
+      return this
 
 closest = (selector, el) ->
-	return false unless el
-	while el, el.=parentElement
-		return el if el[matchesSelector] selector
+  return false unless el
+  while el, el.=parentElement
+    return el if el[matchesSelector] selector
 remove = -> it.parentElement.removeChild it if it and it.parentElement
 
 do ->
-	pluralize = (number, unit) ->
-		"#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
-	
-	Date::relative_time = -> 
-		if ( days = ( ( diff = Date.now! - @getTime! ) / 86400000 ) ) > 1
-			pluralize days, \day
-		else if ( hours = days * 24 ) > 1 
-			pluralize hours, \hour
-		else if ( minutes = hours * 60 ) > 1 
-			pluralize minutes, \minute
-		else if ( seconds = minutes * 60 ) >= 1
-			pluralize seconds, \second
-		else 
-			'from the future!'
-	
+  pluralize = (number, unit) ->
+    "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
+
+  Date::relative_time = ->
+    if ( days = ( ( diff = Date.now! - @getTime! ) / 86400000 ) ) > 1
+      pluralize days, \day
+    else if ( hours = days * 24 ) > 1
+      pluralize hours, \hour
+    else if ( minutes = hours * 60 ) > 1
+      pluralize minutes, \minute
+    else if ( seconds = minutes * 60 ) >= 1
+      pluralize seconds, \second
+    else
+      'from the future!'
+
 # coffeekup-like dom builder
 # pretty fuckin magical
 kup = do ->
-	class ElementProxy
-		(parent, tag, attributes, content) ->
-			# lots of fancy optional argument logic, thanks javascript
-			# TODO document this shit
-			@el = if typeof tag is \string
-				document.createElement tag
-			else # no tag specified, so shift arguments backwards
-				attributes = tag
-				content = attributes
-				document.createDocumentFragment!
-			parent.el.appendChild @el if parent
-			# handle either extended attributes,
-			# or a string of text
-			if typeof attributes is \string
-				@el.textContent = attributes
-			else if typeof attributes is \object
-				@el <<< attributes
-			else
-				content = attributes
-			if content?
-				if typeof content is \function
-					content.call this
-				else 
-					@el.textContent = content
+  class ElementProxy
+    (parent, tag, attributes, content) ->
+      # lots of fancy optional argument logic, thanks javascript
+      # TODO document this shit
+      @el = if typeof tag is \string
+        document.createElement tag
+      else # no tag specified, so shift arguments backwards
+        attributes = tag
+        content = attributes
+        document.createDocumentFragment!
+      parent.el.appendChild @el if parent
+      # handle either extended attributes,
+      # or a string of text
+      if typeof attributes is \string
+        @el.textContent = attributes
+      else if typeof attributes is \object
+        @el <<< attributes
+      else
+        content = attributes
+      if content?
+        if typeof content is \function
+          content.call this
+        else
+          @el.textContent = content
 
-		
-		tag: (tag, attributes, content) -> new ElementProxy this, tag, attributes, content
 
-		# delegated to listen()
-		on: (event, selector, handler) -> listen @el .on event, selector, handler
-		off: (event, selector, handler) -> listen @el .off event, selector, handler
+    tag: (tag, attributes, content) -> new ElementProxy this, tag, attributes, content
 
-		# simple property copy for css
-		css: -> @el.style <<< it
+    # delegated to listen()
+    on: (event, selector, handler) -> listen @el .on event, selector, handler
+    off: (event, selector, handler) -> listen @el .off event, selector, handler
 
-		# proxy common attributes, non-exhaustive
-		<[
-			id classList src href style width height textContent naturalWidth naturalHeight
-			attributes
-		]>.forEach (attr) ->
-			Object.defineProperty ElementProxy.prototype, attr,
-				get: -> @el[attr]
-				set: -> @el[attr] = it
-		# proxy common methods
-		<[
-			getAttribute
-		]>.forEach (method) ->
-			ElementProxy::[method] = -> @el[method].apply @el, @@
+    # simple property copy for css
+    css: -> @el.style <<< it
 
-		# helpers for each kind of element
-		# non-exhaustive, until I need them
-		<[
-			body div section header footer article hgroup h1 h2 a ol ul li span b i em strong
-			img
-		]>.forEach (tag) ->
-			ElementProxy::[tag] = (attributes, content) ->
-				new ElementProxy this, tag, attributes, content
-	
-	(tag, attributes, content) ->
-		new ElementProxy void, tag, attributes, content .el
+    # proxy common attributes, non-exhaustive
+    <[
+      id classList src href style width height textContent naturalWidth naturalHeight
+      attributes
+    ]>.forEach (attr) ->
+      Object.defineProperty ElementProxy.prototype, attr,
+        get: -> @el[attr]
+        set: -> @el[attr] = it
+    # proxy common methods
+    <[
+      getAttribute
+    ]>.forEach (method) ->
+      ElementProxy::[method] = -> @el[method].apply @el, @@
+
+    # helpers for each kind of element
+    # non-exhaustive, until I need them
+    <[
+      body div section header footer article hgroup h1 h2 a ol ul li span b i em strong
+      img
+    ]>.forEach (tag) ->
+      ElementProxy::[tag] = (attributes, content) ->
+        new ElementProxy this, tag, attributes, content
+
+  (tag, attributes, content) ->
+    new ElementProxy void, tag, attributes, content .el
 
 # note that the syntax of reference, then new element is backwards
 # from Node.insertBefore. I think my syntax is more readable
@@ -168,6 +168,6 @@ insertAfter = (ref, el) -> insertBefore ref.nextSibling, el
 
 # TODO sha1 hasher, used for e{x|-}hentai sauce
 
-truncate = (it, length = 20) -> 
-	if it.length > length then "#{it.substring 0 length}..." else it
+truncate = (it, length = 20) ->
+  if it.length > length then "#{it.substring 0 length}..." else it
 

@@ -1,14 +1,26 @@
 # highlight posts by capcode
 # same as vanilla 4chan js
 # TODO highlight by UID too
+# TODO figure out developer replies
+
+highlighting =
+  admin: false
+  mod: false
 
 highlight = (klass) ->
   !-> for post of $$ ".#klass"
-    post.classList.toggle \highlighted
+    ! = that if highlighting[ klass ]    # toggle state
+    post.classList.toggle \highlighted # toggle css
 
-<- onready
+onready ->
+  listen $ \threads
+    .on \click '.admin .capcode' highlight \admin
+    .on \click '.mod .capcode' highlight \mod
 
-listen $ \threads
-  .on \click '.admin .capcode' highlight \admin
-  .on \click '.mod .capcode' highlight \mod
+# activate highlight on new posts
+updater.after_update ->
+  for klass in highlighting
+    if highlighting[ klass ]
+      highlight "new.#klass"
+
 

@@ -1,7 +1,7 @@
 # fake ajax posting
 
 postStatus = ->
-	$ \post-status .textContent = it
+  $ \post-status .textContent = it
 #
 # set .visible class on postform-wrapper when at the bottom of the screen
 # so stylesheet can make it visible
@@ -17,151 +17,151 @@ bottom = false # at the bottom of screen, set by scroller
 <- onready
 
 checkValidity = (e) ->
-	# TODO fix listen so it'll handle returning false from non-delegated events
-	e.preventDefault!
-	e.stopPropagation!
+  # TODO fix listen so it'll handle returning false from non-delegated events
+  e.preventDefault!
+  e.stopPropagation!
 
-	form = $ \postform
-	captcha = $ \recaptcha_response_field
-	file = $ \file
-	comment = $ \comment
-	email = $ \email
+  form = $ \postform
+  captcha = $ \recaptcha_response_field
+  file = $ \file
+  comment = $ \comment
+  email = $ \email
 
-	# noko would load the thread into the iframe and break
-	# sys.4chan.org posting a message back here
-	email.value = '' if /^noko$/i.test email.value
+  # noko would load the thread into the iframe and break
+  # sys.4chan.org posting a message back here
+  email.value = '' if /^noko$/i.test email.value
 
-	captcha.setCustomValidity unless captcha.value
-		"You forgot the captcha!"
-	else ''
-	
-	file.setCustomValidity if !file.value and board.isBoard
-		"You forgot your image!"
-	else ''
+  captcha.setCustomValidity unless captcha.value
+    "You forgot the captcha!"
+  else ''
 
-	comment.setCustomValidity if !file.value and !comment.value
-		"You didn't enter a comment or select a file!"
-	else ''
+  file.setCustomValidity if !file.value and board.isBoard
+    "You forgot your image!"
+  else ''
 
-	if form.checkValidity!
-		$ \post .disabled = true
-		$ \sage ?disabled = true
-		
-		visible := true
-		showform! # make sure the form stays visible
+  comment.setCustomValidity if !file.value and !comment.value
+    "You didn't enter a comment or select a file!"
+  else ''
 
-		postStatus "Posting..."
-		$ \progress .hidden = false # show progress bar
-		$ \progress .value = 0
+  if form.checkValidity!
+    $ \post .disabled = true
+    $ \sage ?disabled = true
 
-		data = new FormData form
-		# since we're ajaxing this, need to replace email with sage
-		# if that was used to submit
-		if this is $ \sage # sage button clicked
-			data.append \email \sage
+    visible := true
+    showform! # make sure the form stays visible
 
-			#ajax time!
-		with new XMLHttpRequest
-			@open \POST form.action
-			listen this 
-				.on \load ->
-					html = document.createElement \div 
-					html.innerHTML = @response
-					console.log html
+    postStatus "Posting..."
+    $ \progress .hidden = false # show progress bar
+    $ \progress .value = 0
 
-					captcha = $ \recaptcha_response_field
-					file = $ \file
-					comment = $ \comment
+    data = new FormData form
+    # since we're ajaxing this, need to replace email with sage
+    # if that was used to submit
+    if this is $ \sage # sage button clicked
+      data.append \email \sage
 
-					$ \post .disabled = false
-					$ \sage ?disabled = false
+      #ajax time!
+    with new XMLHttpRequest
+      @open \POST form.action
+      listen this
+        .on \load ->
+          html = document.createElement \div
+          html.innerHTML = @response
+          console.log html
 
-					if /Post successful!|uploaded!/.test html.textContent
-						postStatus 'Post successful!'
-						cooldown!
-						
-						visible := false # don't need to show form anymore
-						hideform!
+          captcha = $ \recaptcha_response_field
+          file = $ \file
+          comment = $ \comment
 
-						$ \postform .reset!
-						$ \name .value = get \name or '' # persist name
-						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+          $ \post .disabled = false
+          $ \sage ?disabled = false
 
-						# update and show new post, giving some time for 4chan to process it
-						updater.countdown 3sec
-						# reset last_parse to force an update, since 4chan's timestamp
-						# often lies
-						parser.last_parse = 0
+          if /Post successful!|uploaded!/.test html.textContent
+            postStatus 'Post successful!'
+            cooldown!
 
-					# TODO check for other errors
-					else if /mistyped the verification/.test html.textContent
-						postStatus 'You mistyped the verification!'
-						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-						captcha.value = ''
-						captcha.focus!
-					else if /duplicate file entry detected/
-						# TODO select for link to duplicate file
-						$ \postform .reset!
-						$ \name .value = get \name or '' # persist name
-						$ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-				.on \loadend ->
-					$ \progress .hidden = true # hide progress bar
+            visible := false # don't need to show form anymore
+            hideform!
 
-			listen this.upload .on \progress (e) ->
-				$ \progress .value = 100 * e.loaded / e.total
+            $ \postform .reset!
+            $ \name .value = get \name or '' # persist name
+            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 
-			@send data
+            # update and show new post, giving some time for 4chan to process it
+            updater.countdown 3sec
+            # reset last_parse to force an update, since 4chan's timestamp
+            # often lies
+            parser.last_parse = 0
 
-		
-	return false # prevent normal submission
+          # TODO check for other errors
+          else if /mistyped the verification/.test html.textContent
+            postStatus 'You mistyped the verification!'
+            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+            captcha.value = ''
+            captcha.focus!
+          else if /duplicate file entry detected/
+            # TODO select for link to duplicate file
+            $ \postform .reset!
+            $ \name .value = get \name or '' # persist name
+            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+        .on \loadend ->
+          $ \progress .hidden = true # hide progress bar
+
+      listen this.upload .on \progress (e) ->
+        $ \progress .value = 100 * e.loaded / e.total
+
+      @send data
+
+
+  return false # prevent normal submission
 
 listen $ \post .on \click checkValidity
 listen $ \sage .on \click checkValidity
 
 cooldown = ->
-	post = $ \post
-	sage = $ \sage
-	post.disabled = true
-	sage?disabled = true
+  post = $ \post
+  sage = $ \sage
+  post.disabled = true
+  sage?disabled = true
 
-	message = post.textContent
+  message = post.textContent
 
-	tminus = 30sec
-	post.textContent = tminus
-	setTimeout do
-		function tick
-			if tminus-- is 0
-				post.textContent = message
-				post.disabled = false
-				sage?disabled = false
-			else
-				post.textContent = tminus
-				setTimeout tick, 1000ms
-		1000ms
+  tminus = 30sec
+  post.textContent = tminus
+  setTimeout do
+    function tick
+      if tminus-- is 0
+        post.textContent = message
+        post.disabled = false
+        sage?disabled = false
+      else
+        post.textContent = tminus
+        setTimeout tick, 1000ms
+    1000ms
 
 # persist entered name and tripcode
 listen $ \name .on \input ->
-	set name: @value
+  set name: @value
 $ \name ?.value = get \name or ''
 
 listen window .on \scroll ->
-	y = window.scrollMaxY - window.scrollY
-	if bottom := y < 100
-		showform!
-	else
-		hideform!
+  y = window.scrollMaxY - window.scrollY
+  if bottom := y < 100
+    showform!
+  else
+    hideform!
 
 # if form is focused, don't hide
 $ \postform ?.addEventListener do
-	\focus
-	->
-		visible := true
-		showform!
-	true # have to use capture for non-bubbling focus events
+  \focus
+  ->
+    visible := true
+    showform!
+  true # have to use capture for non-bubbling focus events
 
 $ \postform ?.addEventListener do
-	\blur
-	->
-		visible := false
-		hideform!
-	true # have to use capture for non-bubbling focus events
+  \blur
+  ->
+    visible := false
+    hideform!
+  true # have to use capture for non-bubbling focus events
