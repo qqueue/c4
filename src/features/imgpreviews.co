@@ -1,6 +1,6 @@
 # show a centered image preview when hovering over an image after a
 # short delay, like a tooltip
-delay = 200ms 
+delay = 200ms
 dead_zone = 10px
 
 <- onready
@@ -11,12 +11,9 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 	height = @parentElement.getAttribute \data-height
 	src = @parentElement.href
 
-	docheight = window.innerHeight - 20
-	# using clientWidth to account for scrollbars
-	# can't use it for height because it would be the entire
-	# document height
-	# plus, ff uses quirks mode on 4chan:
 	# http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
+	# size of viewport excluding scrollbars
+	docheight = document.documentElement.clientHeight - 20
 	docwidth = document.documentElement.clientWidth - 20
 
 	ratio = Math.min 1, docheight/height, docwidth/width
@@ -35,7 +32,7 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 		# store the new current mouse position
 		x := e.clientX
 		y := e.clientY
-	
+
 	create_image = ~>
 		l.classList.add \dark
 		l.appendChild kup \img {id: \imgpreview alt: "Loading...", src, width, height } ->
@@ -53,7 +50,7 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 		# and instead check that the user moused out of the dead-zone
 		# around image, and destroy the image then
 		# this is similar to how tooltips are handled in firefox
-		listen this 
+		listen this
 			.off \mousemove reset_image
 			.on \mousemove remove_image
 
@@ -64,7 +61,7 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 			remove $ \imgpreview
 			# restart tooltip timeout
 			timeout := setTimeout create_image, delay
-			listen this 
+			listen this
 				.on \mousemove reset_image
 				.off \mousemove remove_image
 
@@ -72,7 +69,7 @@ listen $ \threads .on \mouseover 'img.thumb' ({clientX: x, clientY: y}) ->
 	timeout = setTimeout create_image, delay
 
 	# add handlers
-	listen this 
+	listen this
 		.on \mousemove reset_image
 		.on \mouseout function destroy
 			remove $ \imgpreview
