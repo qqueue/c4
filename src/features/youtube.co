@@ -2,8 +2,8 @@
 # embed youtube links on click
 embed = (e) ->
 	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-		@outerHTML = 
-			"""<iframe width="560" height="315" src="//www.youtube-nocookie.com/embed/#{@dataset.id}#{if @dataset.params then "?#that" else \?}&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>"""
+		@outerHTML =
+			"""<iframe width="560" height="315" src="//www.youtube.com/embed/#{@dataset.id}?#{@dataset.params or ''}&amp;autoplay=1&amp;wmode=transparent&amp" frameborder="0" allowfullscreen></iframe>"""
 		return false
 
 fetch_link = ->
@@ -15,14 +15,14 @@ fetch_link = ->
 		# or man up and fetch all video titles an load, in batches of 50
 		@title = 'Loading video title... (mouse over preview again to refresh)'
 		with new XMLHttpRequest
-			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json" 
+			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json"
 			# fucking chrome and its problems with supporting html5
 			# @responseType = \json
 			listen this
-				.on \load -> 
+				.on \load ->
 					try
 						data = JSON.parse @responseText
-						link.title = 
+						link.title =
 							"
 							#{data.entry.title.\$t}
 							\n\n
@@ -30,7 +30,7 @@ fetch_link = ->
 							\n\n
 							#{truncate data.entry.'media$group'.'media$description'.\$t , 200}
 							"
-					catch 
+					catch
 						link.title = "Couldn't load video information."
 				.on \error -> link.title = "Couldn't load video information."
 				.on \loadend -> listen link .off \mouseenter fetch_link
