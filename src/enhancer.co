@@ -28,18 +28,11 @@ parser.enhance = ->
         )
       //g
 
-      # using background-image so browsers will correctly draw rounded corners
-      # and other stuff http://webdesignerwall.com/tutorials/css3-image-styles
       '<a href="https://$1"
           class="youtube"
           data-id="$2$5"
           data-params="$3$4$6"
-          target="_blank"
-          style="display: inline-block;
-                 width: 120px;
-                 height: 90px;
-                 background-image:
-                   url(\'//img.youtube.com/vi/$2$5/2.jpg\')"></a>'
+          target="_blank"><img src="//img.youtube.com/vi/$2$5/2.jpg"></a>'
 
     # specialcase linkify urls without internal parenthesis surrounded by
     # parenthesis like (http://google.com)
