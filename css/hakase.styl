@@ -6,7 +6,7 @@ html
 	font-size 10pt
 
 body.sfw
-	background linear-gradient( top, #d1d5ee, #eef2ff 200px )
+	background #d6daf0
 	& > header a, & > footer a, .boardlinks a
 		color #34345c
 	.boardlinks
@@ -27,7 +27,7 @@ body.sfw
 		color #d00
 
 body.nsfw 
-	background linear-gradient( top, #fed7af, #ffe 200px )
+	background #f0e0d6
 	color #800000
 	& > header a, & > footer a, .boardlinks a
 		color #800
@@ -108,6 +108,8 @@ body > header
 	clear both
 
 .thread
+	margin 3px auto
+
 	padding-bottom 5px
 	border-style solid
 	border-width 0
@@ -120,50 +122,45 @@ body > header
 .thread-info
 	clear left
 	text-align right
+	margin 1em auto
+	width 40em
 
 .post 
-	margin-top 3px
+	position relative
+	clear both
 
-.replies
-	counter-reset reply
-	counter-reset image
+	&:not(#postpreview)
+		width 40em
+		margin 0 auto
+		padding .5em
 
 .reply 
-	counter-increment reply
-	padding 2px
-	margin-left 2em
-	border-style solid
-	border-width 0 1px 1px 0
+	border-top 1px solid
 	// motherfucking yellow fade
 	transition-property background-color
 	transition-duration 4s
 
-.replies > .post > .fileinfo
-	counter-increment image
-	&:before
-		content '#'counter(image, decimal)
-		color rgba(0,0,0,.4)
-
 .reply.new
 	background-color #feffbf !important
 
-.sage > h1 > .poster:after 
-	content " (sage)"
-
-.reply:before 
-	content counter(reply, decimal)
-	position absolute
-	text-align right
-	display inline-block
-	margin-left -2.5em
-	width 2em
-	font-size 10pt
-
-.post h1 
+.post > h1 
 	margin 0
 	padding 0
 	font-size 100%
 	font-weight normal
+
+	button, input
+		float right
+		display none // TODO for now
+
+.post:not(#postpreview) > h1
+	// hanging off to the right effect
+	float right
+	width 230px
+	margin-right -250px
+
+	time, & > span
+		display block
 
 .op > h1 
 	font-size 130%
@@ -182,21 +179,11 @@ body > header
 		color #34345c
 		text-decoration underline
 
+.sage > h1 > .poster:after 
+	content " (sage)"
+
 .tripcode 
 	color #228854
-
-.fileinfo
-	margin-left 20px
-.file 
-	display block
-	float left
-	margin 3px 20px
-	position relative
-
-img.full
-	// seems to fix weird left-margin in firefox
-	display block
-
 
 .capcode 
 	font-weight 800
@@ -217,15 +204,34 @@ img.full
 	.capcode:after
 		content url(https://static.4chan.org/image/modicon.gif)
 
+a.permalink 
+	text-decoration none
+	color inherit
+
 button:enabled
 	cursor pointer
 
 button.hide,
 button.report 
-	float right
 	margin 0 0 0 2px
 	padding 0 1px
-	line-height 1em
+
+.fileinfo
+	display none // TODO for now
+
+.file 
+	display block
+	float left
+
+.post:not(#postpreview) .file
+	// sort of a hanging-off the left side effect.
+	width 251px
+	margin-left -266px
+	text-align right
+
+img.full
+	// seems to fix weird left-margin in firefox
+	display block
 
 // functional css
 // bad idea? maybe
@@ -275,16 +281,6 @@ a,strong
 a.replylink
 	text-decoration none
 
-a.permalink 
-	text-decoration none
-	color inherit
-	float right
-	display block
-	margin-left 1em
-	line-height 1.7
-	// line-height adjusts a to look in line with rest of text
-	// bit weird, since a becomes a block element
-
 a.saucelink 
 	color inherit
 	text-decoration none
@@ -304,7 +300,6 @@ a.permalink .id, a.saucelink
 	color: black !important
 	
 .comment 
-	margin 1em 1em 1em 40px
 	word-wrap break-word
 	line-height 1.8em
 
@@ -324,7 +319,6 @@ a.permalink .id, a.saucelink
 	&:hover
 		text-shadow none
 		color black !important
-
 
 .youtube 
 	position relative
@@ -369,10 +363,11 @@ a.permalink .id, a.saucelink
 		text-shadow 0 0 10px white
 
 .backlinks 
+	text-align right
 	clear both
 
 .backlink 
-	margin-right 1em
+	margin-left 1em
 
 #postpreview 
 	outline none
