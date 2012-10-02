@@ -166,8 +166,16 @@ kup = do ->
 insertBefore = (ref, el) -> ref.parentNode.insertBefore el, ref
 insertAfter = (ref, el) -> insertBefore ref.nextSibling, el
 
-# TODO sha1 hasher, used for e{x|-}hentai sauce
-
 truncate = (it, length = 20) ->
   if it.length > length then "#{it.substring 0 length}..." else it
+
+debounce = (delay, fn) ->
+  timeout = void
+  ->
+    ctx = this
+    args = arguments
+    clearTimeout timeout
+    timeout = setTimeout do
+      -> fn.call ctx, args
+      delay
 

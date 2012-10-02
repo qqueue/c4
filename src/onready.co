@@ -1,10 +1,6 @@
 <-! document.addEventListener \DOMContentLoaded
 
 time "render"
-# force https: protocol, so ajax posting will work
-#if window.location.protocol is \http:
-  # window.location has its own 'replace' method which is weird
-#  window.location.= toString!.replace /^http/ 'https'
 
 board.name = window.location.pathname.split \/ .1
 
@@ -36,6 +32,7 @@ with board
 
   # detect based on the blue theme
   @sfw = /yotsublue/.test document.styleSheets.0.href
+  @favicon = if @sfw then titler.favicon.sfw else titler.favicon.nsfw
 
   @nav = document.getElementById \boardNavDesktop .innerHTML
   @banner = document.getElementsByTagName \img .0.src
@@ -86,6 +83,7 @@ do ->
     %hakase.css%
     '''
   head.appendChild style
+
   # because Recaptcha document.write's itself to the page
   # in some weird way, we have to attach the script here again
   recaptchaState = document.createElement \script
