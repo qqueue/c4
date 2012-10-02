@@ -2,11 +2,12 @@ fs = require \fs
 coco = require \coco
 stylus = require \stylus
 nib = require \nib
-_ = require \underscore
 
-ls = -> # appends relative path to readdir paths, and skip .swp files
-	"#it/#file" unless /.swp$/.test file for file of fs.readdirSync it
-join = -> _.flatten @@ .join \\n
+ls = -> "#it/#file" for file of fs.readdirSync it
+
+flatten = -> Array::concat.apply [], it # shallow flatten
+
+join = -> flatten @@ .join \\n
 read = -> fs.readFileSync it, \utf8
 compile = -> coco.compile read it
 bare = -> coco.compile read(it), bare: true
@@ -16,38 +17,45 @@ outfile = \html5chan@httpsgithubcomqueue-html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-	err, css <- stylus.nib read(\css/hakase.styl) .render # sexy coco flattened callback
-	try
-		throw err if err
-		fs.writeFileSync do
-			outfile
-			join do
-				metadata
-				bare \src/intro.co
-				bare \src/utils.co
-				bare klass for klass of ls \src/classes
-				compile \src/enhancer.co
-				compile \src/parser.co
-				compile \src/updater.co 
-				compile \src/titler.co
-				compile \src/poster.co
-				coco.compile do
-					read \src/onready.co 
-						.replace /%hakase\.css%/ css 
-						.replace /%board\.co\.html%/ read \templates/board.co.html
-					bare: true # since it's all in a callback
-				compile feature for feature of ls \src/features
-				bare \src/outro.co
-		console.log "compiled script to #{outfile}"
-	catch e
-		console.error e
-				
+  err, css <- stylus.nib read(\css/hakase.styl) .render
+  try
+    throw err if err
+    fs.writeFileSync do
+      outfile
+      join do
+        metadata
+        bare \src/intro.co
+        bare \src/utils.co
+        bare klass for klass of ls \src/classes
+        compile \src/enhancer.co
+        compile \src/parser.co
+        compile \src/updater.co
+        compile \src/titler.co
+        compile \src/poster.co
+        coco.compile do
+          read \src/onready.co
+            .replace /%hakase\.css%/ css
+            .replace /%board\.co\.html%/ read \templates/board.co.html
+          bare: true # since it's all in a callback
+        compile feature for feature of ls \src/features
+        bare \src/outro.co
+    console.log "compiled script to #{outfile}"
+  catch e
+    console.error e
+
+debounce = (delay, fn) ->
+  timeout = void
+  ->
+    ctx = this
+    args = arguments
+    clearTimeout timeout
+    timeout = setTimeout do
+      -> fn.call ctx, args
+      delay
+
 task \watch 'watch for changes and rebuild automatically' ->
-	invoke \build
-	<[css src templates]>.forEach ->
-		fs.watch it, interval: 1000, _.debounce do
-			(event, filename) ->
-				unless /.swp$/.test filename # goddamn vi
-					console.log "#event event detected on #filename. rebuilding..."
-					invoke \build
-			1000
+  invoke \build
+  for it of <[css src templates src/features]>
+    fs.watch it, interval: 1000, debounce 1000 (event, filename) ->
+      console.log "#event event detected on #filename. rebuilding..."
+      invoke \build
