@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        html5chan
-// @namespace   https://github.com/queue-/html5chan
+// @namespace   https://github.com/qqueue/html5chan
 // @description The Tesla Roadster of 4chan userscripts
 //
 // @match       http://boards.4chan.org/*
