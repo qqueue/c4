@@ -44,13 +44,13 @@ task \build 'build userscript' ->
     console.error e
 
 debounce = (delay, fn) ->
-  timeout = void
-  ->
+  var timeout
+  !->
     ctx = this
     args = arguments
     clearTimeout timeout
-    timeout = setTimeout do
-      -> fn.call ctx, args
+    timeout := setTimeout do
+      !-> fn.call ctx, args
       delay
 
 task \watch 'watch for changes and rebuild automatically' ->

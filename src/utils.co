@@ -170,12 +170,12 @@ truncate = (it, length = 20) ->
   if it.length > length then "#{it.substring 0 length}..." else it
 
 debounce = (delay, fn) ->
-  timeout = void
-  ->
+  var timeout
+  !->
     ctx = this
     args = arguments
     clearTimeout timeout
-    timeout = setTimeout do
-      -> fn.call ctx, args
+    timeout := setTimeout do
+      !-> fn.call ctx, args
       delay
 
