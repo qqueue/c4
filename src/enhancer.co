@@ -58,10 +58,10 @@ parser.enhance = ->
     .replace do
       //
       (^|[^a]>|;|\s) # to avoid linking parts of urls inside hrefs, must start
-                 # with one of these
+                     # with one of these
       (
         [\w\.\-]+\. # domain
-        (?:com|net|org|eu|jp) # non-exhaustive
+        (?:com|net|org|eu|jp|us) # non-exhaustive
         (?![\w\.]) # not immediately followed by more words or periods
                    # e.g. 'euuugh'
         [^<\s]* # rest of the url until space or <br>
