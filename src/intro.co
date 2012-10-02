@@ -17,7 +17,7 @@ log = do ->
 # so that the parts of the script can
 # access each other since this file
 # is compiled without the IEFE wrapper
-parser = {} 
+parser = {}
 board = {}
 updater = {}
 titler = {}
@@ -30,3 +30,16 @@ onready.execute = !(thread, threads) -> fn thread, threads for fn of onready.han
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access
+
+# with ff-specific beforescriptexecute:
+# https://developer.mozilla.org/en-US/docs/Mozilla_event_reference/beforescriptexecute
+# prevent native 4chan JS from loading and throwing errors
+# TODO there's got to be a way to do this in chrome, even if only in real
+# extension land TODO opera (if this even works there, has the same 'magic'
+# events)
+do ->
+  prevent = (e) ->
+    e.preventDefault! if /static.4chan.org/.test e.target.src
+  document.addEventListener \beforescriptexecute prevent
+  document.addEventListener \DOMContentLoaded ->
+    document.removeEventListener \beforescriptexecute prevent
