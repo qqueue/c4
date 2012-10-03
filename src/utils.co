@@ -6,14 +6,9 @@
 $ = -> document.getElementById it
 $$ = -> document.querySelectorAll it
 
-# had to resort to lame hack
-# I would monkey-patch Element.prototype,
-# but scriptish/Greasemonkey don't expose the real
-# prototype, so DOM patching is impossible ;_;
-matchesSelector = unless Element.prototype
-  \mozMatchesSelector
-else
-  \webkitMatchesSelector
+# polyfills and monkey patches
+Element::matchesSelector ?=
+  Element::mozMatchesSelector or Element::webkitMatchesSelector
 
 # special prefixed getters and setters
 # to avoid a possible collision with other userscripts
@@ -55,9 +50,9 @@ listen = do ->
           # if actual selector, or child of selector
           # this offloads the usual strategy of walking up parentElements
           # to the internal browser query engine
-          if target[matchesSelector] "#selector, #selector *"
+          if target.matchesSelector "#selector, #selector *"
             # but if it does match, still need to walk up tree to find target context
-            target.=parentElement until target[matchesSelector] selector
+            target.=parentElement until target.matchesSelector selector
             if handler.call(target, event) is false
               event.stopPropagation!
               event.preventDefault!
@@ -78,7 +73,7 @@ listen = do ->
 closest = (selector, el) ->
   return false unless el
   while el, el.=parentElement
-    return el if el[matchesSelector] selector
+    return el if el.matchesSelector selector
 remove = -> it.parentElement.removeChild it if it and it.parentElement
 
 do ->
