@@ -90,12 +90,9 @@ listen = do ->
       element.addEventListener do
         event
         if selector then !({target}: event) ->
-          return unless target # sometimes target disappears, weird
-          # if actual selector, or child of selector
-          # this offloads the usual strategy of walking up parentElements
-          # to the internal browser query engine
+          return unless target
           if target.matchesSelector "#selector, #selector *"
-            # but if it does match, still need to walk up tree to find target context
+            # find delegated target
             target.=parentElement until target.matchesSelector selector
             if handler.call(target, event) is false
               event.stopPropagation!
@@ -115,9 +112,9 @@ listen = do ->
       return this
 
 closest = (selector, el) ->
-  return false unless el
   while el, el.=parentElement
     return el if el.matchesSelector selector
+
 remove = -> it.parentElement.removeChild it if it and it.parentElement
 
 do ->
@@ -165,23 +162,27 @@ kup = do ->
           @el.textContent = content
 
 
-    tag: (tag, attributes, content) -> new ElementProxy this, tag, attributes, content
+    tag: (tag, attributes, content) ->
+      new ElementProxy this, tag, attributes, content
 
     # delegated to listen()
-    on: (event, selector, handler) -> listen @el .on event, selector, handler
-    off: (event, selector, handler) -> listen @el .off event, selector, handler
+    on: (event, selector, handler) ->
+      listen @el .on event, selector, handler
+    off: (event, selector, handler) ->
+      listen @el .off event, selector, handler
 
     # simple property copy for css
     css: -> @el.style <<< it
 
     # proxy common attributes, non-exhaustive
     <[
-      id classList src href style width height textContent naturalWidth naturalHeight
-      attributes
+      id classList src href style width height textContent naturalWidth
+      naturalHeight attributes
     ]>.forEach (attr) ->
       Object.defineProperty ElementProxy.prototype, attr,
         get: -> @el[attr]
         set: -> @el[attr] = it
+
     # proxy common methods
     <[
       getAttribute
@@ -191,8 +192,8 @@ kup = do ->
     # helpers for each kind of element
     # non-exhaustive, until I need them
     <[
-      body div section header footer article hgroup h1 h2 a ol ul li span b i em strong
-      img
+      body div section header footer article hgroup h1 h2 a ol ul li span
+      b i em strong img
     ]>.forEach (tag) ->
       ElementProxy::[tag] = (attributes, content) ->
         new ElementProxy this, tag, attributes, content
