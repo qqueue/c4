@@ -19,7 +19,7 @@ updateFavicon = debounce 200 ->
     ctx.fillText "#number", 16 16
 
   # the entire link needs to be replaced lest the icon won't update
-  remove $ \favicon
+  $ \favicon ?.remove!
   document.head.appendChild kup do
     \link
     id: \favicon

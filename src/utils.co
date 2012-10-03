@@ -115,8 +115,6 @@ closest = (selector, el) ->
   while el, el.=parentElement
     return el if el.matchesSelector selector
 
-remove = -> it.parentElement.removeChild it if it and it.parentElement
-
 do ->
   pluralize = (number, unit) ->
     "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
@@ -200,11 +198,6 @@ kup = do ->
 
   (tag, attributes, content) ->
     new ElementProxy void, tag, attributes, content .el
-
-# note that the syntax of reference, then new element is backwards
-# from Node.insertBefore. I think my syntax is more readable
-insertBefore = (ref, el) -> ref.parentNode.insertBefore el, ref
-insertAfter = (ref, el) -> insertBefore ref.nextSibling, el
 
 truncate = (it, length = 20) ->
   if it.length > length then "#{it.substring 0 length}..." else it
