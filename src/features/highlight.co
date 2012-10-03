@@ -9,8 +9,8 @@ highlighting =
 
 highlight = (klass) ->
   !-> for post of $$ ".#klass"
-    ! = that if highlighting[ klass ]    # toggle state
-    post.classList.toggle \highlighted # toggle css
+    ! = that if highlighting[ klass ]
+    post.classList.toggle \highlighted
 
 onready ->
   listen $ \threads
@@ -22,5 +22,4 @@ updater.after_update ->
   for klass in highlighting
     if highlighting[ klass ]
       highlight "new.#klass"
-
 
