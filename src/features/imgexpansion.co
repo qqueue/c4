@@ -38,7 +38,7 @@ changeDisplay = ->
 
 document.head.appendChild kup \style ->
   @id = \img-style
-  $ \img-style .textContent =
+  @textContent =
     if get \img-display is \full
       ""
     else

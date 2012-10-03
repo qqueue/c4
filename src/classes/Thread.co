@@ -1,46 +1,46 @@
 class Thread
-	postprocess: ->
-		#convenience array including op
-		@posts = [@op].concat @replies
+  postprocess: ->
+    #convenience array including op
+    @posts = [@op].concat @replies
 
-		@imageReplies = []
+    @imageReplies = []
 
-		# build reply hash and image replies array
-		@reply = {}
-		for reply of @replies
-			@imageReplies.push reply if reply.image
-			@reply[reply.id] = reply
+    # build reply hash and image replies array
+    @reply = {}
+    for reply of @replies
+      @imageReplies.push reply if reply.image
+      @reply[reply.id] = reply
 
-		if Thread[@id] # if this thread has been parsed before
-			@new = []
-			@deleted = []
-			for reply of Thread[@id].replies # old replies
-				@deleted.push reply if not @reply[reply.id]
-			for reply of @replies
-				@new.push reply if not Thread[@id].reply[reply.id]
-		
-		Thread[@id] = this
-	
-	className: ->
-		c = 'thread '
-		c += 'sticky ' if @sticky
-		c += ' locked' if @locked
-		c += ' preview' if @preview
-		return c
+    if Thread[@id] # if this thread has been parsed before
+      @new = []
+      @deleted = []
+      for reply of Thread[@id].replies # old replies
+        @deleted.push reply if not @reply[reply.id]
+      for reply of @replies
+        @new.push reply if not Thread[@id].reply[reply.id]
 
-	render: (container = \article, classes = '', id) ->
-		"""
-		<#container id="#{id or "thread-#{@id}"}" class="#classes #{@className!}">
-			#{@op.render \div \op}
-			<div class="thread-info">
-				#{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images. 
-				#{if @preview then """<a class="expand-link" href="#{@url}">Expand</a>""" else ''}
-			</div>
-			<div class="replies">#{render_all @replies, \article \reply}</div>
-		</#container>
-		"""
+    Thread[@id] = this
 
-	element: (container, classes, id) ->
-		d = document.createElement \div
-		d.innerHTML = @render container, classes, id
-		return d.firstElementChild
+  className: ->
+    c = 'thread '
+    c += 'sticky ' if @sticky
+    c += ' locked' if @locked
+    c += ' preview' if @preview
+    return c
+
+  render: (container = \article, classes = '', id) ->
+    """
+    <#container id="#{id or "thread-#{@id}"}" class="#classes #{@className!}">
+      #{@op.render \div \op}
+      <div class="thread-info">
+        #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
+        #{if @preview then """<a class="expand-link" href="#{@url}">Expand</a>""" else ''}
+      </div>
+        <div class="replies">#{render_all @replies, \article \reply}</div>
+    </#container>
+    """
+
+  element: (container, classes, id) ->
+    d = document.createElement \div
+    d.innerHTML = @render container, classes, id
+    return d.firstElementChild
