@@ -1,43 +1,55 @@
-# TODO add close button somehow
 # embed youtube links on click
-embed = (e) ->
-	unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-		@outerHTML =
-			"""<iframe width="560" height="315" src="//www.youtube.com/embed/#{@dataset.id}?#{@dataset.params or ''}&amp;autoplay=1&amp;wmode=transparent&amp" frameborder="0" allowfullscreen></iframe>"""
-		return false
-
-fetch_link = ->
-	link = this # called as event handler
-	unless @title # this prevents multiple xhrs from being created
-		# this is a sad workaround for firefox, which doesn't display a new tooltip
-		# if the tooltip changes after it is displayed
-		# TODO instead of titles, use a custom js-based tooltip
-		# or man up and fetch all video titles an load, in batches of 50
-		@title = 'Loading video title... (mouse over preview again to refresh)'
-		with new XMLHttpRequest
-			@open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json"
-			# fucking chrome and its problems with supporting html5
-			# @responseType = \json
-			listen this
-				.on \load ->
-					try
-						data = JSON.parse @responseText
-						link.title =
-							"
-							#{data.entry.title.\$t}
-							\n\n
-							#{data.entry.'yt$statistics'.viewCount} views.
-							\n\n
-							#{truncate data.entry.'media$group'.'media$description'.\$t , 200}
-							"
-					catch
-						link.title = "Couldn't load video information."
-				.on \error -> link.title = "Couldn't load video information."
-				.on \loadend -> listen link .off \mouseenter fetch_link
-			@send!
-
+# TODO add close button somehow
 <- onready
 
-listen document.getElementById \threads
-	.on \click \a.youtube embed
-	.on \mouseover \a.youtube fetch_link
+listen $ \threads
+  .on \click \a.youtube !(e) ->
+    unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+      @replace kup do
+        \iframe
+        width: 560
+        height: 315
+        src: "//www.youtube.com/embed/#{@dataset.id}
+              ?#{@dataset.params or ''}
+              &amp;autoplay=1
+              &amp;wmode=transparent"
+        frameborder: 0
+        allowfullscreen: ''
+      return false
+  .on \mouseover \a.youtube !->
+    return if @title
+
+    # this is a sad workaround for firefox, which doesn't display a new
+    # tooltip if the tooltip changes after it is displayed
+    @title = 'Loading video title... (mouse over preview again to refresh)'
+    # TODO instead of titles, use a custom js-based tooltip or man up and fetch
+    # all video titles an load, in batches of 50
+    # batch queries on youtube currently only are XML, which is lame.
+    # gotta wait till APIv3 isn't so alpha
+
+    link = this
+
+    new XMLHttpRequest
+      &open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json"
+
+      # https://bugs.webkit.org/show_bug.cgi?id=73648 ;_;
+      # &responseType = \json
+
+      listen(&)
+        .on \load !->
+          try
+            data = JSON.parse @responseText
+            link.title =
+              "
+              #{data.entry.title.\$t}
+              \n\n
+              #{data.entry.'yt$statistics'.viewCount} views.
+                \n\n
+              #{truncate data.entry.'media$group'.'media$description'.\$t , 200}
+              "
+          catch
+            link.title = "Couldn't load video information."
+        .on \error -> link.title = "Couldn't load video information."
+      &send!
+
+
