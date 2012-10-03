@@ -5,77 +5,77 @@
 # scroll! returns to the scroll position when
 # markScroll! was last called
 {markScroll, scroll} = do ->
-	el = null
-	last = {}
-	markScroll: -> 
-		el := it
-		last{offsetLeft, offsetTop} = el
-	scroll: -> window.scrollBy el.offsetLeft - last.offsetLeft, el.offsetTop - last.offsetTop
+  var el
+  last = {}
+  markScroll: ->
+    el := it
+    last{offsetLeft, offsetTop} = el
+  scroll: ->
+    window.scrollBy do
+      el.offsetLeft - last.offsetLeft
+      el.offsetTop - last.offsetTop
 
-# if any of el's parent elements are parent
-isParentOf = (el, parent) ->
-	while el.=parentElement
-		return true if el is parent
-	false
+onready !->
+  listen $ \threads
+    .on \click 'a.quotelink:not(.hiddenlink)' (e) ->
+      return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+      return unless post = Post[id = @hash.substring 1]
 
-toggle = (e) ->
-	if post = Post[id = @hash.substring 1]
-		host = closest \.post, this .id
-		hostid = host.split \- .pop! # grab last (if nested inline post)
-		inlined_id = "#host-#id" # id is unique to hosting post and inlined post
-		stub_id = "#{post.id}-inlined-stub"
-		if inlined = $ inlined_id # toggle off
+      host = closest \.post, this .id
+      hostid = host.split \- .pop! # grab last (if nested inline post)
+      inlined_id = "#host-#id" # id is unique to hosting post and inlined post
+      stub_id = "#{post.id}-inlined-stub"
 
-			markScroll this
+      if inlined = $ inlined_id # toggle off
 
-			@classList.remove \inlinedlink
-			# remove original post's inlined status if this is the last inlining link
-			if $$ ".inline.post#{post.id}" .length is 1
-				$ post.id .classList.remove \inlined
+        markScroll this
 
-			# and for nested posts
-			for p of inlined.querySelectorAll '.post.inline'
-				id = p.id.split \- .pop!
-				if $$ ".inline.post#id" .length is 1
-					$ id .classList.remove \inlined
+        @classList.remove \inlinedlink
+        # remove original post's inlined status if this is the last inlining
+        # link
+        if $$ ".inline.post#{post.id}" .length is 1
+          $ post.id .classList.remove \inlined
 
-			remove inlined
+        # and for nested posts
+        for p of inlined.querySelectorAll '.post.inline'
+          id = p.id.split \- .pop!
+          if $$ ".inline.post#id" .length is 1
+            $ id .classList.remove \inlined
 
-			scroll!
+        inlined.remove!
 
-		else # create
-			inlined = post.element \article "inline hovered" inlined_id
+        scroll!
 
-			for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]" # replace matching reply link
-				link.outerHTML = """<strong class="recursivelink">#{link.innerHTML}</strong>"""
+      else # create
+        inlined = post.element \article "inline hovered" inlined_id
 
-			wrapper = this # walk outside of inline elements like spoilers and greentext
-			wrapper.=parentElement while wrapper.parentElement[matchesSelector] 'a,span,font'
+        # replace matching reply links
+        for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]"
+          link.className = \recursivelink
+          link.removeAttribute \href
 
-			markScroll this
+        # walk outside of inline elements like spoilers and greentext
+        wrapper = this
+        while wrapper.parentElement.matchesSelector 'a,span,font'
+          wrapper.=parentElement
 
-			if @classList.contains \backlink
-				insertAfter wrapper, inlined
-			else
-				insertBefore wrapper, inlined
-			@classList.add \inlinedlink
+        markScroll this
 
-			remove $ \postpreview
+        if @classList.contains \backlink # post is backlinked
+          wrapper.after inlined
+        else
+          wrapper.before inlined # 'natural' order
+        @classList.add \inlinedlink
 
-			$ post.id .classList.add \inlined
+        $ \postpreview ?.remove!
 
-			scroll!
-						
-		return false
+        $ post.id .classList.add \inlined
+
+        scroll!
+
+      return false
+
+  .on \dblclick \a.quotelink !->
+    window.location.hash = that if @hash # actually follow link
 
 
-# TODO add button to uninline all posts
-
-bypass = -> # bypass inline replies on dblclick
-	window.location.hash = that if @hash  # actually follow link
-
-<- onready
-
-listen $ \threads
-	.on \click 'a.quotelink:not(.hiddenlink)' toggle
-	.on \dblclick \a.quotelink bypass
