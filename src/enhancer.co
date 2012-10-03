@@ -28,30 +28,30 @@ parser.enhance = ->
         )
       //g
 
-      '<a href="https://$1"
-          class="youtube"
-          data-id="$2$5"
-          data-params="$3$4$6"
+      '<a href="https://$1" \
+          class="youtube" \
+          data-id="$2$5" \
+          data-params="$3$4$6" \
           target="_blank"><img src="//img.youtube.com/vi/$2$5/2.jpg"></a>'
 
     # specialcase linkify urls without internal parenthesis surrounded by
     # parenthesis like (http://google.com)
     .replace do
       /\((https?:\/\/)([^<\s\)]+)\)/g
-      '(<a class="external"
-           rel="noreferrer"
-           href="$1$2"
-           title="$1$2"
+      '(<a class="external" \
+           rel="noreferrer" \
+           href="$1$2" \
+           title="$1$2" \
            target="_blank">$2</a>)'
 
     # linkify links not preceded by a quote or double-quote (should avoid
     # relinkifying href= urls)
     .replace do
       /([^"']|^)(https?:\/\/)([^<\s]+)/g
-      '$1<a class="external"
-            rel="noreferrer"
-            href="$2$3"
-            title="$2$3"
+      '$1<a class="external" \
+            rel="noreferrer" \
+            href="$2$3" \
+            title="$2$3" \
             target="_blank">$3</a>'
 
     # specialcase linkify urls without a protocol but with a common tld
@@ -67,10 +67,10 @@ parser.enhance = ->
         [^<\s]* # rest of the url until space or <br>
       )
       //g
-      '$1<a class="external"
-            rel="noreferrer"
-            href="http://$2"
-            title="$2"
+      '$1<a class="external" \
+            rel="noreferrer" \
+            href="http://$2" \
+            title="$2" \
             target="_blank">$2</a>'
 
     # attempt to redirect broken post links to the archive
