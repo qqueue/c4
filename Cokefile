@@ -50,7 +50,7 @@ debounce = (delay, fn) ->
     args = arguments
     clearTimeout timeout
     timeout := setTimeout do
-      !-> fn.call ctx, args
+      !-> fn.apply ctx, args
       delay
 
 task \watch 'watch for changes and rebuild automatically' ->
