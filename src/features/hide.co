@@ -3,54 +3,54 @@
 # can then add things like 'hide similar' 'hide replies' etc
 
 
-toggle = -> 
-	# set class on referencing links
-	# TODO somehow persist this with dynamically loaded content
-	for link of $$ "a.quotelink[href=\"##it\"]" 
-		link.classList.toggle \hiddenlink
-	$ it .classList.toggle \hidden
+toggle = ->
+  # set class on referencing links
+  # TODO somehow persist this with dynamically loaded content
+  for link of $$ "a.quotelink[href=\"##it\"]"
+    link.classList.toggle \hiddenlink
+  $ it .classList.toggle \hidden
 
 <- onready
 
 # grab or start persisted hidden hash
-hidden = get \hidden 
+hidden = get \hidden
 if hidden!? or typeof hidden is not \object
-	hidden = {} 
+  hidden = {}
 hidden.posts = {} unless hidden.posts
 hidden.threads = {} unless hidden.threads
 
 # delete expired posts to keep object small
 for type, hash in hidden
-	for key, expiry in hash
-		delete hash[key] if expiry < Date.now!
+  for key, expiry in hash
+    delete hash[key] if expiry < Date.now!
 
 listen $ \threads
-	.on \click '.reply button.hide' !->
-		toggle @value
-		if hidden.posts[@value]
-			delete hidden.posts[@value]
-		else
-			hidden.posts[@value] = Date.now! + 604800000ms # 1 week
-		# persist
-		set \hidden, hidden
-	.on \click '.op button.hide' !->
-		thread = "thread-#{@value}"
-		toggle thread
-		if hidden.threads[thread]
-			delete hidden.threads[thread]
-		else
-			# use Thread hash to always persist sticky threads
-			hidden.threads[thread] = if Thread[@value]?sticky
-				Number.MAX_VALUE
-			else
-				Date.now! + 604800000ms # otherwise, a week should be enough
-		# persist
-		set \hidden, hidden
+  .on \click '.reply button.hide' !->
+    toggle @value
+    if hidden.posts[@value]
+      delete hidden.posts[@value]
+    else
+      hidden.posts[@value] = Date.now! + 604800000ms # 1 week
+    # persist
+    set \hidden, hidden
+      .on \click '.op button.hide' !->
+        thread = "thread-#{@value}"
+    toggle thread
+    if hidden.threads[thread]
+      delete hidden.threads[thread]
+    else
+      # use Thread hash to always persist sticky threads
+      hidden.threads[thread] = if Thread[@value]?sticky
+        Number.MAX_VALUE
+      else
+        Date.now! + 604800000ms # otherwise, a week should be enough
+    # persist
+    set \hidden, hidden
 # hide all previously hidden posts and threads
 # TODO do this at render time instead of post render for faster display
 for post of document.getElementsByClassName \post
-	toggle post.id if hidden.posts[post.id]
+  toggle post.id if hidden.posts[post.id]
 for thread of document.getElementsByClassName \thread
-	if hidden.threads[thread.id]
-		toggle thread.id 
+  if hidden.threads[thread.id]
+    toggle thread.id
 
