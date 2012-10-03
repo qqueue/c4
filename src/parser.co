@@ -1,5 +1,5 @@
 dimension_regex = /(\d+)x(\d+)/
-size_regex = /[\d\.]+ [KM]?B/
+  size_regex = /[\d\.]+ [KM]?B/
 filename_regex = /title="([^"]+)"/
 spoiler_regex = /^Spoiler Image/
 
@@ -7,85 +7,99 @@ sage_regex = /^sage$/i
 
 # returns Array of threads
 parser.board = (document) ->
-	time "parse board"
-	threads = Array::map.call document.getElementsByClassName( \thread ), parse_thread
-	timeEnd "parse board"
+  time "parse board"
+  threads = Array::map.call do
+    document.getElementsByClassName( \thread )
+    parse_thread
+  timeEnd "parse board"
 
-	return threads
+  return threads
 
-parser.thread = (document) -> 
-	time "parse thread"
-	thread = parse_thread document.querySelector \.thread
-	timeEnd "parse thread"
+parser.thread = (document) ->
+  time "parse thread"
+  thread = parse_thread document.querySelector \.thread
+  timeEnd "parse thread"
 
-	return thread
+  return thread
 
 # slow(?!) DOM querying parser
 # shit, why is this so much faster, even with nested functions and
 # lots of querySelector calls? Did switching to standards mode make
 # dom querying faster or something? TODO test this, somehow
 parse_thread = (el) ->
-	t = new Thread
-	t.id = el.id.substring 1 # t12345
-	t.url = board.threadurl + t.id
-	t.preview = true
+  t = new Thread
+  t.id = el.id.substring 1 # t12345
+  t.url = board.threadurl + t.id
+  t.preview = true
 
-	if omitted = el.querySelector \.summary
-		t.omitted = 
-			replies: parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
-			imageReplies: parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
-	
-	# TODO sticky and locked
-	
-	t.op = parse_post el.querySelector( \.op ), t
-	t.replies = Array::map.call el.getElementsByClassName( \reply ), -> parse_post it, t
+  if omitted = el.querySelector \.summary
+    t.omitted =
+      replies:
+        parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
+      imageReplies:
+        parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 
-	t.postprocess!
+  # TODO sticky and locked
 
-	return t
+  t.op = parse_post.call t, el.querySelector( \.op )
+  t.replies = Array::map.call do
+    el.getElementsByClassName( \reply )
+    parse_post
+    t # this for map calls
 
-parse_post = (el, thread) ->
-	p = new Post
-	p.thread = thread
-	p.id = el.id.substring 1
-	p.url = if p.op = el.classList.contains \op
-		thread.url
-	else
-		"#{thread.url}##{p.id}"
-	p.time = new Date( parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms )
-	p.title = el.querySelector '.postInfo.desktop .subject' .textContent
-	p.poster = el.querySelector \.name .textContent
-	p.tripcode = el.querySelector \.postertrip ?.textContent
-	p.capcode = el.querySelector \.capcode ?.textContent
-	p.email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
-	p.sage = sage_regex.test p.email
+  t.postprocess!
 
-	p.comment = parser.enhance el.querySelector \.postMessage
+  return t
 
-	# TODO uid
-	
-	if img = el.querySelector \.fileThumb
-		if img.firstElementChild.alt is "File deleted."
-			p.deletedImage = true
-		else
-			thumb = img.firstElementChild
-			info = el.querySelector \.fileInfo .innerHTML
-			dimensions = dimension_regex.exec info
-			p.image =
-				thumb:
-					url: thumb.src
-					width: parseInt thumb.style.width, 10
-					height: parseInt thumb.style.height, 10
-				url: thumb.parentNode.href
-				
-				width: parseInt dimensions.1, 10
-				height: parseInt dimensions.2, 10
-				
-				size: size_regex.exec thumb.alt .0
-				filename: filename_regex.exec(info)?1
-				md5: thumb.dataset.md5
-				
-				spoiler: spoiler_regex.test thumb.alt
-	p.postprocess!
+parse_post = (el) ->
+  thread = this
 
-	return p
+  p = new Post
+  p.thread = thread
+  p.id = el.id.substring 1
+  p.url =
+    if p.op = el.classList.contains \op
+      thread.url
+    else
+      "#{thread.url}##{p.id}"
+  p.time = new Date do
+    parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
+
+  p.title = el.querySelector '.postInfo.desktop .subject' .textContent
+
+  p.poster = el.querySelector \.name .textContent
+  p.tripcode = el.querySelector \.postertrip ?.textContent
+  p.capcode = el.querySelector \.capcode ?.textContent
+
+  p.email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
+  p.sage = sage_regex.test p.email
+
+  p.comment = parser.enhance el.querySelector \.postMessage
+
+  # TODO uid
+
+  if img = el.querySelector \.fileThumb
+    if img.firstElementChild.alt is "File deleted."
+      p.deletedImage = true
+    else
+      thumb = img.firstElementChild
+      info = el.querySelector \.fileInfo .innerHTML
+      dimensions = dimension_regex.exec info
+      p.image =
+        thumb:
+          url: thumb.src
+          width: parseInt thumb.style.width, 10
+          height: parseInt thumb.style.height, 10
+        url: thumb.parentNode.href
+
+        width: parseInt dimensions.1, 10
+        height: parseInt dimensions.2, 10
+
+        size: size_regex.exec thumb.alt .0
+        filename: filename_regex.exec(info)?1
+        md5: thumb.dataset.md5
+
+        spoiler: spoiler_regex.test thumb.alt
+  p.postprocess!
+
+  return p
