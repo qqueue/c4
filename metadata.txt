@@ -3,10 +3,10 @@
 // @namespace   https://github.com/qqueue/html5chan
 // @description The Tesla Roadster of 4chan userscripts
 //
-// @match       http://boards.4chan.org/*
-// @match       https://boards.4chan.org/*
-// @exclude     http://boards.4chan.org/f/*
-// @exclude     https://boards.4chan.org/f/*
+// @match       *://boards.4chan.org/*
+// @exclude     *://boards.4chan.org/f/*
 //
 // @run-at      document-start
+//
+// @grant       none
 // ==/UserScript==
