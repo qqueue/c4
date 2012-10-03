@@ -13,7 +13,7 @@ compile = -> coco.compile read it
 bare = -> coco.compile read(it), bare: true
 stylus.nib = -> stylus it .use nib!
 
-outfile = \html5chan@httpsgithubcomqueue-html5chan.user.js
+outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
