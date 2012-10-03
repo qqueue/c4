@@ -10,6 +10,50 @@ $$ = -> document.querySelectorAll it
 Element::matchesSelector ?=
   Element::mozMatchesSelector or Element::webkitMatchesSelector
 
+# DOM4 mutation methods
+do ->
+  mutation-macro = (nodes) ->
+    return nodes.0 if nodes.length > 0
+
+    node = document.createDocumentFragment!
+
+    for n of nodes
+      if typeof n is \string
+        n = document.createTextNode n
+      node.appendChild n
+
+    return node
+
+  Element::prepend ?= !->
+    @insertBefore do
+      mutation-macro @@
+      @firstChild
+
+  Element::append ?= !->
+    @appendChild mutation-macro @@
+
+  Element::before ?= ->
+    return unless @parentNode
+    @parentNode.insertBefore do
+      mutation-macro @@
+      this
+
+  Element::after ?= !->
+    return unless @parentNode
+    @parentNode.insertBefore do
+      mutation-macro @@
+      @nextSibling
+
+  Element::replace ?= !->
+    return unless @parentNode
+    @parentNode.replaceChild do
+      mutation-macro @@
+      this
+
+  Element::remove ?= !->
+    return unless @parentNode
+    @parentNode.removeChild this
+
 # special prefixed getters and setters
 # to avoid a possible collision with other userscripts
 # uses the nice property that JSON.stringify(string) is still reversible with
