@@ -9,8 +9,6 @@ listen $ \threads .on \mouseover 'a.quotelink' ->
 
   $ \postpreview ?.remove!
 
-""
-
   host = closest \.post this
   hostid = (host.id.split / \-)pop!
 
