@@ -21,7 +21,7 @@ onready !->
       return unless post = Post[id = @hash.substring 1]
 
       host = closest \.post, this .id
-      hostid = host.split \- .pop! # grab last (if nested inline post)
+      hostid = (host / \-)pop! # grab last (if nested inline post)
       inlined_id = "#host-#id" # id is unique to hosting post and inlined post
       stub_id = "#{post.id}-inlined-stub"
 
@@ -37,7 +37,7 @@ onready !->
 
         # and for nested posts
         for p of inlined.querySelectorAll '.post.inline'
-          id = (p.id.split / \-)pop!
+          id = (p.id / \-)pop!
           if $$ ".inline.post#id" .length is 1
             $ id .classList.remove \inlined
 
