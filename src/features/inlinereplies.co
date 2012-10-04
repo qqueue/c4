@@ -4,7 +4,8 @@
 
 # scroll! returns to the scroll position when
 # markScroll! was last called
-{markScroll, scroll} = let el, last = {} ->
+{markScroll, scroll} = let last = {}
+  var el
   markScroll: ->
     el := it
     last{offsetLeft, offsetTop} = el

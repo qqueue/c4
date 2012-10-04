@@ -19,7 +19,7 @@ class Post
       for post in backlinks[@id]
         html +=
           "<a href=\"##post\" class=\"backlink quotelink\">&lt;&lt;#post</a> "
-    Post.new_backlinks@[@id]
+    ..new_backlinks[@id] = []
     return html
 
   className: -> # generates the correct classes to use
@@ -113,8 +113,9 @@ class Post
     wrapper.innerHTML = @render container, classes, id
     return wrapper.firstElementChild
 
-  Post@backlinks
-  Post@new_backlinks
-  Post@tripcodes
-  Post@uids
+  Post
+    &backlinks = {}
+    &new_backlinks = {}
+    &tripcodes = {}
+    &uids = {}
 
