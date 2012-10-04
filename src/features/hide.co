@@ -16,8 +16,8 @@ toggle = ->
 hidden = get \hidden
 if hidden!? or typeof hidden is not \object
   hidden = {}
-hidden.posts = {} unless hidden.posts
-hidden.threads = {} unless hidden.threads
+hidden@posts
+hidden@threads
 
 # delete expired posts to keep object small
 for type, hash in hidden

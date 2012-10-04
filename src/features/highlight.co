@@ -9,7 +9,7 @@ highlighting =
 
 highlight = (klass) ->
   !-> for post of $$ ".#klass"
-    ! = that if highlighting[ klass ]
+    highlighting[klass] = false if highlighting[klass]
     post.classList.toggle \highlighted
 
 onready ->
@@ -20,6 +20,6 @@ onready ->
 # activate highlight on new posts
 updater.after_update ->
   for klass in highlighting
-    if highlighting[ klass ]
+    if highlighting[klass]
       highlight "new.#klass"
 

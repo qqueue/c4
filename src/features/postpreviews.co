@@ -10,7 +10,7 @@ listen $ \threads .on \mouseover 'a.quotelink' ->
   $ \postpreview ?.remove!
 
   host = closest \.post this
-  hostid = host.id.split \- .pop!
+  hostid = (host.id / \-)pop!
 
   preview = post.element \article, , \postpreview
 

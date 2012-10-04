@@ -42,5 +42,5 @@ class Thread
 
   element: (container, classes, id) ->
     d = document.createElement \div
-    d.innerHTML = @render container, classes, id
+      &innerHTML = @render container, classes, id
     return d.firstElementChild

@@ -2,7 +2,8 @@
 <- listen $ \threads .on \click '.permalink .id'
 
 selection = window.getSelection!toString!trim!
-selection = ">#selection\n" if(selection)
-$ \comment .value += ">>#{@textContent}\n#selection"
-$ \comment .focus!
+selection = ">#selection\n" if selection
+$ \comment
+  &value += ">>#{@textContent}\n#selection"
+  &focus!
 return false

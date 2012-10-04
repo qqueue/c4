@@ -1,12 +1,11 @@
 "use strict"
 log = do ->
-  beginning = Date.now()
-  log = -> log.messages += "\n[t+#{Date.now() - beginning}] #it"
+  beginning = Date.now!
+  log = -> log.messages += "\n[t+#{Date.now! - beginning}] #it"
   log.messages = "[t-0]: html5chan"
   return log
 
-{time, timeEnd} = do ->
-  times = {}
+{time, timeEnd} = let times = {}
   time: (name) ->
     times[name] = Date.now()
     log "#{name} [start]"
@@ -26,7 +25,8 @@ titler = {}
 # handlers with return, we implement a custom callback queue
 onready = -> onready.handlers.push it
 onready.handlers = []
-onready.execute = !(thread, threads) -> fn thread, threads for fn of onready.handlers
+onready.execute = !(thread, threads) ->
+  fn thread, threads for fn of onready.handlers
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access

@@ -24,35 +24,36 @@ do ->
 
     return node
 
-  Element::prepend ?= !->
-    @insertBefore do
-      mutation-macro @@
-      @firstChild
+  Element:: <<<
+    prepend: !->
+      @insertBefore do
+        mutation-macro @@
+        @firstChild
 
-  Element::append ?= !->
-    @appendChild mutation-macro @@
+    append: !->
+      @appendChild mutation-macro @@
 
-  Element::before ?= ->
-    return unless @parentNode
-    @parentNode.insertBefore do
-      mutation-macro @@
-      this
+    before: ->
+      return unless @parentNode
+      @parentNode.insertBefore do
+        mutation-macro @@
+        this
 
-  Element::after ?= !->
-    return unless @parentNode
-    @parentNode.insertBefore do
-      mutation-macro @@
-      @nextSibling
+    after: !->
+      return unless @parentNode
+      @parentNode.insertBefore do
+        mutation-macro @@
+        @nextSibling
 
-  Element::replace ?= !->
-    return unless @parentNode
-    @parentNode.replaceChild do
-      mutation-macro @@
-      this
+    replace: !->
+      return unless @parentNode
+      @parentNode.replaceChild do
+        mutation-macro @@
+        this
 
-  Element::remove ?= !->
-    return unless @parentNode
-    @parentNode.removeChild this
+    remove: !->
+      return unless @parentNode
+      @parentNode.removeChild this
 
 # special prefixed getters and setters
 # to avoid a possible collision with other userscripts
@@ -75,11 +76,11 @@ render_all = (objects, ...options) ->
   (obj.render.apply obj, options for obj of objects).join ''
 
 listen = do ->
-  mouse = mouseenter: \mouseover, mouseleave: \mouseout
+  mouse = mouseenter: \mouseover mouseleave: \mouseout
   (element) -> new # chainable wrapper for addEventListener
     @on = (event, selector, handler) ->
       return this unless element
-      if (events = event.split ' ').length > 1 # handle space separated events
+      if (events = event / ' ')length > 1 # handle space separated events
         @on e, selector, handler for e of events
         return this
       if typeof selector is \function
@@ -105,7 +106,7 @@ listen = do ->
     # TODO this doesn't handle delegated events, since they are proxied
     @off = (event, handler) ->
       return this unless element
-      if (events = event.split ' ').length > 1 # handle space separated events
+      if (events = event / ' ')length > 1 # handle space separated events
         @off e, handler for e of events
         return
       element.removeEventListener event, handler
@@ -176,7 +177,7 @@ kup = do ->
     <[
       id classList src href style width height textContent naturalWidth
       naturalHeight attributes
-    ]>.forEach (attr) ->
+    ]>forEach (attr) ->
       Object.defineProperty ElementProxy.prototype, attr,
         get: -> @el[attr]
         set: -> @el[attr] = it
@@ -184,7 +185,7 @@ kup = do ->
     # proxy common methods
     <[
       getAttribute
-    ]>.forEach (method) ->
+    ]>forEach (method) ->
       ElementProxy::[method] = -> @el[method].apply @el, @@
 
     # helpers for each kind of element
@@ -192,7 +193,7 @@ kup = do ->
     <[
       body div section header footer article hgroup h1 h2 a ol ul li span
       b i em strong img
-    ]>.forEach (tag) ->
+    ]>forEach (tag) ->
       ElementProxy::[tag] = (attributes, content) ->
         new ElementProxy this, tag, attributes, content
 

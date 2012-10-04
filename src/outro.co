@@ -6,4 +6,4 @@ listen document.getElementById \dump-log .on \click ->
 log "finished"
 # console?log? log.messages
 
-$ \bottom .appendChild kup \pre, log.messages
+$ \bottom .appendChild kup \pre log.messages

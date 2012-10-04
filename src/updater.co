@@ -33,7 +33,7 @@ updater.update = ->
         # cache-busting parameter to the URL, forcing a full server response
         # every time (which along with if-modified-since, allows them to test
         # for a real 304 response).
-        last_modified = new Date( @getResponseHeader \Last-Modified ).getTime!
+        last_modified = new Date( @getResponseHeader \Last-Modified )getTime!
         if last_modified > last_update
           updater.status = "update detected, parsing"
           last_update := last_modified
@@ -59,7 +59,7 @@ updater.update = ->
             for backlinks of document.querySelectorAll '.thread .backlinks'
               backlinks.insertAdjacentHTML do
                 \beforeend
-                Post[backlinks.parentNode.id.split \- .pop!].backlinks true
+                Post[(backlinks.parentNode.id / \-)pop!]backlinks true
 
             # call after_update hooks
             fn! for fn of updater.callbacks
