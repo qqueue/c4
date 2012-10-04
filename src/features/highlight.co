@@ -9,7 +9,7 @@ highlighting =
 
 highlight = (klass) ->
   !-> for post of $$ ".#klass"
-    ! = that if highlighting[ klass ]
+    highlighting[ klass ] = false
     post.classList.toggle \highlighted
 
 onready ->

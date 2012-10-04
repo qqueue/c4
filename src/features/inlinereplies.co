@@ -4,9 +4,7 @@
 
 # scroll! returns to the scroll position when
 # markScroll! was last called
-{markScroll, scroll} = do ->
-  var el
-  last = {}
+{markScroll, scroll} = let el, last = {} ->
   markScroll: ->
     el := it
     last{offsetLeft, offsetTop} = el
@@ -38,7 +36,7 @@ onready !->
 
         # and for nested posts
         for p of inlined.querySelectorAll '.post.inline'
-          id = p.id.split \- .pop!
+          id = (p.id.split / \-)pop!
           if $$ ".inline.post#id" .length is 1
             $ id .classList.remove \inlined
 

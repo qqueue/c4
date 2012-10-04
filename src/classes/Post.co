@@ -10,7 +10,7 @@ class Post
           Post.new_backlinks@[quoted][@id] = true
           backlinks[@id] = true
 
-    Post[@id] = this # register this post as having been parsed
+    ..[@id] = this # register this post as having been parsed
 
   backlinks: (only_new) -> # renders backlinks
     html = ""
@@ -19,7 +19,7 @@ class Post
       for post in backlinks[@id]
         html +=
           "<a href=\"##post\" class=\"backlink quotelink\">&lt;&lt;#post</a> "
-    Post.new_backlinks[@id] = {}
+    Post.new_backlinks@[@id]
     return html
 
   className: -> # generates the correct classes to use
@@ -113,8 +113,8 @@ class Post
     wrapper.innerHTML = @render container, classes, id
     return wrapper.firstElementChild
 
-  Post.backlinks = {}
-  Post.new_backlinks = {}
-  Post.tripcodes = {}
-  Post.uids = {}
+  Post@backlinks
+  Post@new_backlinks
+  Post@tripcodes
+  Post@uids
 
