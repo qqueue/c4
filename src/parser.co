@@ -68,10 +68,10 @@ parse_post = (el) ->
     &title = el.querySelector '.postInfo.desktop .subject' .textContent
 
     &poster = el.querySelector \.name .textContent
-    &tripcode = el.querySelector \.postertrip ?textContent
-    &capcode = el.querySelector \.capcode ?textContent
+    &tripcode = el.querySelector \.postertrip ?.textContent
+    &capcode = el.querySelector \.capcode ?.textContent
 
-    &email = el.querySelector \.useremail ?href.substring(7) # strip mailto:
+    &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
     &sage = sage_regex.test &email
 
     &comment = parser.enhance el.querySelector \.postMessage
