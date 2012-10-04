@@ -42,13 +42,12 @@ board
   &url = "//boards.4chan.org/#{&name}/"
   &threadurl = "#{&url}res/"
 
-  if document.location.pathname.match /res\/(\d+)/
-    &isThread = true
+  if &isThread = document.location.pathname.match /res\/(\d+)/
     &threadId = that.1
     &threadPath = "/#{&name}/res/#{&threadId}"
   else
     &isThread = false
-    &page = parseInt document.location.pathname.split('/')?2, 10 or 0
+    &page = parseInt (document.location.pathname / '/')?2, 10 or 0
     &pages = for i to 15 # let's assume they all have 15 pages
       num: i, current: i is &page
     &next = if &current < 15 then &current + 1
@@ -57,7 +56,7 @@ board
   &locked = document.forms.length is 1 # delform, without postform
 
   # delete password
-  &password = get \password or Math.random!.toString!.substr -8
+  &password = get \password or Math.random!toString!substr -8
 
 if board.isThread then
   thread = parser.thread document
@@ -85,7 +84,7 @@ style = document.createElement \style
 head.appendChild style
 
 title = document.createElement \title
-title.textContent = board.title
+  &textContent = board.title
 head.appendChild title
 html.appendChild head
 
@@ -124,7 +123,7 @@ window.onload = window.onunload = void
 if window.location.hash and not sget document.URL
   window.location.hash = window.location.hash
   window.addEventListener \scroll function registerPage
-    sset (document.URL): true
+    sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
 # fix captcha

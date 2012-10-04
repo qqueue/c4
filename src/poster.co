@@ -45,14 +45,15 @@ checkValidity = (e) ->
 
   if form.checkValidity!
     $ \post .disabled = true
-    $ \sage ?disabled = true
+    $ \sage ?.disabled = true
 
     visible := true
     showform! # make sure the form stays visible
 
     postStatus "Posting..."
-    $ \progress .hidden = false # show progress bar
-    $ \progress .value = 0
+    $ \progress
+      &hidden = false # show progress bar
+      &value = 0
 
     data = new FormData form
     # since we're ajaxing this, need to replace email with sage
@@ -74,7 +75,7 @@ checkValidity = (e) ->
           comment = $ \comment
 
           $ \post .disabled = false
-          $ \sage ?disabled = false
+          $ \sage ?.disabled = false
 
           if /Post successful!|uploaded!/.test html.textContent
             postStatus 'Post successful!'
@@ -97,8 +98,9 @@ checkValidity = (e) ->
           else if /mistyped the verification/.test html.textContent
             postStatus 'You mistyped the verification!'
             $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-            captcha.value = ''
-            captcha.focus!
+            captcha
+              &value = ''
+              &focus!
           else if /duplicate file entry detected/
             # TODO select for link to duplicate file
             $ \postform .reset!
@@ -107,7 +109,7 @@ checkValidity = (e) ->
         .on \loadend ->
           $ \progress .hidden = true # hide progress bar
 
-      listen this.upload .on \progress (e) ->
+      listen @upload .on \progress (e) ->
         $ \progress .value = 100 * e.loaded / e.total
 
       @send data

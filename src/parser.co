@@ -55,26 +55,26 @@ parse_post = (el) ->
   thread = this
 
   p = new Post
-  p.thread = thread
-  p.id = el.id.substring 1
-  p.url =
-    if p.op = el.classList.contains \op
-      thread.url
-    else
-      "#{thread.url}##{p.id}"
-  p.time = new Date do
+    &thread = thread
+    &id = el.id.substring 1
+    &url =
+      if &op = el.classList.contains \op
+        thread.url
+      else
+        "#{thread.url}##{&id}"
+    &time = new Date do
     parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
 
-  p.title = el.querySelector '.postInfo.desktop .subject' .textContent
+    &title = el.querySelector '.postInfo.desktop .subject' .textContent
 
-  p.poster = el.querySelector \.name .textContent
-  p.tripcode = el.querySelector \.postertrip ?.textContent
-  p.capcode = el.querySelector \.capcode ?.textContent
+    &poster = el.querySelector \.name .textContent
+    &tripcode = el.querySelector \.postertrip ?.textContent
+    &capcode = el.querySelector \.capcode ?.textContent
 
-  p.email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
-  p.sage = sage_regex.test p.email
+    &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
+    &sage = sage_regex.test &email
 
-  p.comment = parser.enhance el.querySelector \.postMessage
+    &comment = parser.enhance el.querySelector \.postMessage
 
   # TODO uid
 
