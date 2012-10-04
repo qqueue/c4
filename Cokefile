@@ -9,8 +9,16 @@ flatten = -> Array::concat.apply [], it # shallow flatten
 
 join = -> flatten @@ .join \\n
 read = -> fs.readFileSync it, \utf8
-compile = -> coco.compile read it
-bare = -> coco.compile read(it), bare: true
+compile = (it, options) ->
+  try
+    coco.compile do
+      read it
+      options
+  catch
+    throw new Error "Compiling #it:\n\t#{e.message}"
+
+bare = -> compile it, bare: true
+
 stylus.nib = -> stylus it .use nib!
 
 outfile = \html5chan.user.js
@@ -40,8 +48,8 @@ task \build 'build userscript' ->
         compile feature for feature of ls \src/features
         bare \src/outro.co
     console.log "compiled script to #{outfile}"
-  catch e
-    console.error e
+  catch
+    console.error e.message
 
 debounce = (delay, fn) ->
   var timeout
