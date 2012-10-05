@@ -147,6 +147,7 @@ window.onload = window.onunload = void
 # this retains the browser's natural scroll position memory
 # while still scrolling to the new hash target's position
 # the first time the page loads (or if window hasn't been scrolled
+# TODO fix hash discrepency with vanilla 4chan
 if window.location.hash and not sget document.URL
   window.location.hash = window.location.hash
   window.addEventListener \scroll function registerPage
