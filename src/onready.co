@@ -10,12 +10,61 @@ style = document.createElement \style
     '''
 head.appendChild style
 
+# because the original scripts on the page no longer run, recreate the useful
+# ones here.
+recaptcha = document.createElement \script
+  &src = '//www.google.com/recaptcha/api/challenge?
+          k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc'
+  &addEventListener \load ->
+    recaptcha = document.createElement \script
+      &src = \//www.google.com/recaptcha/api/js/recaptcha.js
+    &addEventListener \load ->
+      recaptcha = document.createElement \script
+        &textContent =
+          # secret secrets, gained from digging around in the recaptcha js
+          "(function() {
+            var c;
+            if (c = document.getElementById('captcha')) {
+              Recaptcha._init_options({
+                theme: 'custom',
+                custom_theme_widget: c
+              });
+              Recaptcha.theme = 'custom';
+              Recaptcha.widget = c;
+              Recaptcha._finish_widget();
+            }
+           }())"
+      # this check is needed since the firefox loads the script before
+      # DOMContentLoaded, which causes it to fail (no captcha element), while
+      # chrome, since the script cannot run before DOMContentLoaded, is already
+      # in 'interactive' ready state, and a DOMContentLoaded listener added
+      # after it happens will never fire.
+      if document.readyState is \interactive
+        head.appendChild recaptcha
+      else
+        document.addEventListener \DOMContentLoaded ->
+          head.appendChild recaptcha
+    head.appendChild recaptcha
+head.appendChild recaptcha
+
+#
+# inject captcha
+if $ \captcha
+  document.createElement \script
+    head.appendChild(&)
+
 html.appendChild head
 
 body = document.createElement \body
 
 html.appendChild body
 
+# replace the original html with the new, but keep a reference to query and
+# parse. This speeds up re-rendering consideraby, since the browser doesn't
+# even have to attempt displaying the old content and style.
+#
+# in fact, it's so effective, even the original sript tags don't run, EVEN ON
+# CHROME, negating the need to handle 'beforescriptexeute' or whatever. crazy.
 d = document.replaceChild html, document.documentElement
 
 # init
@@ -23,6 +72,7 @@ d = document.replaceChild html, document.documentElement
 
 time "render"
 
+time "parse page"
 # get other useful information
 board
   &title =
@@ -57,6 +107,7 @@ board
   # delete password
   &password = get \password or Math.random!toString!substr -8
 
+timeEnd "parse page"
 
 if board.isThread then
   thread = parser.thread d
@@ -102,18 +153,6 @@ if window.location.hash and not sget document.URL
     sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
-# fix captcha
-if $ \captcha
-  setTimeout do
-    # secret secrets, gained from digging around in the recaptcha js
-    "Recaptcha._init_options({
-       theme: 'custom',
-       custom_theme_widget: document.getElementById('captcha')
-     });
-     Recaptcha.theme = 'custom';
-     Recaptcha.widget = document.getElementById('captcha');
-     Recaptcha._finish_widget();"
-    0
 
 timeEnd "render"
 
