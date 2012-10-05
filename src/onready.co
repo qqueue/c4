@@ -16,7 +16,7 @@ body = document.createElement \body
 
 html.appendChild body
 
-d = document.removeChild document.documentElement
+d = document.replaceChild html, document.documentElement
 
 # init
 <-! document.addEventListener \DOMContentLoaded
@@ -88,11 +88,6 @@ timeEnd "parse innerHTML"
 if board.isBoard
   body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]"
     .id = \current
-
-time "replace documentElement"
-document.appendChild html
-#document.replaceChild html, document.documentElement
-timeEnd "replace documentElement"
 
 # disable 4chan's onload functions
 window.onload = window.onunload = void
