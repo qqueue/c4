@@ -9,7 +9,7 @@ sage_regex = /^sage$/i
 parser.board = (document) ->
   time "parse board"
   threads = Array::map.call do
-    document.getElementsByClassName( \thread )
+    document.querySelectorAll \.thread
     parse_thread
   timeEnd "parse board"
 

@@ -1,3 +1,5 @@
+timeEnd "init"
+
 <-! document.addEventListener \DOMContentLoaded
 
 listen document.getElementById \dump-log .on \click ->
