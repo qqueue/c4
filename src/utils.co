@@ -24,34 +24,34 @@ do ->
 
     return node
 
-  Element:: <<<
-    prepend: !->
+  Element::
+    &prepend ?= !->
       @insertBefore do
         mutation-macro @@
         @firstChild
 
-    append: !->
+    &append ?= !->
       @appendChild mutation-macro @@
 
-    before: ->
+    &before ?= !->
       return unless @parentNode
       @parentNode.insertBefore do
         mutation-macro @@
         this
 
-    after: !->
+    &after ?= !->
       return unless @parentNode
       @parentNode.insertBefore do
         mutation-macro @@
         @nextSibling
 
-    replace: !->
+    &replace ?= !->
       return unless @parentNode
       @parentNode.replaceChild do
         mutation-macro @@
         this
 
-    remove: !->
+    &remove ?= !->
       return unless @parentNode
       @parentNode.removeChild this
 
