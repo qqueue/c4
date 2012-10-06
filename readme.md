@@ -25,11 +25,18 @@ riff-raff.
 html5chan depends on [node.js](http://nodejs.org/),
 [coco](https://github.com/satyr/coco),
 [stylus](http://learnboost.github.com/stylus/), and
-[nib](http://visionmedia.github.com/nib/) and for building. Make sure you have
-coco installed both globally (to use `coke`) and locally through npm.
+[nib](http://visionmedia.github.com/nib/) and for building. To attempt to
+automatically install the dependencies, run:
 
-Run `coke build` to build the script, or run `coke watch` to rebuild the script
-when something changes.
+```
+sudo npm install
+```
+
+Root permissions are required, since stylus and coco want to install their
+repective command line tools to `/bin`; annoying, I know.
+
+Once you've got the deps, run `coke build` to build the script, or run `coke
+watch` to rebuild the script when something changes.
 
 I usually make a symbolic link from the copy in the repo to the copy in
 Greasmonkey's folder inside my Firefox profile, so I get instant feedback
