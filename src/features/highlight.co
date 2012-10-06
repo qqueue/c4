@@ -3,23 +3,25 @@
 # TODO highlight by UID too
 # TODO figure out developer replies
 
-highlighting =
-  admin: false
-  mod: false
+highlighting = sget \highlighting or { -admin, -mod }
 
-highlight = (klass) ->
+highlight = !-> post.classList.add \highlighted for post of $$ it
+
+toggle-highlight = (klass) ->
   !-> for post of $$ ".#klass"
-    highlighting[klass] = false if highlighting[klass]
+    ! = highlighting[klass]
+    sset \highlighting highlighting # persist
     post.classList.toggle \highlighted
 
-onready ->
+onready !->
   listen $ \threads
-    .on \click '.admin .capcode' highlight \admin
-    .on \click '.mod .capcode' highlight \mod
+    .on \click '.admin .capcode' toggle-highlight \admin
+    .on \click '.mod .capcode' toggle-highlight \mod
+
+  # set persisted highlight
+  highlight klass if highlighting[klass] for klass in highlighting
 
 # activate highlight on new posts
-updater.after_update ->
-  for klass in highlighting
-    if highlighting[klass]
-      highlight "new.#klass"
+updater.after_update !->
+  highlight "new.#klass" if highlighting[klass] for klass in highlighting
 
