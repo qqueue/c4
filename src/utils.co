@@ -77,24 +77,24 @@ render_all = (objects, ...options) ->
 
 # A parallel array polyfill of ES6 Map
 # O(n) access time, so don't use extensively
-Map ?= class
+window.Map ?= class
   ->
     @keys = []
     @values = []
 
-  get: (key) -> @values[find @keys, key]
+  get: (key) -> @values[find key, @keys]
 
   set: !(key, val) ->
-    if (idx = @keys.indexOf key) is not -1
+    if (idx = find key, @keys) is not -1
       @values[idx] = val
     else
       @keys.push key
       @values.push val
 
-  has: (key) -> find @keys, key is not -1
+  has: (key) -> find(key, @keys) is not -1
 
   delete: !(key) ->
-    if (idx = @keys.indexOf key) is not -1
+    if (idx = find key, @keys) is not -1
       @keys.splice idx, 1
       @values.splice idx, 1
       return true
@@ -104,7 +104,7 @@ Map ?= class
   size: -> @keys.length
 
   # strict equality version of indexOf
-  find = (keys, key) ->
+  find = (key, keys) ->
     for k, i of keys
       return i if Object.is k, key
     return -1
@@ -182,7 +182,7 @@ class Listener
       else
         return
 
-    element.removeEventListener event, delegated-handler || handler
+    @element.removeEventListener event, delegated-handler || handler
 
     return this
 
