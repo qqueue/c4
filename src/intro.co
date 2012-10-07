@@ -1,5 +1,5 @@
 "use strict"
-log = do ->
+log = let
   beginning = Date.now!
   log = -> log.messages += "\n[t+#{Date.now! - beginning}] #it"
   log.messages = "[t-0]: html5chan"
