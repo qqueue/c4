@@ -87,7 +87,7 @@ checkValidity = (e) ->
             $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 
             # update and show new post, giving some time for 4chan to process it
-            updater.countdown 3sec
+            updater.countdown.restart 3sec
             # reset last_parse to force an update, since 4chan's timestamp
             # often lies
             parser.last_parse = 0

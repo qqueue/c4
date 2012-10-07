@@ -10,8 +10,26 @@ $$ = -> document.querySelectorAll it
 Element::matchesSelector ?=
   Element::mozMatchesSelector or Element::webkitMatchesSelector
 
+# incomplete VisibilityState polyfill for ff/webkit, since this userscript
+# won't run anywhere else.
+unless \visibilityState in document
+  let
+    prefix = if \mozVisibilityState in document then \moz else \webkit
+
+    property = prefix + \VisibilityState
+    event = prefix + \visibilitychange
+
+    document
+      &visibilityState = &[property]
+      &hidden = &visibilityState is \hidden
+      &addEventListener event, !->
+        document
+          &visibilityState = &[property]
+          &hidden = &visibilityState is \hidden
+          &dispatchEvent new CustomEvent \visibilitychange
+
 # DOM4 mutation methods
-do ->
+let
   mutation-macro = (nodes) ->
     return nodes.0 if nodes.length > 0
 
@@ -59,7 +77,7 @@ do ->
 # to avoid a possible collision with other userscripts
 # uses the nice property that JSON.stringify(string) is still reversible with
 # JSON.parse, since it adds the necessary double quotes
-[set, get, sset, sget] = do ->
+[set, get, sset, sget] = let
   setter = (storage) -> !(key, val) ->
     obj = (key): val if val # support both hash and key,val syntax
     for key, val in obj or key
@@ -130,13 +148,12 @@ class Listener
       selector = null
 
     if selector
-      delegated-handler = !({target}: event) ->
-        return unless target
-        if target.matchesSelector "#selector, #selector *"
+      delegated-handler = !({target}: e) ->
+        if target?matchesSelector "#selector, #selector *"
           # find delegated target
           target.=parentElement until target.matchesSelector selector
 
-          handler.call target, event
+          handler.call target, e
 
       if delegated-elements.has @element
         delegated-handlers = delegated-elements.get @element
@@ -150,6 +167,41 @@ class Listener
     @element.addEventListener event, delegated-handler || handler
 
     return this
+
+  # attach a handler that will be removed after it runs
+  once: (event, selector, handler) ->
+    return this unless @element
+
+    if (events = event / ' ')length > 1 # handle space separated events
+      @off e, handler for e of events
+      return
+
+    # "selector" argument is optional
+    if typeof selector is \function
+      handler = selector
+      selector = null
+
+    el = @element
+
+    # I'm not entirely sure this check is needed, but I can imagine that more
+    # than one event can be fired before the handler is removed, thus resulting
+    # in multiple runs
+    ran = false
+
+    el.addEventListener event, !function once ({target}: e)
+      return if ran
+      ran := true
+
+      if selector
+        if target?matchesSelector "#selector, #selector *"
+          # find delegated target
+          target.=parentElement until target.matchesSelector selector
+
+          handler.call target, e
+      else
+        handler ...
+
+      el.removeEventListener event, once
 
   off: (event, selector, handler) ->
     return this unless @element
@@ -196,7 +248,7 @@ closest = (selector, el) ->
   while el, el.=parentElement
     return el if el.matchesSelector selector
 
-do ->
+let
   pluralize = (number, unit) ->
     "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
 
@@ -214,7 +266,7 @@ do ->
 
 # coffeekup-like dom builder
 # pretty fuckin magical
-kup = do ->
+kup = let
   class ElementProxy
     (parent, tag, attributes, content) ->
       # lots of fancy optional argument logic, thanks javascript
@@ -292,4 +344,48 @@ debounce = (delay, fn) ->
     timeout := setTimeout do
       !-> fn.apply ctx, args
       delay
+
+# setTimeout with nicer syntax and optional delay
+# the rest of the arguments to the fn are passed through, so the syntax with
+# predefined functions is also more natural, e.g. defer 10ms fn, arg1, arg2
+defer = (delay, fn) ->
+  if typeof delay is \function
+    fn = delay
+    delay = 4ms # minimum by HTML5
+    args = Array::slice.call @@, 2
+  else
+    args = Array::slice.call @@, 1
+
+  setTimeout.apply null, [fn, delay].concat args
+
+# safer, extended version of setInterval. fn is called with a context object
+# that has methods to manage the repetition. Shares a prototype for
+# performance, but the constructor is meant to be called as a verb and is thus
+# lowercase.
+repeat = class
+  # options are optional
+  (@delay, options, fn) ~>
+    if typeof options is \function
+      fn = options
+      options = {}
+
+    @fn = fn
+    @timeoutee = !~>
+      @fn ...
+      @timeout = @repeat! if @auto
+
+    @auto = if options.auto? then options.auto else true
+    @start! unless options.start is false
+
+  stop: !-> clearTimeout @timeout
+
+  # the args of start are passed to the timeoutee
+  start: !(...args) ->
+    @stop! # for safety
+    @timeout = setTimeout.apply null, [@timeoutee, @delay].concat args
+
+  restart: ::start
+
+  # makes more sense with auto: false
+  repeat: ::start
 

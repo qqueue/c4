@@ -1,154 +1,140 @@
-last_update = Date.now!
+last_update = new Date
 
-updater.update = ->
-  clearTimeout timeout # clear any other running countdowns
-  updater.status = "Updating thread..."
+updater.update = !->
+  updater.status.textContent = "Updating thread..."
   updater.button.disabled = true
-  lock = #scroll bottom of page
-    (window.scrollMaxY - window.scrollY < 50) and
-    ( document.mozVisibilityState is \visible or
-    document.webkitVisibilityState is \visible )
 
-  with new XMLHttpRequest
-    @open \get document.URL
-    # shit is weird, if the request is 200 OK, it'll time out every time
-    # until it becomes 304 not modified, which will go through fine,
-    # and trip the last_modified check
-    # back to stupid workaround until this is fixed
-    # @responseType = \document
-    # FIXME the timeout is here because using responseType document
-    # seems to never complete on some requests in firefox, even though firebug reports
-    # that the request went 200 OK. not sure why, report bug maybe?
-    listen this
-      .on \load ->
-        # why do 404 pages call 'load' handler?
+  new XMLHttpRequest
+    &open \get document.URL
+    &responseType = \document
+
+    &setRequestHeader \If-Modified-Since last_update.toUTCString!
+
+    listen(&)
+      .on \load !->
         if @status is 404
           titler.text += '(dead)'
-          updater.status = "thread 404'd"
+          updater.status.textContent = "thread 404'd"
           return
-        # have to check the header instead of the status as 304,
-        # becuase if the browser caches the request (shows up in firebug as
-        # 304), it'll still be show up as 200 OK in here to prevent history
-        # leaking. This is a slightly better solution than 4chanX, which adds a
-        # cache-busting parameter to the URL, forcing a full server response
-        # every time (which along with if-modified-since, allows them to test
-        # for a real 304 response).
-        last_modified = new Date( @getResponseHeader \Last-Modified )getTime!
-        if last_modified > last_update
-          updater.status = "update detected, parsing"
-          last_update := last_modified
+        if @status is 304
+          updater.countdown.restart!
+          return
 
-          # html5... ;_;
-          # can't use createHTMLDocument because all relative links
-          # have a blank pathname, which screws up the detection of
-          # crossthread links
-          # TODO work around this better
-          # html = document.implementation.createHTMLDocument ''
-          html = document.createElement \div
-          html.innerHTML = @response
+        last_modified = new Date @getResponseHeader \Last-Modified
 
-          thread = parser.thread html
-          if thread.new.length > 0
-            document.querySelector '#thread-' + thread.id + ' .replies'
-              .insertAdjacentHTML do
-                \beforeend
-                render_all thread.new, \article, 'new reply'
-            # refresh backlinks
-            # TODO refactor out all the various places backlinks are made
-            # into something less coupled
-            for backlinks of document.querySelectorAll '.thread .backlinks'
-              backlinks.insertAdjacentHTML do
-                \beforeend
-                Post[(backlinks.parentNode.id / \-)pop!]backlinks true
+        unless last_modified > last_update
+          updater.countdown.restart!
+          return
 
-            # call after_update hooks
-            fn! for fn of updater.callbacks
+        updater.status.textContent = "update detected, parsing"
+        last_update := last_modified
 
-            # update title
-            titler.number += thread.new.length
+        thread = parser.thread @response
+        if thread.new.length > 0
+          $ "thread-#{thread.id}" .lastElementChild # .replies
+            .insertAdjacentHTML do
+              \beforeend
+              render_all thread.new, \article, 'new reply'
 
-            # add scroll handler to rest number and new posts
-            # when the window scrolls past the end of them
-            resetNew thread.new
+          # refresh backlinks
+          # TODO refactor out all the various places backlinks are made
+          # into something less coupled
+          for backlinks of $$ '.thread .backlinks'
+            backlinks.insertAdjacentHTML do
+              \beforeend
+              Post[(backlinks.parentNode.id / \-)pop!]backlinks true
 
-            if lock then setTimeout do
-              function smoothScroll
-                if window.scrollMaxY - window.scrollY
+          # call after_update hooks
+          fn! for fn of updater.callbacks
+
+          # update title
+          titler.number += thread.new.length
+
+          # add scroll handler to rest number and new posts
+          # when the window scrolls past the end of them
+          resetNew thread.new
+
+          if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
+            # smooth scroll to the bottom, but if user scrolls upwards
+            # manually, abort.
+            let last = window.scrollY
+              repeat 50ms {-auto} !->
+                if last > window.scrollY
+                  @stop!
+                else if window.scrollMaxY - window.scrollY
                   window.scrollBy 0, that/4 >? 1
-                  setTimeout smoothScroll, 50ms
-              10ms
+                  last := window.scrollY
+                  @repeat!
 
-            # update post count
-            document.querySelector "\#thread-#{thread.id} .thread-info"
-              .textContent = "#{thread.replies.length} replies and #{thread.imageReplies.length} image replies."
+          # update post count
+          $ "thread-#{thread.id}" .querySelector ".thread-info" .textContent =
+            "#{thread.replies.length} replies \
+             and #{thread.imageReplies.length} image replies."
 
+        updater.countdown.restart!
+
+      .on \timeout !->
+        updater.status.textContent = "request timed out..."
         updater.countdown!
-      .on \timeout ->
-        updater.status = "request timed out..."
-        updater.countdown!
-      .on \error ->
-        updater.status = "Couldn't fetch thread page!"
-      .on \loadend ->
-        updater.button.disabled = false
-    @send!
+
+      .on \error !-> updater.status.textContent = "Couldn't fetch thread page!"
+
+      .on \loadend !-> updater.button.disabled = false
+
+    &send!
 
 # some spaghetti to remove the new class from posts
 # once they are visible to the user
-resetNew = (posts) ->
-  posts.forEach (post) ->
-    post = document.getElementById post.id
-    removeNew = ->
+resetNew = !(posts) ->
+  posts.forEach !(post) ->
+    post = $ post.id
+
+    removeNew = !->
       post.classList.remove \new
-      titler.number--
+      --titler.number
 
     y = post.offsetTop
-    if ( window.innerHeight + window.scrollY ) > y
-      if document.mozVisibilityState is \hidden or document.webkitVisibilityState is \hidden
+
+    if (window.innerHeight + window.scrollY) > y
+      if document.hidden
         # fade them once the window is focused again
-        listen window .on \focus function fadeNew
-          setTimeout removeNew, 1000 # immediately seems to break fade animation
-          listen window .off \focus fadeNew
-      else # fade immediately
+        listen window .once \focus !->
+          # running immediately seems to break fade animation, thus setTimeout
+          defer 100ms removeNew
+      else
         removeNew!
-    else # wait till post is scrolled to
+    else
+      # wait till post is scrolled to
       listen window .on \scroll function reset
         if ( window.innerHeight + window.scrollY ) > post.offsetTop
           removeNew!
           listen window .off \scroll reset
 
-
 updater.callbacks = []
 
-updater.after_update = -> updater.callbacks.push it
+updater.after_update = !-> updater.callbacks.push it
 
-timeout = null
+updater.countdown = repeat 1000ms {-start} !(t) ->
+  @t = t or @t or 30sec
 
-# kind of unneccessary, but proxies the textContent field in a more 'natural'
-# way, instead of as a function call
-Object.defineProperty updater, \status,
-  get: -> document.getElementById \update-status .textContent
-  set: -> document.getElementById \update-status .textContent = it
-Object.defineProperty updater, \button,
-  get: -> document.getElementById \update-now
+  updater.status.textContent = "Updating in #{@t} seconds..."
 
-updater.countdown = (tminus = 30) ->
-  clearTimeout timeout
-  timeout := setTimeout do
-    function tick
-      updater.status = "Updating in #tminus seconds..."
-      tminus--
-      timeout := setTimeout tick, 1000ms
-      if tminus is 0
-        updater.update!
-    1000ms
+  if --@t is 0
+    @stop!
+    updater.update!
 
-# start updating
-onready ->
+onready !->
+  updater.status = $ \update-status
+  updater.button = $ \update-now
+
   # autoupdate threads
   if board.isThread
-    updater.countdown!
-    listen document.getElementById \update-now .on \click ->
+    updater.countdown.start!
+    listen $ \update-now .on \click ->
+      updater.countdown
+        &stop!
+        &t = 30ms
       updater.update!
   else
-    document.getElementById \updater .hidden = true
+    $ \updater .hidden = true
 
