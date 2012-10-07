@@ -79,7 +79,7 @@ let
 # JSON.parse, since it adds the necessary double quotes
 [set, get, sset, sget] = let
   setter = (storage) -> !(key, val) ->
-    obj = (key): val if val # support both hash and key,val syntax
+    obj = (key): val if val? # support both hash and key,val syntax
     for key, val in obj or key
       storage.setItem "html5chan-#key", JSON.stringify val
   getter = (storage) -> -> try JSON.parse storage.getItem "html5chan-#it"
