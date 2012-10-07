@@ -75,42 +75,122 @@ do ->
 render_all = (objects, ...options) ->
   (obj.render.apply obj, options for obj of objects).join ''
 
-listen = do ->
-  mouse = mouseenter: \mouseover mouseleave: \mouseout
-  (element) -> new # chainable wrapper for addEventListener
-    @on = (event, selector, handler) ->
-      return this unless element
-      if (events = event / ' ')length > 1 # handle space separated events
-        @on e, selector, handler for e of events
-        return this
-      if typeof selector is \function
-        handler = selector
-        selector = null
-      # replace non-bubbling events with those that do
-      event = that if mouse[event]
-      element.addEventListener do
-        event
-        if selector then !({target}: event) ->
-          return unless target
-          if target.matchesSelector "#selector, #selector *"
-            # find delegated target
-            target.=parentElement until target.matchesSelector selector
-            if handler.call(target, event) is false
-              event.stopPropagation!
-              event.preventDefault!
-            return
-        # TODO add same wrapper for return false, without breaking @off
-        # functionality
-        else handler # just plain callback
+# A parallel array polyfill of ES6 Map
+# O(n) access time, so don't use extensively
+Map ?= class
+  ->
+    @keys = []
+    @values = []
+
+  get: (key) -> @values[find @keys, key]
+
+  set: !(key, val) ->
+    if (idx = @keys.indexOf key) is not -1
+      @values[idx] = val
+    else
+      @keys.push key
+      @values.push val
+
+  has: (key) -> find @keys, key is not -1
+
+  delete: !(key) ->
+    if (idx = @keys.indexOf key) is not -1
+      @keys.splice idx, 1
+      @values.splice idx, 1
+      return true
+    else
+      return false
+
+  size: -> @keys.length
+
+  # strict equality version of indexOf
+  find = (keys, key) ->
+    for k, i of keys
+      return i if Object.is k, key
+    return -1
+
+# chainable, delegatable wrapper for addEventListener
+# Lots of logic to keep references to delegated versions of handlers. At some
+# point, I'll have to look at how jQuery keeps track of those things, and see
+# how my version compares
+class Listener
+  (@element) ->
+
+  on: (event, selector, handler) ->
+    return this unless @element
+
+    # handle space separated events
+    if (events = event / ' ')length > 1
+      @on e, selector, handler for e of events
       return this
-    # TODO this doesn't handle delegated events, since they are proxied
-    @off = (event, handler) ->
-      return this unless element
-      if (events = event / ' ')length > 1 # handle space separated events
-        @off e, handler for e of events
+
+    # "selector" argument is optional
+    if typeof selector is \function
+      handler = selector
+      selector = null
+
+    if selector
+      delegated-handler = !({target}: event) ->
+        return unless target
+        if target.matchesSelector "#selector, #selector *"
+          # find delegated target
+          target.=parentElement until target.matchesSelector selector
+
+          handler.call target, event
+
+      if delegated-elements.has @element
+        delegated-handlers = delegated-elements.get @element
+      else
+        delegated-handlers = {}
+        delegated-elements.set @element, delegated-handlers
+
+      delegated-handlers[selector] ?= new Map
+        &set handler, delegated-handler
+
+    @element.addEventListener event, delegated-handler || handler
+
+    return this
+
+  off: (event, selector, handler) ->
+    return this unless @element
+
+    if (events = event / ' ')length > 1 # handle space separated events
+      @off e, handler for e of events
+      return
+
+    # "selector" argument is optional
+    if typeof selector is \function
+      handler = selector
+      selector = null
+
+    # find delegated handler
+    if selector
+      # if delegated handler was never added
+      return unless delegated-elements.has @element
+
+      delegated-handlers = delegated-elements.get @element
+
+      if delegated-handlers[selector]?get handler
+        delegated-handler = that
+        delegated-handlers[selector]delete handler
+
+        # clean up references
+        if delegated-handlers[selector].size() is 0
+          delete delegated-handlers[selector]
+          if Object.keys(delegated-handlers).length is 0
+            delegated-elements.delete @element
+      else
         return
-      element.removeEventListener event, handler
-      return this
+
+    element.removeEventListener event, delegated-handler || handler
+
+    return this
+
+  # to avoid using expando properties on elements to store their delegated
+  # listeners, this global map stores the association
+  delegated-elements = new Map
+
+listen = -> new Listener it
 
 closest = (selector, el) ->
   while el, el.=parentElement
