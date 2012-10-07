@@ -5,7 +5,7 @@ updater.update = !->
   updater.button.disabled = true
 
   new XMLHttpRequest
-    &open \get document.URL
+    &open \GET document.URL
     &responseType = \document
 
     &setRequestHeader \If-Modified-Since last_update.toUTCString!
