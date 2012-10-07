@@ -1,9 +1,11 @@
-<- onready
-<- listen $ \threads .on \click '.permalink .id'
+<-! onready
 
-selection = window.getSelection!toString!trim!
-selection = ">#selection\n" if selection
-$ \comment
-  &value += ">>#{@textContent}\n#selection"
-  &focus!
-return false
+listen $ \threads .on \click '.permalink .id' !(e) ->
+  selection = window.getSelection!toString!trim!
+  selection = ">#selection\n" if selection
+
+  $ \comment
+    &value += ">>#{@textContent}\n#selection"
+    &focus!
+
+  e.preventDefault!
