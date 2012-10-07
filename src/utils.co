@@ -24,7 +24,7 @@ do ->
 
     return node
 
-  Element::
+  Node::
     &prepend ?= !->
       @insertBefore do
         mutation-macro @@
