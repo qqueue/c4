@@ -4,7 +4,8 @@
 
 # scroll! returns to the scroll position when
 # markScroll! was last called
-{markScroll, scroll} = let last = {}
+{markScroll, scroll} = let
+  last = {}
   var el
   markScroll: ->
     el := it
@@ -16,9 +17,10 @@
 
 onready !->
   listen $ \threads
-    .on \click 'a.quotelink:not(.hiddenlink)' (e) ->
+    .on \click 'a.quotelink:not(.hiddenlink)' !(e) ->
       return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       return unless post = Post[id = @hash.substring 1]
+      e.preventDefault!
 
       host = closest \.post, this .id
       hostid = (host / \-)pop! # grab last (if nested inline post)
@@ -71,8 +73,6 @@ onready !->
         $ post.id .classList.add \inlined
 
         scroll!
-
-      return false
 
   .on \dblclick \a.quotelink !->
     window.location.hash = that if @hash # actually follow link

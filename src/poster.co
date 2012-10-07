@@ -17,9 +17,7 @@ bottom = false # at the bottom of screen, set by scroller
 <- onready
 
 checkValidity = (e) ->
-  # TODO fix listen so it'll handle returning false from non-delegated events
   e.preventDefault!
-  e.stopPropagation!
 
   form = $ \postform
   captcha = $ \recaptcha_response_field

@@ -1,7 +1,7 @@
 toggleExpand = (e) ->
   unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
     expand this
-    return false
+    e.preventDefault!
 
 expand = (a) ->
   a.hidden = true
