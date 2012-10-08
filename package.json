@@ -1,0 +1,9 @@
+{ "name" : "html5chan"
+, "version" : "0.0.1"
+, "author" : "queue <queue@lavabit.com"
+, "dependencies" : { "coco" : "0.8.x"
+                   , "stylus" : "0.29.x"
+                   , "nib" : "0.8.x"
+                   }
+}
+
