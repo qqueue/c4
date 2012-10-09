@@ -1,10 +1,11 @@
 # embed youtube links on click
 # TODO add close button somehow
-<- onready
+<-! onready
 
 listen $ \threads
   .on \click \a.youtube !(e) ->
     unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+      e.preventDefault!
       @replace kup do
         \iframe
         width: 560
@@ -15,7 +16,6 @@ listen $ \threads
               &amp;wmode=transparent"
         frameborder: 0
         allowfullscreen: ''
-      return false
   .on \mouseover \a.youtube !->
     return if @title
 
@@ -30,7 +30,8 @@ listen $ \threads
     link = this
 
     new XMLHttpRequest
-      &open \get "https://gdata.youtube.com/feeds/api/videos/#{link.dataset.id}?v=2&alt=json"
+      &open \get "https://gdata.youtube.com
+                  /feeds/api/videos/#{link.dataset.id}?v=2&alt=json"
 
       # https://bugs.webkit.org/show_bug.cgi?id=73648 ;_;
       # &responseType = \json
@@ -51,5 +52,4 @@ listen $ \threads
             link.title = "Couldn't load video information."
         .on \error -> link.title = "Couldn't load video information."
       &send!
-
 
