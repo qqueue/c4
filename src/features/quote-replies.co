@@ -1,0 +1,11 @@
+# add quote text to >> replies to be able to identify them without hover
+
+<-! onready
+
+for quote of $$ '.quotelink:not(.backlink)'
+  id = quote.href.split \# .1
+  if (post = Post[id])
+    text = document.createElement \div
+      &innerHTML = post.comment
+    preview = truncate text.textContent, 100
+    quote.after document.createTextNode " " + preview
