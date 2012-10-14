@@ -1,14 +1,18 @@
 # add quote text to >> replies to be able to identify them without hover
 
-<-! onready
+munge = !(sel = '.quotelink:not(.backlink)') ->
+  for quote of $$ sel
+    id = quote.href.split \# .1
+    if (post = Post[id])
+      text = document.createElement \div
+        &innerHTML = post.comment
+      preview = truncate text.textContent, 100
+      quote.after document.createTextNode " " + preview
 
-for quote of $$ '.quotelink:not(.backlink)'
-  id = quote.href.split \# .1
-  if (post = Post[id])
-    text = document.createElement \div
-      &innerHTML = post.comment
-    preview = truncate text.textContent, 100
-    quote.after document.createTextNode " " + preview
+      # compact post number
+      quote.textContent = ">>#{post.idx}"
 
-    # compact post number
-    quote.textContent = ">>#{post.idx}"
+onready !-> munge!
+#updater.after_update !->
+  #munge '.new .quotelink:not(.backlink)'
+
