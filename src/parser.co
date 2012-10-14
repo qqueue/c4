@@ -42,6 +42,7 @@ parse_thread = (el) ->
   # TODO sticky and locked
 
   t.op = parse_post.call t, el.querySelector( \.op )
+  t.op.idx = 0
   t.replies = Array::map.call do
     el.getElementsByClassName( \reply )
     parse_post
@@ -51,10 +52,11 @@ parse_thread = (el) ->
 
   return t
 
-parse_post = (el) ->
+parse_post = (el, idx) ->
   thread = this
 
   p = new Post
+    &idx = idx + 1
     &thread = thread
     &id = el.id.substring 1
     &url =

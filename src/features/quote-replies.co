@@ -9,3 +9,6 @@ for quote of $$ '.quotelink:not(.backlink)'
       &innerHTML = post.comment
     preview = truncate text.textContent, 100
     quote.after document.createTextNode " " + preview
+
+    # compact post number
+    quote.textContent = ">>#{post.idx}"
