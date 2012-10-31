@@ -63,7 +63,7 @@ parse_post = (el, idx) ->
       if &op = el.classList.contains \op
         thread.url
       else
-        "#{thread.url}##{&id}"
+        "#{thread.url}\#p#{&id}"
     &time = new Date do
       parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
 
