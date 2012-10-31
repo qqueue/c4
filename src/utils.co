@@ -93,6 +93,14 @@ let
 render_all = (objects, ...options) ->
   (obj.render.apply obj, options for obj of objects).join ''
 
+# helper to mass-edit classes
+classify = class
+  (@els) ~>
+
+  add:    !-> el.classList.add    it for el of @els
+  remove: !-> el.classList.remove it for el of @els
+  toggle: !-> el.classList.toggle it for el of @els
+
 # A parallel array polyfill of ES6 Map
 # O(n) access time, so don't use extensively
 window.Map ?= class

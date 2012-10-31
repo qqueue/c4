@@ -12,33 +12,31 @@ listen $ \threads .on \mouseover 'a.quotelink' !->
   host = closest \.post this
   hostid = (host.id / \-)pop!
 
-  preview = post.element \article, , \postpreview
-
-  for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]"
-    link.classList.add \recursivelink
-
   {width, height, left, top} = @getBoundingClientRect!
 
-  preview.style
-    &position = \fixed
-    if left > (docWidth = document.documentElement.clientWidth) / 2
-      &right = "#{docWidth - left - width}px"
-    else
-      &left = "#{left}px"
+  preview = post.element \article, , \postpreview
 
-    if @classList.contains \backlink
-      &top = "#{top + height + 5}px"
-    else
-      &bottom = "#{window.innerHeight - top + 5}px"
+    classify (&querySelectorAll "a.quotelink[href$=\"##hostid\"]")
+      .add \recursivelink
 
-  document.body.appendChild preview
+    &style
+      &position = \fixed
+      if left > (docWidth = document.documentElement.clientWidth) / 2
+        &right = "#{docWidth - left - width}px"
+      else
+        &left = "#{left}px"
+
+      if @classList.contains \backlink
+        &top = "#{top + height + 5}px"
+      else
+        &bottom = "#{window.innerHeight - top + 5}px"
+
+    document.body.appendChild (&)
 
   # highlight hovered replies
-  for post of document.getElementsByClassName "post#{@hash.substring 1}"
-    post.classList.add \hovered
+  classify $$ ".post#id" .add \hovered
 
   listen this .once \mouseout !->
     preview.remove!
-    for post of document.getElementsByClassName "post#{@hash.substring 1}"
-      post.classList.remove \hovered
+    classify $$ ".post#id" .remove \hovered
 
