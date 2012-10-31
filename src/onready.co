@@ -90,7 +90,7 @@ board
   &nav = d.querySelector \#boardNavDesktop .innerHTML
   &banner = d.querySelector \.title .src
 
-  &motd = document.querySelector \.globalMessage ?.innerHTML
+  &motd = d.querySelector \.globalMessage ?.innerHTML
   &url = "//boards.4chan.org/#{&name}/"
   &threadurl = "#{&url}res/"
 
