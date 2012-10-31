@@ -17,30 +17,28 @@ listen $ \threads .on \mouseover 'a.quotelink' !->
   for link of preview.querySelectorAll "a.quotelink[href$=\"##hostid\"]"
     link.classList.add \recursivelink
 
-  bounds = @getBoundingClientRect!
+  {width, height, left, top} = @getBoundingClientRect!
 
-  preview.style.position = \fixed
-  if bounds.left > (width = document.documentElement.clientWidth) / 2
-    preview.style.right = "#{width - bounds.left - bounds.width}px"
-  else
-    preview.style.left = "#{bounds.left}px"
-  if @classList.contains \backlink
-    preview.style.top = "#{bounds.top + bounds.height + 5}px"
-  else
-    preview.style.bottom = "#{window.innerHeight - bounds.top + 5}px"
+  preview.style
+    &position = \fixed
+    if left > (docWidth = document.documentElement.clientWidth) / 2
+      &right = "#{docWidth - left - width}px"
+    else
+      &left = "#{left}px"
+
+    if @classList.contains \backlink
+      &top = "#{top + height + 5}px"
+    else
+      &bottom = "#{window.innerHeight - top + 5}px"
 
   document.body.appendChild preview
-
-  # TODO extend `listen` for a `once` method or similar to handle the off
-  listen this .on \mouseout function destroy
-    preview.remove!
-    listen this .off \mouseout destroy
 
   # highlight hovered replies
   for post of document.getElementsByClassName "post#{@hash.substring 1}"
     post.classList.add \hovered
 
-  listen this .on \mouseout function unhighlight
+  listen this .once \mouseout !->
+    preview.remove!
     for post of document.getElementsByClassName "post#{@hash.substring 1}"
       post.classList.remove \hovered
-    listen this .off \mouseout unhighlight
+
