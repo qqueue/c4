@@ -188,7 +188,7 @@ class Listener
     # in multiple runs
     ran = false
 
-    el.addEventListener event, !function once ({target}: e)
+    el.addEventListener event, function once ({target}: e)
       return if ran
       ran := true
 
@@ -202,6 +202,7 @@ class Listener
         handler ...
 
       el.removeEventListener event, once
+      void
 
   off: (event, selector, handler) ->
     return this unless @element
