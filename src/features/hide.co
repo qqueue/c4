@@ -48,5 +48,5 @@ for thread of document.getElementsByClassName \thread
 
 updater.after_update !->
   for a of $$ ".new .quotelink"
-    a.toggle \hiddenlink if a.href.hash.substring(1) in hidden.posts
+    a.toggle \hiddenlink if a.hash.substring(1) in hidden.posts
 
