@@ -2,6 +2,7 @@
 html = document.createElement \html
 
 head = document.createElement \head
+head.appendChild document.createElement \title
 style = document.createElement \style
   &id = \html5chan-style
   &textContent =
@@ -112,10 +113,10 @@ console.log board
 timeEnd "parse page"
 
 if board.isThread then
-  thread = parser.thread d
-  threads = [thread] # for rendering conformity
+  board.thread = thread = parser.thread d
+  board.threads = threads = [thread] # for rendering conformity
 else
-  threads = parser.board d
+  board.threads = threads = parser.board d
 
 console.log threads
 

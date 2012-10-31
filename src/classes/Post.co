@@ -113,6 +113,11 @@ class Post
     wrapper.innerHTML = @render container, classes, id
     return wrapper.firstElementChild
 
+  text:~ ->
+    document.createElement \div
+      &innerHTML = @comment
+      &textContent
+
   Post
     &backlinks = {}
     &new_backlinks = {}
