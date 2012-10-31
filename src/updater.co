@@ -31,7 +31,7 @@ updater.update = !->
 
         thread = parser.thread @response
         if thread.new.length > 0
-          $ "thread-#{thread.id}" .lastElementChild # .replies
+          $ "t#{thread.id}" .lastElementChild # .replies
             .insertAdjacentHTML do
               \beforeend
               render_all thread.new, \article, 'new reply'
@@ -42,7 +42,7 @@ updater.update = !->
           for backlinks of $$ '.thread .backlinks'
             backlinks.insertAdjacentHTML do
               \beforeend
-              Post[(backlinks.parentNode.id / \-)pop!]backlinks true
+              Post[backlinks.parentNode.dataset.id]backlinks true
 
           # call after_update hooks
           fn! for fn of updater.callbacks
@@ -67,7 +67,7 @@ updater.update = !->
                   @repeat!
 
           # update post count
-          $ "thread-#{thread.id}" .querySelector ".thread-info" .textContent =
+          $ "t#{thread.id}" .querySelector ".thread-info" .textContent =
             "#{thread.replies.length} replies \
              and #{thread.imageReplies.length} image replies."
 
