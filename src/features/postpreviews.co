@@ -34,9 +34,9 @@ listen $ \threads .on \mouseover 'a.quotelink' !->
     document.body.appendChild (&)
 
   # highlight hovered replies
-  classify $$ ".post#id" .add \hovered
+  classify $$ ".post[data-id=\"#id\"]" .add \hovered
 
   listen this .once \mouseout !->
     preview.remove!
-    classify $$ ".post#id" .remove \hovered
+    classify $$ ".post[data-id=\"#id\"]" .remove \hovered
 
