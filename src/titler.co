@@ -39,6 +39,7 @@ Object.defineProperties titler,
     set: -> document.title = it
 
 onready (thread, threads) ->
+  updateFavicon!
   # mess with title at start
   if board.isThread
     with thread.op

@@ -81,8 +81,8 @@ board
     d.querySelector \.boardSubtitle ?.innerHTML or ''
 
   # detect based on favicon href
-  &sfw = d.querySelector 'link[rel="shortcut icon"]'
-    .href.slice -6 is \ws.ico
+  &sfw =
+    d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
 
   # set equivalent base64-encoded version
   &favicon = if &sfw then titler.favicon.sfw else titler.favicon.nsfw
@@ -106,6 +106,8 @@ board
 
   # delete password
   &password = get \password or Math.random!toString!substr -8
+
+console.log board
 
 timeEnd "parse page"
 
