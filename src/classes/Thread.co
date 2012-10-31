@@ -29,7 +29,9 @@ class Thread
     return c
 
   render: (container = \article, classes = '', id) ->
-    "<#container id='#{id or "t#{@id}"}' class='#classes #{@className!}'>
+    "<#container id='#{id or "t#{@id}"}' \
+                 data-id=#{@id} \
+                 class='#classes #{@className!}'>
       #{@op.render \div \op}
       <div class=thread-info>
         #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.

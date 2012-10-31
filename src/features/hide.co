@@ -2,21 +2,13 @@
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
 
-toggle = ->
-  # set class on referencing links
-  # TODO somehow persist this with dynamically loaded content
-  for link of $$ "a.quotelink[href=\"##it\"]"
-    link.classList.toggle \hiddenlink
-  $ it .classList.toggle \hidden
+toggle = (prefix, id) ->
+  classify $$ ".quotelink[href$=\"##id\"]" .toggle \hiddenlink
+  $ "#prefix#id" ?.classList.toggle \hidden
 
 <-! onready
 
-# grab or start persisted hidden hash
-hidden = get \hidden
-if hidden!? or typeof hidden is not \object
-  hidden = {}
-hidden@posts
-hidden@threads
+hidden = get \hidden or {threads: {}, posts: {}}
 
 # delete expired posts to keep object small
 for type, hash in hidden
@@ -25,31 +17,36 @@ for type, hash in hidden
 
 listen $ \threads
   .on \click '.reply button.hide' !->
-    toggle @value
-    if hidden.posts[@value]
+    toggle \p @value
+    if @value in hidden.posts
       delete hidden.posts[@value]
     else
       hidden.posts[@value] = Date.now! + 604800000ms # 1 week
-    # persist
-    set \hidden, hidden
-      .on \click '.op button.hide' !->
-        thread = "thread-#{@value}"
-    toggle thread
-    if hidden.threads[thread]
-      delete hidden.threads[thread]
+
+  .on \click '.op button.hide' !->
+    toggle \t @value
+    if @value in hidden.threads
+      delete hidden.threads[@value]
     else
       # use Thread hash to always persist sticky threads
-      hidden.threads[thread] = if Thread[@value]?sticky
+      hidden.threads[@value] = if Thread[@value]?sticky
         Number.MAX_VALUE
       else
         Date.now! + 604800000ms # otherwise, a week should be enough
-    # persist
-    set \hidden, hidden
+
+# persist
+listen window .on \beforeunload !-> set \hidden hidden
+
 # hide all previously hidden posts and threads
 # TODO do this at render time instead of post render for faster display
 for post of document.getElementsByClassName \post
-  toggle post.id if hidden.posts[post.id]
+  id = post.dataset.id
+  toggle \p id if hidden.posts[id]
 for thread of document.getElementsByClassName \thread
-  if hidden.threads[thread.id]
-    toggle thread.id
+  id = thread.dataset.id
+  toggle \t id if hidden.threads[id]
+
+updater.after_update !->
+  for a of $$ ".new .quotelink"
+    a.toggle \hiddenlink if a.href.hash.substring(1) in hidden.posts
 

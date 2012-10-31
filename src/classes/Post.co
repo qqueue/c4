@@ -37,7 +37,7 @@ class Post
   # is getting more complicated (would like to switch foolz to other archivers)
 
   render: (container, classes = '', id) ->
-    "<#container data-post=#{@id} \
+    "<#container data-id=#{@id} \
                  class='#classes #{@className!}' \
                  id='#{id or "p#{@id}"}'>
       <h1>
