@@ -1,4 +1,3 @@
-"use strict"
 log = let
   beginning = Date.now!
   log = -> log.messages += "\n[t+#{Date.now! - beginning}] #it"
@@ -12,6 +11,8 @@ log = let
   timeEnd: (name) ->
     log "#{name} [end: #{Date.now() - times[name]}ms]"
 
+time "init"
+
 # sets up global variables
 # so that the parts of the script can
 # access each other since this file
@@ -21,25 +22,28 @@ board = {}
 updater = {}
 titler = {}
 
-# because we want to be able to stop all on DOMContentLoaded
-# handlers with return, we implement a custom callback queue
-onready = -> onready.handlers.push it
-onready.handlers = []
-onready.execute = !(thread, threads) ->
-  fn thread, threads for fn of onready.handlers
+# early abort for archive redirection
+[ , board.name, board.page] = window.location.pathname / \/
+
+board.archive = switch board.name
+  case <[a jp m tg u tv v vg]> # foolz
+    "http://archive.foolz.us/#that/thread"
+  case \lit
+    "http://fuuka.warosu.org/#that/thread"
+  case <[diy g sci]>
+    "http://archive.installgentoo.net/#that/thread"
+  case <[3 adv an ck co fa fit int k mu n o p po pol r9k soc sp toy trv vp x]>
+    "http://archive.no-ip.org/#that/thread"
+
+# archive redirection
+if /404/.test document.title and board.archive
+  if /\d+/.exec window.location.pathname
+    window.location = "#{board.archive}/#{that.0}"
+    return
+
+# shortcut for html5chan-loaded
+onready = !-> document.addEventListener \html5chan-loaded it
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access
 
-# with ff-specific beforescriptexecute:
-# https://developer.mozilla.org/en-US/docs/Mozilla_event_reference/beforescriptexecute
-# prevent native 4chan JS from loading and throwing errors
-# TODO there's got to be a way to do this in chrome, even if only in real
-# extension land TODO opera (if this even works there, has the same 'magic'
-# events)
-do ->
-  prevent = (e) ->
-    e.preventDefault! if /static.4chan.org/.test e.target.src
-  document.addEventListener \beforescriptexecute prevent
-  document.addEventListener \DOMContentLoaded ->
-    document.removeEventListener \beforescriptexecute prevent

@@ -32,6 +32,8 @@ task \build 'build userscript' ->
       outfile
       join do
         metadata
+        '(function(){' # IIFE wrapper
+        '"use strict";'
         bare \src/intro.co
         bare \src/utils.co
         bare klass for klass of ls \src/classes
@@ -47,6 +49,7 @@ task \build 'build userscript' ->
           bare: true # since it's all in a callback
         compile feature for feature of ls \src/features
         bare \src/outro.co
+        '}.call(this))'
     console.log "compiled script to #{outfile}"
   catch
     console.error e.message

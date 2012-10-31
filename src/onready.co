@@ -1,80 +1,8 @@
-<-! document.addEventListener \DOMContentLoaded
-
-time "render"
-
-board.name = window.location.pathname.split \/ .1
-
-board.archive = switch board.name
-  case <[a jp m tg u tv v vg]> # foolz
-    "http://archive.foolz.us/#that/thread"
-  case \lit
-    "http://fuuka.warosu.org/#that/thread"
-  case <[diy g sci]>
-    "http://archive.installgentoo.net/#that/thread"
-  case <[3 adv an ck co fa fit int k mu n o p po pol r9k soc sp toy trv vp x]>
-    "http://archive.no-ip.org/#that/thread"
-
-# used in enhancer
-board.archivelink = if board.archive
-  """$1<a href="#{board.archive}/$2" class="archivelink">&gt;&gt;$2</a>"""
-else \$& # don't replace
-
-# archive redirection
-if /404/.test document.title and board.archive
-  if /\d+/.exec window.location.pathname
-    window.location = "#{board.archive}/#{that.0}"
-  return
-
-# get other useful information
-board
-  &title = document.querySelector \.boardTitle .textContent
-  &subtitle = document.querySelector \.boardSubtitle ?.innerHTML or ''
-
-  # detect based on the blue theme
-  &sfw = /yotsublue/.test document.styleSheets.0.href
-  &favicon = if &sfw then titler.favicon.sfw else titler.favicon.nsfw
-
-  &nav = document.getElementById \boardNavDesktop .innerHTML
-  &banner = document.getElementsByTagName \img .0.src
-
-  # the captcha, 2 ads, and footer tag are also in center tags
-  &motd = document.querySelector(\.globalMessage)?innerHTML
-  &url = "//boards.4chan.org/#{&name}/"
-  &threadurl = "#{&url}res/"
-
-  if &isThread = document.location.pathname.match /res\/(\d+)/
-    &threadId = that.1
-    &threadPath = "/#{&name}/res/#{&threadId}"
-  else
-    &isThread = false
-    &page = parseInt (document.location.pathname / '/')?2, 10 or 0
-    &pages = for i to 15 # let's assume they all have 15 pages
-      num: i, current: i is &page
-    &next = if &current < 15 then &current + 1
-    &previous = if &current > 0 then &current - 1
-  &isBoard = !&isThread
-  &locked = document.forms.length is 1 # delform, without postform
-
-  # delete password
-  &password = get \password or Math.random!toString!substr -8
-
-if board.isThread then
-  thread = parser.thread document
-  threads = [thread] # for rendering conformity
-else
-  threads = parser.board document
-
-console.log threads
-
-# replace documentElement with new document element
-# to avoid multiple reflows of removing old styles, adding new content, etc
-# not using my DOM creation helper because it's slower, and speed is of the
-# essence here (also no $ shortcut)
-time "create elements"
-
+# pre-create new DOM
 html = document.createElement \html
 
 head = document.createElement \head
+head.appendChild document.createElement \title
 style = document.createElement \style
   &id = \html5chan-style
   &textContent =
@@ -83,12 +11,122 @@ style = document.createElement \style
     '''
 head.appendChild style
 
-title = document.createElement \title
-  &textContent = board.title
-head.appendChild title
+# because the original scripts on the page no longer run, recreate the useful
+# ones here.
+recaptcha = document.createElement \script
+  &src = '//www.google.com/recaptcha/api/challenge?
+          k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc'
+  &addEventListener \load ->
+    recaptcha = document.createElement \script
+      &src = \//www.google.com/recaptcha/api/js/recaptcha.js
+    &addEventListener \load ->
+      recaptcha = document.createElement \script
+        &textContent =
+          # secret secrets, gained from digging around in the recaptcha js
+          "(function() {
+            var c;
+            if (c = document.getElementById('captcha')) {
+              Recaptcha._init_options({
+                theme: 'custom',
+                custom_theme_widget: c
+              });
+              Recaptcha.theme = 'custom';
+              Recaptcha.widget = c;
+              Recaptcha._finish_widget();
+            }
+           }())"
+      # this check is needed since the firefox loads the script before
+      # DOMContentLoaded, which causes it to fail (no captcha element), while
+      # chrome, since the script cannot run before DOMContentLoaded, is already
+      # in 'interactive' ready state, and a DOMContentLoaded listener added
+      # after it happens will never fire.
+      if document.readyState is \interactive
+        head.appendChild recaptcha
+      else
+        document.addEventListener \DOMContentLoaded ->
+          head.appendChild recaptcha
+    head.appendChild recaptcha
+head.appendChild recaptcha
+
+#
+# inject captcha
+if $ \captcha
+  document.createElement \script
+    head.appendChild(&)
+
 html.appendChild head
 
 body = document.createElement \body
+
+html.appendChild body
+
+# replace the original html with the new, but keep a reference to query and
+# parse. This speeds up re-rendering consideraby, since the browser doesn't
+# even have to attempt displaying the old content and style.
+#
+# in fact, it's so effective, even the original sript tags don't run, EVEN ON
+# CHROME, negating the need to handle 'beforescriptexeute' or whatever. crazy.
+d = document.replaceChild html, document.documentElement
+
+# init
+<-! document.addEventListener \DOMContentLoaded
+
+time "render"
+
+time "parse page"
+# get other useful information
+board
+  &title =
+    d.querySelector \.boardTitle .textContent
+  &subtitle =
+    d.querySelector \.boardSubtitle ?.innerHTML or ''
+
+  # detect based on favicon href
+  &sfw =
+    d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
+
+  # set equivalent base64-encoded version
+  &favicon = if &sfw then titler.favicon.sfw else titler.favicon.nsfw
+
+  &nav = d.querySelector \#boardNavDesktop .innerHTML
+  &banner = d.querySelector \.title .src
+
+  &motd = d.querySelector \.globalMessage ?.innerHTML
+  &url = "//boards.4chan.org/#{&name}/"
+  &threadurl = "#{&url}res/"
+
+  if document.location.pathname.match /res\/(\d+)/
+    &isThread = true
+    &threadId = that.1
+    &threadPath = "/#{&name}/res/#{&threadId}"
+  else
+    &isThread = false
+    &page = parseInt (&page), 10 or 0 if &page
+
+  &isBoard = !&isThread
+
+  # delete password
+  &password = get \password or Math.random!toString!substr -8
+
+console.log board
+
+timeEnd "parse page"
+
+if board.isThread then
+  board.thread = thread = parser.thread d
+  board.threads = threads = [thread] # for rendering conformity
+else
+  board.threads = threads = parser.board d
+
+console.log threads
+
+# replace documentElement with new document element to avoid multiple reflows
+# of removing old styles, adding new content, etc
+#
+# not using my DOM creation helper because it's slower, and speed is of the
+# essence here (also no $ shortcut)
+
+body
   &id = board.name
   &className = "#{if board.sfw then \sfw else \nsfw} \
                #{if board.isThread then \threadpage else \boardpage}"
@@ -105,14 +143,6 @@ if board.isBoard
   body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]"
     .id = \current
 
-html.appendChild body
-
-timeEnd "create elements"
-
-time "replace documentElement"
-document.replaceChild html, document.documentElement
-timeEnd "replace documentElement"
-
 # disable 4chan's onload functions
 window.onload = window.onunload = void
 
@@ -120,27 +150,17 @@ window.onload = window.onunload = void
 # this retains the browser's natural scroll position memory
 # while still scrolling to the new hash target's position
 # the first time the page loads (or if window hasn't been scrolled
+# TODO fix hash discrepency with vanilla 4chan
 if window.location.hash and not sget document.URL
   window.location.hash = window.location.hash
   window.addEventListener \scroll function registerPage
     sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
-# fix captcha
-if board.isThread and not thread.locked
-  setTimeout do
-    # secret secrets, gained from digging around in the recaptcha js
-    "Recaptcha._init_options({
-       theme: 'custom',
-       custom_theme_widget: document.getElementById('captcha')
-     });
-     Recaptcha.theme = 'custom';
-     Recaptcha.widget = document.getElementById('captcha');
-     Recaptcha._finish_widget();"
-    0
-
 timeEnd "render"
 
 # run other onready handlers
-onready.execute thread, threads
+document.dispatchEvent new CustomEvent do
+  \html5chan-loaded
+  detail: {thread, threads}
 

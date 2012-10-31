@@ -2,7 +2,6 @@
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
 
-
 toggle = ->
   # set class on referencing links
   # TODO somehow persist this with dynamically loaded content
@@ -10,7 +9,7 @@ toggle = ->
     link.classList.toggle \hiddenlink
   $ it .classList.toggle \hidden
 
-<- onready
+<-! onready
 
 # grab or start persisted hidden hash
 hidden = get \hidden

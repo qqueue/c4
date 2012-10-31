@@ -1,5 +1,9 @@
 # adds features at the comment html level
 
+board.archivelink = if board.archive
+  """$1<a href="#{board.archive}/$2" class="archivelink">&gt;&gt;$2</a>"""
+else \$& # don't replace
+
 # taking the regex approach with innerHTML because I believe that cloning the
 # element and working with the DOM before taking the HTML would be slower
 parser.enhance = ->
