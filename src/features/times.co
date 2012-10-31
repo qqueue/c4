@@ -34,7 +34,7 @@ set_update = (el) ->
         60_000ms # one minute
 
 onready !-> set_update time for time of document.getElementsByTagName \time
-updater.after_update !->
+onupdate !->
   set_update time for time of $$ '.new time'
 
   # attempt to update other times that have changed during the page reflow
@@ -44,3 +44,4 @@ updater.after_update !->
     #new_time = new Date el.getAttribute \datetime .relative_time!
     #if new_time is not el.textContent
       #el.textContent = new_time
+

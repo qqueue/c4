@@ -11,6 +11,5 @@ munge = !(sel = '.quotelink:not(.backlink):not(.forcequoted)') ->
       quote.classList.add \forcequoted
 
 onready !-> munge!
-updater.after_update !->
-  munge '.new .quotelink:not(.backlink):not(.forcequoted)'
+onupdate !-> munge '.new .quotelink:not(.backlink):not(.forcequoted)'
 

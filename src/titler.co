@@ -51,6 +51,8 @@ onready !->
     else
       board.title
 
+onupdate !-> titler.number = it.detail.thread.new.length
+
 # icons need to be here in b64 because they are served from static.4chan.org
 # without CORS headers, so drawing those to the canvas would taint it and
 # prevent reexporting to the favicon

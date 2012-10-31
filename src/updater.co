@@ -44,11 +44,9 @@ updater.update = !->
               \beforeend
               Post[backlinks.parentNode.dataset.id]backlinks true
 
-          # call after_update hooks
-          fn! for fn of updater.callbacks
-
-          # update title
-          titler.number += thread.new.length
+          document.dispatchEvent new CustomEvent do
+            \html5chan-update
+            detail: {thread}
 
           # add scroll handler to rest number and new posts
           # when the window scrolls past the end of them
@@ -87,7 +85,7 @@ updater.update = !->
 # once they are visible to the user
 resetNew = !(posts) ->
   posts.forEach !(post) ->
-    post = $ post.id
+    post = $ "p#{post.id}"
 
     removeNew = !->
       post.classList.remove \new
@@ -102,17 +100,13 @@ resetNew = !(posts) ->
           # running immediately seems to break fade animation, thus setTimeout
           defer 100ms removeNew
       else
-        removeNew!
+        defer 100ms removeNew
     else
       # wait till post is scrolled to
       listen window .on \scroll function reset
         if ( window.innerHeight + window.scrollY ) > post.offsetTop
           removeNew!
           listen window .off \scroll reset
-
-updater.callbacks = []
-
-updater.after_update = !-> updater.callbacks.push it
 
 updater.countdown = repeat 1000ms {-start} !(t) ->
   @t = t or @t or 30sec

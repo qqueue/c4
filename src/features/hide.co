@@ -46,7 +46,7 @@ for thread of document.getElementsByClassName \thread
   id = thread.dataset.id
   toggle \t id if hidden.threads[id]
 
-updater.after_update !->
+onupdate !->
   for a of $$ ".new .quotelink"
     a.toggle \hiddenlink if a.hash.substring(1) in hidden.posts
 

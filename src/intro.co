@@ -41,8 +41,9 @@ if /404/.test document.title and board.archive
     window.location = "#{board.archive}/#{that.0}"
     return
 
-# shortcut for html5chan-loaded
+# shortcuts for custom events
 onready = !-> document.addEventListener \html5chan-loaded it
+onupdate = !-> document.addEventListener \html5chan-update it
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access

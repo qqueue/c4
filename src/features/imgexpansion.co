@@ -68,7 +68,7 @@ listen $ \expand-all .on \click ->
 
 listen $ \img-display .on \change changeDisplay
 
-updater.after_update ->
+onupdate !->
   preloadAll! if preloading
   if expanding
     expand img for img of $$ '.new a.file'

@@ -22,6 +22,6 @@ onready !->
   highlight klass if highlighting[klass] for klass in highlighting
 
 # activate highlight on new posts
-updater.after_update !->
+onupdate !->
   highlight "new.#klass" if highlighting[klass] for klass in highlighting
 
