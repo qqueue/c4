@@ -23,7 +23,7 @@ class Post
     return html
 
   className: -> # generates the correct classes to use
-    c = "post post#{@id} "
+    c = "post "
     c += 'imagepost ' if @image
     c += 'sage ' if @sage
     c += "tripcoded #that " if @tripcode
@@ -36,78 +36,77 @@ class Post
   # TODO factor out image sauce links somewhere else, as the logic behind them
   # is getting more complicated (would like to switch foolz to other archivers)
 
-  render: (container, classes = '', id)->
-    """
-    <#container class="#classes #{@className!}" id="#{id or @id}">
+  render: (container, classes = '', id) ->
+    "<#container data-post=#{@id} \
+                 class='#classes #{@className!}' \
+                 id='#{id or "p#{@id}"}'>
       <h1>
-        <input type="checkbox" value="delete" name="#{@id}" form="delform">
-        <button type="button" class="hide" value="#{@id}">&times;</button>
-        <button type="submit"
-                form="reportform"
-                class="report"
-                name="no"
-                value="#{@id}">!</button>
-        <a href="#{@url}" class="title">#{@title or ''}</a>
-        <a class="poster"
+        <input type=checkbox value=delete name=#{@id} form=delform>
+        <button type=button class=hide value=#{@id}>&times;</button>
+        <button type=submit \
+                form=reportform \
+                class=report \
+                name=no \
+                value=#{@id}>!</button>
+        <a href='#{@url}' class=title>#{@title or ''}</a>
+        <a class=poster \
            #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a>
 
-        <span class="tripcode">#{@tripcode or ''}</span>
-        <span class="capcode">#{@capcode or ''}</span>
-        <span class="posteruid">#{if @uid then "(ID: #that)" else ''}</span>
-        <time pubdate
-              datetime="#{@time.toISOString!}"
-              title="#{@time}">#{@time.relative_time!}</time>
+        <span class=tripcode>#{@tripcode or ''}</span>
+        <span class=capcode>#{@capcode or ''}</span>
+        <span class=posteruid>#{if @uid then "(ID: #that)" else ''}</span>
+        <time pubdate \
+              datetime='#{@time.toISOString!}' \
+              title='#{@time}'>#{@time.relative_time!}</time>
         #{if @op and @thread.sticky
-            '<img alt="sticky" src="//static.4chan.org/image/sticky.gif">'
+            '<img alt=sticky src=//static.4chan.org/image/sticky.gif>'
           else ''}
         #{if @op and @thread.closed
-            '<img alt="closed" src="//static.4chan.ork/image/closed.gif">'
+            '<img alt=closed src=//static.4chan.org/image/closed.gif>'
           else ''}
-        <a href="#{@url}" class="permalink">
-          No.<span class="id">#{@id}</span>
-        </a>
+        <a href='#{@url}' class=permalink>No.<span class=id>#{@id}</span></a>
       </h1>
       #{if @image
-        """
-        <div class="fileinfo">
-          <span class="dimensions">#{@image.width}x#{@image.height}</span>
-          <span class="size">#{@image.size}</span>
-          <span class="filename">#{@image.filename or ''}</span>
-          <a class="saucelink"
-             href="http://iqdb.org/?url=#{@image.url}"
-             target="_blank">iqdb</a>
-          <a class="saucelink"
-             href="http://google.com/searchbyimage?image_url=#{@image.url}"
-             target="_blank">google</a>
-          <a class="saucelink"
-             href="http://regex.info/exif.cgi/exif.cgi?imgurl=#{@image.url}"
-             target="_blank">exif</a>
-          <a class="saucelink"
-             href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}"
-             target="_blank">foolz</a>
+        "
+        <div class=fileinfo>
+          <span class=dimensions>#{@image.width}x#{@image.height}</span>
+          <span class=size>#{@image.size}</span>
+          <span class=filename>#{@image.filename or ''}</span>
+          <a class=saucelink \
+             href='http://iqdb.org/?url=#{@image.url}' \
+             target=_blank>iqdb</a>
+          <a class=saucelink \
+             href='http://google.com/searchbyimage?image_url=#{@image.url}' \
+             target=_blank>google</a>
+          <a class=saucelink \
+             href='http://regex.info/exif.cgi/exif.cgi?imgurl=#{@image.url}' \
+             target=_blank>exif</a>
+          <a class=saucelink \
+             href='http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}' \
+             target=_blank>foolz</a>
         </div>
-        <a class="file"
-           target="_blank"
-           href="#{@image.url}"
-           data-width="#{@image.width}"
-           data-height="#{@image.height}">
-          <img class="thumb"
-               src="#{@image.thumb.url}"
-               width="#{@image.thumb.width}"
-               height="#{@image.thumb.height}">
+        <a class=file \
+           target=_blank \
+           href='#{@image.url}' \
+           data-width=#{@image.width} \
+           data-height=#{@image.height}>
+          <img class=thumb \
+               src='#{@image.thumb.url}' \
+               width=#{@image.thumb.width} \
+               height=#{@image.thumb.height}>
         </a>
-        """
+        "
       else ''
       }
       #{if @deletedImage
-          '<img class="deleted-image"
+          '<img class=deleted-image
                 alt="File deleted."
-                src="//static.4chan.org/image/filedeleted.gif">'
+                src=//static.4chan.org/image/filedeleted.gif>'
         else ''}
-      <div class="comment">#{@comment}</div>
-      <footer class="backlinks">#{@backlinks!}</footer>
+      <div class=comment>#{@comment}</div>
+      <footer class=backlinks>#{@backlinks!}</footer>
     </#container>
-    """
+    "
   element: (container, classes = '', id) ->
     wrapper = document.createElement \div
     wrapper.innerHTML = @render container, classes, id
@@ -118,9 +117,8 @@ class Post
       &innerHTML = @comment
       &textContent
 
-  Post
-    &backlinks = {}
-    &new_backlinks = {}
-    &tripcodes = {}
-    &uids = {}
+  ..backlinks = {}
+  ..new_backlinks = {}
+  ..tripcodes = {}
+  ..uids = {}
 

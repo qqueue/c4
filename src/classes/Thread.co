@@ -29,16 +29,15 @@ class Thread
     return c
 
   render: (container = \article, classes = '', id) ->
-    """
-    <#container id="#{id or "thread-#{@id}"}" class="#classes #{@className!}">
+    "<#container id='#{id or "t#{@id}"}' class='#classes #{@className!}'>
       #{@op.render \div \op}
-      <div class="thread-info">
+      <div class=thread-info>
         #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
-        #{if @preview then """<a class="expand-link" href="#{@url}">Expand</a>""" else ''}
+        #{if @preview then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
       </div>
-        <div class="replies">#{render_all @replies, \article \reply}</div>
+        <div class=replies>#{render_all @replies, \article \reply}</div>
     </#container>
-    """
+    "
 
   element: (container, classes, id) ->
     d = document.createElement \div
