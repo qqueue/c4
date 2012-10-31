@@ -33,8 +33,8 @@ set_update = (el) ->
       else # under a minute ( or in the future )
         60_000ms # one minute
 
-onready -> set_update time for time of document.getElementsByTagName \time
-updater.after_update ->
+onready !-> set_update time for time of document.getElementsByTagName \time
+updater.after_update !->
   set_update time for time of $$ '.new time'
 
   # attempt to update other times that have changed during the page reflow

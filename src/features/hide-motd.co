@@ -1,6 +1,6 @@
 # Hide MOTD until it changes
 
-<- onready
+<-! onready
 
 # unlikely to be 2 consecutive messages with the same length
 hash = -> it.innerHTML.length

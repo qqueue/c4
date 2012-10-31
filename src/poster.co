@@ -14,7 +14,7 @@ hideform = -> $ \postform-wrapper .classList.remove \visible unless bottom or vi
 
 bottom = false # at the bottom of screen, set by scroller
 
-<- onready
+<-! onready
 
 checkValidity = (e) ->
   e.preventDefault!

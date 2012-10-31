@@ -41,12 +41,8 @@ if /404/.test document.title and board.archive
     window.location = "#{board.archive}/#{that.0}"
     return
 
-# because we want to be able to stop all on DOMContentLoaded
-# handlers with return, we implement a custom callback queue
-onready = -> onready.handlers.push it
-onready.handlers = []
-onready.execute = !(thread, threads) ->
-  fn thread, threads for fn of onready.handlers
+# shortcut for html5chan-loaded
+onready = !-> document.addEventListener \html5chan-loaded it
 
 # the classes (Post, Thread, Image) are also
 # in the top level, for global access

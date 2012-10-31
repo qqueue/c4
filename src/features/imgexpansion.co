@@ -34,7 +34,7 @@ changeDisplay = ->
     else
       "img.full { max-width: 100%; }"
 
-<- onready
+<-! onready
 
 document.head.appendChild kup \style ->
   @id = \img-style

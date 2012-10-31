@@ -156,9 +156,10 @@ if window.location.hash and not sget document.URL
     sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
-
 timeEnd "render"
 
 # run other onready handlers
-onready.execute thread, threads
+document.dispatchEvent new CustomEvent do
+  \html5chan-loaded
+  detail: {thread, threads}
 
