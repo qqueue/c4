@@ -1,26 +1,21 @@
-log = let
-  beginning = Date.now!
-  log = -> log.messages += "\n[t+#{Date.now! - beginning}] #it"
-  log.messages = "[t-0]: html5chan"
-  return log
+# some custom logging
+beginning = Date.now!
 
-{time, timeEnd} = let times = {}
-  time: (name) ->
+export log = -> log.messages += "\n[t+#{Date.now! - beginning}] #it"
+
+log.messages = "[t-0]: html5chan"
+
+times = {}
+export
+  time = (name) ->
     times[name] = Date.now()
     log "#{name} [start]"
-  timeEnd: (name) ->
+  timeEnd = (name) ->
     log "#{name} [end: #{Date.now() - times[name]}ms]"
 
 time "init"
 
-# sets up global variables
-# so that the parts of the script can
-# access each other since this file
-# is compiled without the IEFE wrapper
-parser = {}
-board = {}
-updater = {}
-titler = {}
+export board = {}
 
 # early abort for archive redirection
 [ , board.name, board.page] = window.location.pathname / \/
@@ -42,9 +37,11 @@ if /404/.test document.title and board.archive
     return
 
 # shortcuts for custom events
-onready = !-> document.addEventListener \html5chan-loaded it
-onupdate = !-> document.addEventListener \html5chan-update it
+export
+  onready = !-> document.addEventListener \html5chan-loaded it
+  onupdate = !-> document.addEventListener \html5chan-update it
 
-# the classes (Post, Thread, Image) are also
-# in the top level, for global access
+# used in rendering pipeline some
+export render_all = (objects, ...options) ->
+  (obj.render.apply obj, options for obj of objects).join ''
 

@@ -1,85 +1,97 @@
 last_update = new Date
 
-updater.update = !->
-  updater.status.textContent = "Updating thread..."
-  updater.button.disabled = true
+export updater =
+  update:  !->
+    updater.status.textContent = "Updating thread..."
+    updater.button.disabled = true
 
-  new XMLHttpRequest
-    &open \GET document.URL
-    &responseType = \document
+    new XMLHttpRequest
+      &open \GET document.URL
+      &responseType = \document
 
-    &setRequestHeader \If-Modified-Since last_update.toUTCString!
+      &setRequestHeader \If-Modified-Since last_update.toUTCString!
 
-    listen(&)
-      .on \load !->
-        if @status is 404
-          titler.text += '(dead)'
-          updater.status.textContent = "thread 404'd"
-          return
-        if @status is 304
+      listen(&)
+        .on \load !->
+          if @status is 404
+            titler.text += '(dead)'
+            updater.status.textContent = "thread 404'd"
+            return
+          if @status is 304
+            updater.countdown.restart!
+            return
+
+          last_modified = new Date @getResponseHeader \Last-Modified
+
+          unless last_modified > last_update
+            updater.countdown.restart!
+            return
+
+          updater.status.textContent = "update detected, parsing"
+          last_update := last_modified
+
+          thread = parser.thread @response
+          if thread.new.length > 0
+            $ "t#{thread.id}" .lastElementChild # .replies
+              .insertAdjacentHTML do
+                \beforeend
+                render_all thread.new, \article, 'new reply'
+
+            # refresh backlinks
+            # TODO refactor out all the various places backlinks are made
+            # into something less coupled
+            for backlinks of $$ '.thread .backlinks'
+              backlinks.insertAdjacentHTML do
+                \beforeend
+                Post[backlinks.parentNode.dataset.id]backlinks true
+
+            document.dispatchEvent new CustomEvent do
+              \html5chan-update
+              detail: {thread}
+
+            # add scroll handler to rest number and new posts
+            # when the window scrolls past the end of them
+            resetNew thread.new
+
+            if (window.scrollMaxY - window.scrollY) < 50 \
+               and not document.hidden
+              # smooth scroll to the bottom, but if user scrolls upwards
+              # manually, abort.
+              let last = window.scrollY
+                repeat 50ms {-auto} !->
+                  if last > window.scrollY
+                    @stop!
+                  else if window.scrollMaxY - window.scrollY
+                    window.scrollBy 0, that/4 >? 1
+                    last := window.scrollY
+                    @repeat!
+
+            # update post count
+            $ "t#{thread.id}" .querySelector ".thread-info" .textContent =
+              "#{thread.replies.length} replies \
+               and #{thread.imageReplies.length} image replies."
+
           updater.countdown.restart!
-          return
 
-        last_modified = new Date @getResponseHeader \Last-Modified
+        .on \timeout !->
+          updater.status.textContent = "request timed out..."
+          updater.countdown!
 
-        unless last_modified > last_update
-          updater.countdown.restart!
-          return
+        .on \error !->
+          updater.status.textContent = "Couldn't fetch thread page!"
 
-        updater.status.textContent = "update detected, parsing"
-        last_update := last_modified
+        .on \loadend !-> updater.button.disabled = false
 
-        thread = parser.thread @response
-        if thread.new.length > 0
-          $ "t#{thread.id}" .lastElementChild # .replies
-            .insertAdjacentHTML do
-              \beforeend
-              render_all thread.new, \article, 'new reply'
+      &send!
 
-          # refresh backlinks
-          # TODO refactor out all the various places backlinks are made
-          # into something less coupled
-          for backlinks of $$ '.thread .backlinks'
-            backlinks.insertAdjacentHTML do
-              \beforeend
-              Post[backlinks.parentNode.dataset.id]backlinks true
+  countdown: repeat 1000ms {-start} !(t) ->
+    @t = t or @t or 30sec
 
-          document.dispatchEvent new CustomEvent do
-            \html5chan-update
-            detail: {thread}
+    updater.status.textContent = "Updating in #{@t} seconds..."
 
-          # add scroll handler to rest number and new posts
-          # when the window scrolls past the end of them
-          resetNew thread.new
-
-          if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
-            # smooth scroll to the bottom, but if user scrolls upwards
-            # manually, abort.
-            let last = window.scrollY
-              repeat 50ms {-auto} !->
-                if last > window.scrollY
-                  @stop!
-                else if window.scrollMaxY - window.scrollY
-                  window.scrollBy 0, that/4 >? 1
-                  last := window.scrollY
-                  @repeat!
-
-          # update post count
-          $ "t#{thread.id}" .querySelector ".thread-info" .textContent =
-            "#{thread.replies.length} replies \
-             and #{thread.imageReplies.length} image replies."
-
-        updater.countdown.restart!
-
-      .on \timeout !->
-        updater.status.textContent = "request timed out..."
-        updater.countdown!
-
-      .on \error !-> updater.status.textContent = "Couldn't fetch thread page!"
-
-      .on \loadend !-> updater.button.disabled = false
-
-    &send!
+    if --@t is 0
+      @stop!
+      updater.update!
 
 # some spaghetti to remove the new class from posts
 # once they are visible to the user
@@ -107,15 +119,6 @@ resetNew = !(posts) ->
         if ( window.innerHeight + window.scrollY ) > post.offsetTop
           removeNew!
           listen window .off \scroll reset
-
-updater.countdown = repeat 1000ms {-start} !(t) ->
-  @t = t or @t or 30sec
-
-  updater.status.textContent = "Updating in #{@t} seconds..."
-
-  if --@t is 0
-    @stop!
-    updater.update!
 
 onready !->
   updater.status = $ \update-status

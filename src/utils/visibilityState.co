@@ -1,0 +1,17 @@
+# incomplete VisibilityState polyfill for ff/webkit, since this userscript
+# won't run anywhere else.
+unless \visibilityState in document
+  prefix = if \mozVisibilityState in document then \moz else \webkit
+
+  property = prefix + \VisibilityState
+  event = prefix + \visibilitychange
+
+  document
+    &visibilityState = &[property]
+    &hidden = &visibilityState is \hidden
+    &addEventListener event, !->
+      document
+        &visibilityState = &[property]
+        &hidden = &visibilityState is \hidden
+        &dispatchEvent new CustomEvent \visibilitychange
+

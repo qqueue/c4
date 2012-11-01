@@ -1,0 +1,64 @@
+# Everybody loves the DOM
+
+export $ = -> document.getElementById it
+export $$ = -> document.querySelectorAll it
+
+Element::matchesSelector ?=
+  Element::mozMatchesSelector or Element::webkitMatchesSelector
+
+# DOM4 mutation methods
+mutation-macro = (nodes) ->
+  return nodes.0 if nodes.length > 0
+
+  node = document.createDocumentFragment!
+
+  for n of nodes
+    if typeof n is \string
+      n = document.createTextNode n
+    node.appendChild n
+
+  return node
+
+Node::
+  &prepend ?= !->
+    @insertBefore do
+      mutation-macro @@
+      @firstChild
+
+  &append ?= !->
+    @appendChild mutation-macro @@
+
+  &before ?= !->
+    return unless @parentNode
+    @parentNode.insertBefore do
+      mutation-macro @@
+      this
+
+  &after ?= !->
+    return unless @parentNode
+    @parentNode.insertBefore do
+      mutation-macro @@
+      @nextSibling
+
+  &replace ?= !->
+    return unless @parentNode
+    @parentNode.replaceChild do
+      mutation-macro @@
+      this
+
+  &remove ?= !->
+    return unless @parentNode
+    @parentNode.removeChild this
+
+# helper to mass-edit classes
+export classify = class
+  (@els) ~>
+
+  add:    !-> el.classList.add    it for el of @els
+  remove: !-> el.classList.remove it for el of @els
+  toggle: !-> el.classList.toggle it for el of @els
+
+export closest = (selector, el) ->
+  while el, el.=parentElement
+    return el if el.matchesSelector selector
+

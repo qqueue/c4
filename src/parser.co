@@ -5,23 +5,6 @@ spoiler_regex = /^Spoiler Image/
 
 sage_regex = /^sage$/i
 
-# returns Array of threads
-parser.board = (document) ->
-  time "parse board"
-  threads = Array::map.call do
-    document.querySelectorAll \.thread
-    parse_thread
-  timeEnd "parse board"
-
-  return threads
-
-parser.thread = (document) ->
-  time "parse thread"
-  thread = parse_thread document.querySelector \.thread
-  timeEnd "parse thread"
-
-  return thread
-
 # slow(?!) DOM querying parser
 # shit, why is this so much faster, even with nested functions and
 # lots of querySelector calls? Did switching to standards mode make
@@ -105,3 +88,22 @@ parse_post = (el, idx) ->
   p.postprocess!
 
   return p
+
+export parser =
+  # returns Array of threads
+  board: (document) ->
+    time "parse board"
+    threads = Array::map.call do
+      document.querySelectorAll \.thread
+      parse_thread
+    timeEnd "parse board"
+
+    return threads
+
+  thread: (document) ->
+    time "parse thread"
+    thread = parse_thread document.querySelector \.thread
+    timeEnd "parse thread"
+
+    return thread
+

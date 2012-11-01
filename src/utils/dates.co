@@ -1,0 +1,17 @@
+# pretty dates
+
+pluralize = (number, unit) ->
+  "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
+
+Date::relative_time = ->
+  if ( days = ( ( diff = Date.now! - @getTime! ) / 86400000 ) ) > 1
+    pluralize days, \day
+  else if ( hours = days * 24 ) > 1
+    pluralize hours, \hour
+  else if ( minutes = hours * 60 ) > 1
+    pluralize minutes, \minute
+  else if ( seconds = minutes * 60 ) >= 1
+    pluralize seconds, \second
+  else
+    'from the future!'
+

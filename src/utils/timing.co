@@ -1,0 +1,54 @@
+export debounce = (delay, fn) ->
+  var timeout
+  !->
+    ctx = this
+    args = arguments
+    clearTimeout timeout
+    timeout := setTimeout do
+      !-> fn.apply ctx, args
+      delay
+
+# setTimeout with nicer syntax and optional delay
+# the rest of the arguments to the fn are passed through, so the syntax with
+# predefined functions is also more natural, e.g. defer 10ms fn, arg1, arg2
+export defer = (delay, fn) ->
+  if typeof delay is \function
+    fn = delay
+    delay = 4ms # minimum by HTML5
+    args = Array::slice.call @@, 2
+  else
+    args = Array::slice.call @@, 1
+
+  setTimeout.apply null, [fn, delay].concat args
+
+# safer, extended version of setInterval. fn is called with a context object
+# that has methods to manage the repetition. Shares a prototype for
+# performance, but the constructor is meant to be called as a verb and is thus
+# lowercase.
+export repeat = class
+  # options are optional
+  (@delay, options, fn) ~>
+    if typeof options is \function
+      fn = options
+      options = {}
+
+    @fn = fn
+    @timeoutee = !~>
+      @fn ...
+      @timeout = @repeat! if @auto
+
+    @auto = if options.auto? then options.auto else true
+    @start! unless options.start is false
+
+  stop: !-> clearTimeout @timeout
+
+  # the args of start are passed to the timeoutee
+  start: !(...args) ->
+    @stop! # for safety
+    @timeout = setTimeout.apply null, [@timeoutee, @delay].concat args
+
+  restart: ::start
+
+  # makes more sense with auto: false
+  repeat: ::start
+
