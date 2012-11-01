@@ -1,4 +1,4 @@
-class Post
+export class Post
   # constructor is inlined into parser
   postprocess: ->
     # backlinker, with some fancy logic to detect new ones

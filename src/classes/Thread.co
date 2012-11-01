@@ -1,4 +1,4 @@
-class Thread
+export class Thread
   postprocess: ->
     #convenience array including op
     @posts = [@op].concat @replies
@@ -45,3 +45,4 @@ class Thread
     d = document.createElement \div
       &innerHTML = @render container, classes, id
     return d.firstElementChild
+

@@ -1,45 +1,40 @@
-number = 0
+export titler =
+  text:~
+    -> document.title
+    (it) -> document.title = it
 
-# adapted from https://github.com/tommoor/tinycon
-# debounce favicon update slightly to prevent UI thread hangs
-updateFavicon = debounce 200 ->
-  canvas = kup \canvas width: 16 height: 16
-  ctx = canvas.getContext \2d
+  # update favicon when number changes
+  number:~ (@number) -> @updateFavicon!
 
-  ctx.drawImage board.favicon, 0 0
+  # adapted from https://github.com/tommoor/tinycon
+  # debounce favicon update slightly to prevent UI thread hangs
+  updateFavicon: debounce 200 ->
+    canvas = kup \canvas width: 16 height: 16
+    ctx = canvas.getContext \2d
 
-  if number > 0
-    ctx.font = '8px monospace'
-    ctx.fillStyle = \#000
-    ctx.strokeStyle = \#fff
-    ctx.lineWidth = 4
-    ctx.textBaseline = \bottom
-    ctx.textAlign = \right
-    ctx.strokeText "#number", 16 16
-    ctx.fillText "#number", 16 16
+    ctx.drawImage board.favicon, 0 0
 
-  # the entire link needs to be replaced lest the icon won't update
-  $ \favicon ?.remove!
-  document.head.appendChild kup do
-    \link
-    id: \favicon
-    rel: \icon
-    type: \image/x-icon # required for chrome, I guess
-    href: canvas.toDataURL \image/png
+    if @number > 0
+      ctx.font = '8px monospace'
+      ctx.fillStyle = \#000
+      ctx.strokeStyle = \#fff
+      ctx.lineWidth = 4
+      ctx.textBaseline = \bottom
+      ctx.textAlign = \right
+      ctx.strokeText @number, 16 16
+      ctx.fillText @number, 16 16
 
-
-Object.defineProperties titler,
-  number:
-    get: -> number
-    set: ->
-      number := it
-      updateFavicon!
-  text:
-    get: -> document.title
-    set: -> document.title = it
+    # the entire link needs to be replaced lest the icon won't update
+    $ \favicon ?.remove!
+    document.head.appendChild kup do
+      \link
+      id: \favicon
+      rel: \icon
+      type: \image/x-icon # required for chrome, I guess
+      href: canvas.toDataURL \image/png
 
 onready !->
-  updateFavicon!
+  titler.updateFavicon!
   titler.text =
     if board.isThread
       board.thread.op

@@ -1,7 +1,7 @@
-fs = require \fs
-coco = require \coco
+fs     = require \fs
+coco   = require \coco
 stylus = require \stylus
-nib = require \nib
+nib    = require \nib
 
 ls = -> "#it/#file" for file of fs.readdirSync it
 
@@ -17,15 +17,13 @@ compile = (it, options) ->
   catch
     throw new Error "Compiling #it:\n\t#{e.message}"
 
-bare = -> compile it, bare: true
-
 stylus.nib = -> stylus it .use nib!
 
 outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-  err, css <- stylus.nib read(\css/hakase.styl) .render
+  err, css <-! stylus.nib read(\css/hakase.styl) .render
   try
     throw err if err
     fs.writeFileSync do
@@ -34,11 +32,13 @@ task \build 'build userscript' ->
         metadata
         '(function(){' # IIFE wrapper
         '"use strict";'
-        bare \src/intro.co
-        bare \src/utils.co
-        bare klass for klass of ls \src/classes
-        compile \src/enhancer.co
+        compile \src/intro.co
+        coco.compile join do
+          read f for f of ls \src/utils
+        coco.compile join do
+          read f for f of ls \src/classes
         compile \src/parser.co
+        compile \src/enhancer.co
         compile \src/updater.co
         compile \src/titler.co
         compile \src/poster.co
@@ -46,9 +46,8 @@ task \build 'build userscript' ->
           read \src/onready.co
             .replace /%hakase\.css%/ css
             .replace /%board\.co\.html%/ read \templates/board.co.html
-          bare: true # since it's all in a callback
         compile feature for feature of ls \src/features
-        bare \src/outro.co
+        compile \src/outro.co
         '}.call(this))'
     console.log "compiled script to #{outfile}"
   catch
@@ -66,7 +65,7 @@ debounce = (delay, fn) ->
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
-  for it of <[css src templates src/features src/classes]>
+  for it of <[css src templates src/features src/classes src/utils]>
     fs.watch it, interval: 1000, debounce 1000 (event, filename) ->
       console.log "#event event detected on #filename. rebuilding..."
       invoke \build
