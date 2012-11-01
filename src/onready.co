@@ -159,6 +159,9 @@ if window.location.hash and not sget document.URL
 
 timeEnd "render"
 
+# shortcut for use in features
+export delegate = listen $ \threads
+
 # run other onready handlers
 document.dispatchEvent new CustomEvent do
   \html5chan-loaded

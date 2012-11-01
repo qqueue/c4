@@ -16,7 +16,7 @@
       el.offsetTop - last.offsetTop
 
 onready !->
-  listen $ \threads
+  delegate
     .click 'a.quotelink:not(.hiddenlink)' !(e) ->
       return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       return unless post = Post[id = @hash.substring 1]

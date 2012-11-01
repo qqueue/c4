@@ -14,7 +14,7 @@ toggle-highlight = (klass) ->
     post.classList.toggle \highlighted
 
 onready !->
-  listen $ \threads
+  delegate
     .click '.admin .capcode' toggle-highlight \admin
     .click '.mod .capcode' toggle-highlight \mod
 

@@ -1,7 +1,7 @@
 # post hover previews
 <-! onready
 
-listen $ \threads .mouseover 'a.quotelink' !->
+delegate.mouseover 'a.quotelink' !->
   return if @hash is '' or @classList.contains \inlinedlink
 
   id = @hash.substring 1

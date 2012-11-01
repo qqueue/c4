@@ -15,7 +15,7 @@ for type, hash in hidden
   for key, expiry in hash
     delete hash[key] if expiry < Date.now!
 
-listen $ \threads
+delegate
   .click '.reply button.hide' !->
     toggle \p @value
     if @value in hidden.posts

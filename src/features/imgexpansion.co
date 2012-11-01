@@ -35,7 +35,7 @@ onready !->
 
   # TODO think about 'custom' event plain-click or unmodified-click to abstract
   # the unless statement
-  listen $ \threads .click \a.file !(e) ->
+  delegate.click \a.file !(e) ->
     unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       expand this
       e.preventDefault!

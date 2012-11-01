@@ -2,7 +2,7 @@
 # TODO add close button somehow
 <-! onready
 
-listen $ \threads
+delegate
   .click \a.youtube !(e) ->
     unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       e.preventDefault!
