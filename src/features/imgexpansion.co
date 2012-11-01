@@ -1,15 +1,13 @@
-toggleExpand = (e) ->
-  unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-    expand this
-    e.preventDefault!
+# Wonderful server-killing image expansion tools
 
-expand = (a) ->
+expand = !(a) ->
+  return if a.hidden # already expanded
   a.hidden = true
-  a.before kup \img src: a.href, className: \full, ->
-    @on \click -> collapse a
+  a.before kup \img src: a.href, className: \full, !->
+    @on \click !-> collapse a
   $ \imgpreview ?.remove!
 
-collapse = (a, scroll = true) ->
+collapse = !(a, scroll = true) ->
   a.hidden = false
   a.previousSibling?remove! # the full image
 
@@ -17,58 +15,49 @@ collapse = (a, scroll = true) ->
   if scroll and (top = a.getBoundingClientRect!.top) < 0
     window.scrollBy 0, top # scroll so it is visible
 
+# force browser fetch by creating img element
+preload = !(a) -> kup \img src: a.href
+
 preloading = false
-preloadAll = ->
-  for a of document.querySelectorAll \a.file
-    kup \img src: a.href # creating an image forces browser to fetch
-
 expanding = false
-expandAll = -> expand img for img of $$ \a.file
-collapseAll = -> collapse img, false for img of $$ \a.file
 
-changeDisplay = ->
-  set \img-display @value
-  $ \img-style .textContent =
-    if @value is \full
-      ""
+onready !->
+
+  # manage single-rule stylesheet so we don't have to iterate over elements
+  fit-width = kup \style '.full { max-width: 100%; }'
+  document.head.append fit-width
+
+  fit-width.disabled = get(\img-display) is \full
+
+  listen $ \img-display .on \change !->
+    set \img-display @value
+    fit-width.disabled = get(\img-display) is \full
+
+  # TODO think about 'custom' event plain-click or unmodified-click to abstract
+  # the unless statement
+  listen $ \threads .on \click \a.file !(e) ->
+    unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+      expand this
+      e.preventDefault!
+
+  listen $ \preload-all .on \click ->
+    if ! := preloading
+      preload img for img of $$ '.file'
+      @textContent = "Stop Preloading"
     else
-      "img.full { max-width: 100%; }"
+      @textContent = "Preload all"
 
-<-! onready
-
-document.head.appendChild kup \style ->
-  @id = \img-style
-  @textContent =
-    if get \img-display is \full
-      ""
+  listen $ \expand-all .on \click ->
+    if ! := expanding
+      preloading := false
+      expand img for img of $$ '.file'
+      @textContent = "Stop expanding"
     else
-      "img.full { max-width: 100%; }"
+      @textContent = "Expand all"
 
-listen $ \threads
-  .on \click \a.file toggleExpand
-
-listen $ \preload-all .on \click ->
-  ! := preloading
-  if preloading
-    preloadAll!
-    @textContent = "Stop Preloading"
-  else
-    @textContent = "Preload all"
-
-listen $ \collapse-all .on \click collapseAll
-
-listen $ \expand-all .on \click ->
-  ! := expanding
-  if expanding
-    expandAll!
-    preloading = false
-    @textContent = "Stop expanding"
-  else
-    @textContent = "Expand all"
-
-listen $ \img-display .on \change changeDisplay
+  listen $ \collapse-all .on \click !-> collapse img for img of $$ '.full'
 
 onupdate !->
-  preloadAll! if preloading
-  if expanding
-    expand img for img of $$ '.new a.file'
+  preload img for img of $$ '.new .file' if preloading
+  expand  img for img of $$ '.new .file' if expanding
+

@@ -193,6 +193,10 @@ body > header
 	margin 3px 20px
 	position relative
 
+	// display block overrides hidden style...
+	&[hidden]
+		display none
+
 img.full
 	// seems to fix weird left-margin in firefox
 	display block
