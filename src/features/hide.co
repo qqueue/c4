@@ -16,14 +16,14 @@ for type, hash in hidden
     delete hash[key] if expiry < Date.now!
 
 listen $ \threads
-  .on \click '.reply button.hide' !->
+  .click '.reply button.hide' !->
     toggle \p @value
     if @value in hidden.posts
       delete hidden.posts[@value]
     else
       hidden.posts[@value] = Date.now! + 604800000ms # 1 week
 
-  .on \click '.op button.hide' !->
+  .click '.op button.hide' !->
     toggle \t @value
     if @value in hidden.threads
       delete hidden.threads[@value]

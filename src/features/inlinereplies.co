@@ -17,7 +17,7 @@
 
 onready !->
   listen $ \threads
-    .on \click 'a.quotelink:not(.hiddenlink)' !(e) ->
+    .click 'a.quotelink:not(.hiddenlink)' !(e) ->
       return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       return unless post = Post[id = @hash.substring 1]
       e.preventDefault!

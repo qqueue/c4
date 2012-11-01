@@ -35,19 +35,19 @@ onready !->
 
   # TODO think about 'custom' event plain-click or unmodified-click to abstract
   # the unless statement
-  listen $ \threads .on \click \a.file !(e) ->
+  listen $ \threads .click \a.file !(e) ->
     unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       expand this
       e.preventDefault!
 
-  listen $ \preload-all .on \click ->
+  listen $ \preload-all .click ->
     if ! := preloading
       preload img for img of $$ '.file'
       @textContent = "Stop Preloading"
     else
       @textContent = "Preload all"
 
-  listen $ \expand-all .on \click ->
+  listen $ \expand-all .click ->
     if ! := expanding
       preloading := false
       expand img for img of $$ '.file'
@@ -55,7 +55,7 @@ onready !->
     else
       @textContent = "Expand all"
 
-  listen $ \collapse-all .on \click !-> collapse img for img of $$ '.full'
+  listen $ \collapse-all .click !-> collapse img for img of $$ '.full'
 
 onupdate !->
   preload img for img of $$ '.new .file' if preloading

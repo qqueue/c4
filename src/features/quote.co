@@ -1,6 +1,6 @@
 <-! onready
 
-listen $ \threads .on \click '.permalink .id' !(e) ->
+listen $ \threads .click '.permalink .id' !(e) ->
   selection = window.getSelection!toString!trim!
   selection = ">#selection\n" if selection
 

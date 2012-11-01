@@ -115,8 +115,8 @@ checkValidity = (e) ->
 
   return false # prevent normal submission
 
-listen $ \post .on \click checkValidity
-listen $ \sage .on \click checkValidity
+listen $ \post .click checkValidity
+listen $ \sage .click checkValidity
 
 cooldown = ->
   post = $ \post
@@ -144,7 +144,7 @@ listen $ \name .on \input ->
   set name: @value
 $ \name ?.value = get \name or ''
 
-listen window .on \scroll ->
+listen window .scroll ->
   y = window.scrollMaxY - window.scrollY
   if bottom := y < 100
     showform!
@@ -165,3 +165,4 @@ $ \postform ?.addEventListener do
     visible := false
     hideform!
   true # have to use capture for non-bubbling focus events
+

@@ -15,8 +15,8 @@ toggle-highlight = (klass) ->
 
 onready !->
   listen $ \threads
-    .on \click '.admin .capcode' toggle-highlight \admin
-    .on \click '.mod .capcode' toggle-highlight \mod
+    .click '.admin .capcode' toggle-highlight \admin
+    .click '.mod .capcode' toggle-highlight \mod
 
   # set persisted highlight
   highlight klass if highlighting[klass] for klass in highlighting

@@ -139,8 +139,8 @@ window.Map ?= class
 # Lots of logic to keep references to delegated versions of handlers. At some
 # point, I'll have to look at how jQuery keeps track of those things, and see
 # how my version compares
-class Listener
-  (@element) ->
+listen = class
+  (@element) ~>
 
   on: (event, selector, handler) ->
     return this unless @element
@@ -251,7 +251,9 @@ class Listener
   # listeners, this global map stores the association
   delegated-elements = new Map
 
-listen = -> new Listener it
+  # jQuery-like shortcuts for some common handlers
+  <[ click mouseover scroll]>.forEach !(e) ->
+    ::[e] = (selector, handler) -> @on e, selector, handler
 
 closest = (selector, el) ->
   while el, el.=parentElement

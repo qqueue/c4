@@ -103,7 +103,7 @@ resetNew = !(posts) ->
         defer 100ms removeNew
     else
       # wait till post is scrolled to
-      listen window .on \scroll function reset
+      listen window .scroll function reset
         if ( window.innerHeight + window.scrollY ) > post.offsetTop
           removeNew!
           listen window .off \scroll reset
@@ -124,7 +124,7 @@ onready !->
   # autoupdate threads
   if board.isThread
     updater.countdown.start!
-    listen $ \update-now .on \click ->
+    listen $ \update-now .click ->
       updater.countdown
         &stop!
         &t = 30ms

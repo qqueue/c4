@@ -6,7 +6,7 @@ dead_zone = 10px
 
 <-! onready
 
-listen $ \threads .on \mouseover 'img.thumb' !({clientX: x, clientY: y}) ->
+listen $ \threads .mouseover 'img.thumb' !({clientX: x, clientY: y}) ->
   $ \imgpreview ?.remove!
 
   width = @parentElement.getAttribute \data-width

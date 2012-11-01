@@ -3,7 +3,7 @@
 <-! onready
 
 listen $ \threads
-  .on \click \a.youtube !(e) ->
+  .click \a.youtube !(e) ->
     unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       e.preventDefault!
       @replace kup do
@@ -16,7 +16,7 @@ listen $ \threads
               &amp;wmode=transparent"
         frameborder: 0
         allowfullscreen: ''
-  .on \mouseover \a.youtube !->
+  .mouseover \a.youtube !->
     return if @title
 
     # this is a sad workaround for firefox, which doesn't display a new

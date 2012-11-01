@@ -2,10 +2,8 @@ timeEnd "init"
 
 <-! document.addEventListener \DOMContentLoaded
 
-listen document.getElementById \dump-log .on \click ->
-  console.log log.messages
+listen $ \dump-log .click -> console.log log.messages
 
 log "finished"
-# console?log? log.messages
 
 $ \bottom .appendChild kup \pre log.messages

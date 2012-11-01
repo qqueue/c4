@@ -16,7 +16,7 @@ if $ \motd
   else
     set \motd-hash hash msg
 
-  listen btn .on \click ->
+  listen btn .click !->
     ! = msg.hidden
     set \motd-hidden msg.hidden
     btn.textContent = "#{if msg.hidden then "Show" else "Hide"} News"
