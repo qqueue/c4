@@ -49,7 +49,7 @@ onclick = !(e) ->
     inlined = post.element \article "inline hovered" inlined_id
 
     # replace matching reply links
-    for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]"
+    for link of inlined.querySelectorAll "a.quotelink[href$=\"p#hostid\"]"
       link.className = \recursivelink
       link.removeAttribute \href
 
@@ -86,7 +86,7 @@ onready !->
     link.addEventListener \dblclick follow
 
 onpostinserted !->
-  for link of it.detail.post.querySelector '.quotelink:not(.hiddenlink)'
+  for link of it.detail.post.querySelectorAll '.quotelink:not(.hiddenlink)'
     link.addEventListener \click onclick
     link.addEventListener \dblclick follow
 

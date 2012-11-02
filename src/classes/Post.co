@@ -18,7 +18,7 @@ export class Post
     if backlinks[@id]
       for post in backlinks[@id]
         html +=
-          "<a href=\"##post\" class=\"backlink quotelink\">&lt;&lt;#post</a> "
+          "<a href=\"\#p#post\" class=\"backlink quotelink\">&lt;&lt;#post</a> "
     ..new_backlinks[@id] = []
     return html
 
