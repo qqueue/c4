@@ -16,43 +16,37 @@ head.appendChild style
 recaptcha = document.createElement \script
   &src = '//www.google.com/recaptcha/api/challenge?
           k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc'
-  &addEventListener \load ->
+  &addEventListener \load !->
     recaptcha = document.createElement \script
       &src = \//www.google.com/recaptcha/api/js/recaptcha.js
-    &addEventListener \load ->
-      recaptcha = document.createElement \script
-        &textContent =
-          # secret secrets, gained from digging around in the recaptcha js
-          "(function() {
-            var c;
-            if (c = document.getElementById('captcha')) {
-              Recaptcha._init_options({
-                theme: 'custom',
-                custom_theme_widget: c
-              });
-              Recaptcha.theme = 'custom';
-              Recaptcha.widget = c;
-              Recaptcha._finish_widget();
-            }
-           }())"
-      # this check is needed since the firefox loads the script before
-      # DOMContentLoaded, which causes it to fail (no captcha element), while
-      # chrome, since the script cannot run before DOMContentLoaded, is already
-      # in 'interactive' ready state, and a DOMContentLoaded listener added
-      # after it happens will never fire.
-      if document.readyState is \interactive
-        head.appendChild recaptcha
-      else
-        document.addEventListener \DOMContentLoaded ->
+      &addEventListener \load ->
+        recaptcha = document.createElement \script
+          &textContent =
+            # secret secrets, gained from digging around in the recaptcha js
+            "(function() {
+              var c;
+              if (c = document.getElementById('captcha')) {
+                Recaptcha._init_options({
+                  theme: 'custom',
+                  custom_theme_widget: c
+                });
+                Recaptcha.theme = 'custom';
+                Recaptcha.widget = c;
+                Recaptcha._finish_widget();
+              }
+             }())"
+        # this check is needed since the firefox loads the script before
+        # DOMContentLoaded, which causes it to fail (no captcha element), while
+        # chrome, since the script cannot run before DOMContentLoaded, is already
+        # in 'interactive' ready state, and a DOMContentLoaded listener added
+        # after it happens will never fire.
+        if document.readyState is \interactive
           head.appendChild recaptcha
+        else
+          document.addEventListener \DOMContentLoaded !->
+            head.appendChild recaptcha
     head.appendChild recaptcha
 head.appendChild recaptcha
-
-#
-# inject captcha
-if $ \captcha
-  document.createElement \script
-    head.appendChild(&)
 
 html.appendChild head
 
@@ -76,36 +70,20 @@ time "render"
 time "parse page"
 # get other useful information
 board
-  &title =
-    d.querySelector \.boardTitle .textContent
-  &subtitle =
-    d.querySelector \.boardSubtitle ?.innerHTML or ''
+  &title    = d.querySelector \.boardTitle .textContent
+
+  &subtitle = d.querySelector \.boardSubtitle ?.innerHTML or ''
+  &nav      = d.querySelector \#boardNavDesktop .innerHTML
+  &banner   = d.querySelector \.title .src
+  &motd     = d.querySelector \.globalMessage ?.innerHTML
 
   # detect based on favicon href
   &sfw =
     d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
 
-  # set equivalent base64-encoded version
-  &favicon = if &sfw then titler.favicon.sfw else titler.favicon.nsfw
+  &type = if &sfw then \sfw else \nsfw
 
-  &nav = d.querySelector \#boardNavDesktop .innerHTML
-  &banner = d.querySelector \.title .src
-
-  &motd = d.querySelector \.globalMessage ?.innerHTML
-  &url = "//boards.4chan.org/#{&name}/"
-  &threadurl = "#{&url}res/"
-
-  if document.location.pathname.match /res\/(\d+)/
-    &isThread = true
-    &threadId = that.1
-    &threadPath = "/#{&name}/res/#{&threadId}"
-  else
-    &isThread = false
-    &page = parseInt (&page), 10 or 0 if &page
-
-  &isBoard = !&isThread
-
-  # delete password
+  # for post deletion
   &password = get \password or Math.random!toString!substr -8
 
 console.log board
@@ -120,15 +98,9 @@ else
 
 console.log threads
 
-# replace documentElement with new document element to avoid multiple reflows
-# of removing old styles, adding new content, etc
-#
-# not using my DOM creation helper because it's slower, and speed is of the
-# essence here (also no $ shortcut)
-
 body
   &id = board.name
-  &className = "#{if board.sfw then \sfw else \nsfw} \
+  &className = "#{board.type} \
                #{if board.isThread then \threadpage else \boardpage}"
 
 time "parse innerHTML"
@@ -143,14 +115,22 @@ if board.isBoard
   body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]"
     .id = \current
 
-# disable 4chan's onload functions
-window.onload = window.onunload = void
+document.title =
+  if board.isThread
+    board.thread.op
+      "#{truncate do
+           &title or
+           "#{if &poster is not \Anonymous then "#that - " else ''}
+            #{&text or &image?filename or &time.relative_time!}"}
+       \ - /#{board.name}/"
+  else
+    board.title
 
 # rescroll to target element if this page hasn't been scrolled before
 # this retains the browser's natural scroll position memory
 # while still scrolling to the new hash target's position
-# the first time the page loads (or if window hasn't been scrolled
-# TODO fix hash discrepency with vanilla 4chan
+# the first time the page loads (or if window hasn't been scrolled)
+# TODO I don't know if this is necessary any more
 if window.location.hash and not sget document.URL
   window.location.hash = window.location.hash
   window.addEventListener \scroll function registerPage
@@ -162,7 +142,6 @@ timeEnd "render"
 # shortcut for use in features
 export delegate = listen $ \threads
 
-# run other onready handlers
 document.dispatchEvent new CustomEvent do
   \html5chan-loaded
   detail: {thread, threads}
