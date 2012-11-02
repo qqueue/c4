@@ -1,19 +1,7 @@
-# some custom logging
-beginning = Date.now!
+console.group "html5chan"
 
-export log = -> log.messages += "\n[t+#{Date.now! - beginning}] #it"
-
-log.messages = "[t-0]: html5chan"
-
-times = {}
-export
-  time = (name) ->
-    times[name] = Date.now()
-    log "#{name} [start]"
-  timeEnd = (name) ->
-    log "#{name} [end: #{Date.now() - times[name]}ms]"
-
-time "init"
+console.time "init"
+console.time "interactive"
 
 export board = {}
 
