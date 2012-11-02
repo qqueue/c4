@@ -17,20 +17,29 @@ time "init"
 
 export board = {}
 
+board
+  # boards.4chan.org/<name>/'res' or <page>/<threadid>
+  [ , &name, page, &thread-id] = window.location.pathname / \/
+
+  &is-thread   = !!&thread-id
+  &is-board    = not &is-thread
+  &page        = parseInt page, 10 or 0
+
+  &url         = "//boards.4chan.org/#{&name}/"
+  &threadurl   = &url + \res/
+  &thread-path = "/#{&name}/res/#{&thread-id}"
+
+  &archive = switch &name
+    case <[a jp m tg u tv v vg]> # foolz
+      "http://archive.foolz.us/#that/thread"
+    case \lit
+      "http://fuuka.warosu.org/#that/thread"
+    case <[diy g sci]>
+      "http://archive.installgentoo.net/#that/thread"
+    case <[3 adv an ck co fa fit int k mu n o p po pol r9k soc sp toy trv vp x]>
+      "http://archive.no-ip.org/#that/thread"
+
 # early abort for archive redirection
-[ , board.name, board.page] = window.location.pathname / \/
-
-board.archive = switch board.name
-  case <[a jp m tg u tv v vg]> # foolz
-    "http://archive.foolz.us/#that/thread"
-  case \lit
-    "http://fuuka.warosu.org/#that/thread"
-  case <[diy g sci]>
-    "http://archive.installgentoo.net/#that/thread"
-  case <[3 adv an ck co fa fit int k mu n o p po pol r9k soc sp toy trv vp x]>
-    "http://archive.no-ip.org/#that/thread"
-
-# archive redirection
 if /404/.test document.title and board.archive
   if /\d+/.exec window.location.pathname
     window.location = "#{board.archive}/#{that.0}"
@@ -38,7 +47,7 @@ if /404/.test document.title and board.archive
 
 # shortcuts for custom events
 export
-  onready = !-> document.addEventListener \html5chan-loaded it
+  onready  = !-> document.addEventListener \html5chan-loaded it
   onupdate = !-> document.addEventListener \html5chan-update it
 
 # used in rendering pipeline some

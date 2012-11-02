@@ -1,5 +1,44 @@
 last_update = new Date
 
+unread = 0
+
+# icons need to be here in b64 because they are served from static.4chan.org
+# without CORS headers, so drawing those to the canvas would taint it and
+# prevent reexporting to the favicon
+favicons =
+  sfw: kup \img src: 'data:image/vnd.microsoft.icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAABMLAAATCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv8AAAD/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/AAAA/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAOvXAADBgwAAwYMAAMGDAADhhwAA888AAP//AAD//wAAw8MAAIGBAADBgwAAg8EAAMfj/////////////w=='
+  nsfw: kup \img src: 'data:image/vnd.microsoft.icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/zPMZv8AAAD/M8xm/wAAAP8AAAAAAAAAAAAAAP8zzGb/AAAA/zPMZv8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8zzGb/M8xm/zPMZv8AAAD/AAAAAAAAAAAAAAD/M8xm/zPMZv8zzGb/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAD/M8xm/zPMZv8zzGb/AAAA/wAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAP8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAP8zzGb/M8xm/zPMZv8zzGb/AAAA/wAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/zPMZv8AAAD/AAAAAAAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAP8zzGb/M8xm/zPMZv8AAAD/AAAAAAAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAOvXAADBgwAAwYMAAMGDAADhhwAA888AAP//AAD//wAAw8MAAIGBAADBgwAAg8EAAMfjAAD//////////w=='
+
+# draw unread count on favicon
+# adapted from https://github.com/tommoor/tinycon
+# debounce slightly to prevent stuttering while scrolling
+draw-favicon = debounce 200ms !->
+  # the entire link needs to be replaced lest the icon won't update
+  $ \favicon ?.remove!
+  link = document.createElement \link
+    &id   = \favicon
+    &rel  = \icon
+    &type = \image/x-icon # required for chrome, I guess
+
+  document.createElement \canvas
+    &width = 16
+    &height = 16
+
+    &getContext \2d
+      &drawImage favicons[board.type], 0 0
+      if unread > 0
+        &font         = '8px monospace'
+        &fillStyle    = \#000
+        &strokeStyle  = \#fff
+        &lineWidth    = 4
+        &textBaseline = \bottom
+        &textAlign    = \right
+
+        &strokeText unread, 16 16
+        &fillText   unread, 16 16
+    link.href = &toDataURL \image/png
+  document.head.appendChild link
+
 export updater =
   update:  !->
     updater.status.textContent = "Updating thread..."
@@ -14,7 +53,7 @@ export updater =
       listen(&)
         .on \load !->
           if @status is 404
-            titler.text += '(dead)'
+            document.title += '(dead)'
             updater.status.textContent = "thread 404'd"
             return
           if @status is 304
@@ -49,22 +88,21 @@ export updater =
               \html5chan-update
               detail: {thread}
 
-            # add scroll handler to rest number and new posts
-            # when the window scrolls past the end of them
-            resetNew thread.new
+            unread += thread.new.length
+            draw-favicon!
 
-            if (window.scrollMaxY - window.scrollY) < 50 \
-               and not document.hidden
-              # smooth scroll to the bottom, but if user scrolls upwards
-              # manually, abort.
-              let last = window.scrollY
-                repeat 50ms {-auto} !->
-                  if last > window.scrollY
-                    @stop!
-                  else if window.scrollMaxY - window.scrollY
-                    window.scrollBy 0, that/4 >? 1
-                    last := window.scrollY
-                    @repeat!
+            fade-when-visible post for post of thread.new
+
+            # if on the bottom of the page, smooth scroll to new posts
+            if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
+              last = window.scrollY
+              repeat 50ms !->
+                #if user scrolls upwards manually, abort.
+                if last > window.scrollY
+                  @stop!
+                else if (remaining = window.scrollMaxY - window.scrollY) > 1
+                  window.scrollBy 0, remaining / 4
+                  last := window.scrollY
 
             # update post count
             $ "t#{thread.id}" .querySelector ".thread-info" .textContent =
@@ -93,32 +131,31 @@ export updater =
       @stop!
       updater.update!
 
-# some spaghetti to remove the new class from posts
-# once they are visible to the user
-resetNew = !(posts) ->
-  posts.forEach !(post) ->
-    post = $ "p#{post.id}"
+fade = !(post) ->
+  # running immediately seems to break CSS yellow fade.
+   defer 100ms !->
+    post.classList.remove \new
+    --unread
+    draw-favicon!
 
-    removeNew = !->
-      post.classList.remove \new
-      --titler.number
+fade-when-visible = !->
+  post = $ "p#{it.id}"
 
-    y = post.offsetTop
+  y = post.offsetTop
 
-    if (window.innerHeight + window.scrollY) > y
-      if document.hidden
-        # fade them once the window is focused again
-        listen window .once \focus !->
-          # running immediately seems to break fade animation, thus setTimeout
-          defer 100ms removeNew
-      else
-        defer 100ms removeNew
+  if (window.innerHeight + window.scrollY) > y
+    if document.hidden
+      # fade them once the window/tab is visible again
+      listen window .once \focus !-> fade post
     else
-      # wait till post is scrolled to
-      listen window .scroll function reset
-        if ( window.innerHeight + window.scrollY ) > post.offsetTop
-          removeNew!
-          listen window .off \scroll reset
+      # now
+      fade post
+  else
+    # wait until scrolled to
+    listen window .scroll function reset
+      if ( window.innerHeight + window.scrollY ) > post.offsetTop
+        fade post
+        listen window .off \scroll reset
 
 onready !->
   updater.status = $ \update-status
@@ -127,7 +164,7 @@ onready !->
   # autoupdate threads
   if board.isThread
     updater.countdown.start!
-    listen $ \update-now .click ->
+    listen $ \update-now .click !->
       updater.countdown
         &stop!
         &t = 30ms

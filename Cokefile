@@ -40,7 +40,6 @@ task \build 'build userscript' ->
         compile \src/parser.co
         compile \src/enhancer.co
         compile \src/updater.co
-        compile \src/titler.co
         compile \src/poster.co
         coco.compile do
           read \src/onready.co
