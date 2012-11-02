@@ -1,7 +1,6 @@
 # post hover previews
-<-! onready
 
-delegate.mouseover 'a.quotelink' !->
+handle-preview = !->
   return if @hash is '' or @classList.contains \inlinedlink
 
   id = @hash.substring 1
@@ -40,3 +39,12 @@ delegate.mouseover 'a.quotelink' !->
     preview.remove!
     classify $$ ".post[data-id=\"#id\"]" .remove \hovered
 
+onready !->
+  console.time 'attach post hover listeners'
+  for link of $$ \.quotelink
+    link.addEventListener \mouseover handle-preview
+  console.timeEnd 'attach post hover listeners'
+
+onpostinserted !->
+  for link of it.detail.post.querySelectorAll \.quotelink
+    link.addEventListener \mouseover handle-preview
