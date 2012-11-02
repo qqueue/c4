@@ -1,17 +1,19 @@
 # add quote text to >> replies to be able to identify them without hover
 
-munge = !(sel = '.quotelink:not(.backlink):not(.forcequoted)') ->
-  console.time "munging quotelinks..."
-  for quote of $$ sel
-    id = quote.href.split \# .1
+munge = !(ctx) ->
+  for quote of ctx.querySelectorAll '.quotelink:not(.backlink):not(.forcequoted)'
+    id = quote.hash.substring 2
     if (post = Post[id])
       quote.after document.createTextNode " #{truncate post.text, 100}"
 
       # compact post number
       quote.textContent = ">>#{post.idx}"
       quote.classList.add \forcequoted
+
+onready !->
+  console.time "munging quotelinks..."
+  munge document
   console.timeEnd "munging quotelinks..."
 
-onready !-> munge!
-onupdate !-> munge '.new .quotelink:not(.backlink):not(.forcequoted)'
+onpostinserted !->  munge it.detail.post
 

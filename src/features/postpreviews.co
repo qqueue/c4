@@ -10,13 +10,12 @@ handle-preview = !->
 
   host = closest \.post this
   hostid = (host.id / \-)pop!
-  hostid.=substring 1 if hostid[0] is \p # stupid hashes...
 
   {width, height, left, top} = @getBoundingClientRect!
 
   preview = post.element \article, , \postpreview
 
-    classify (&querySelectorAll ".quotelink[href$=\"p#hostid\"]")
+    classify (&querySelectorAll ".quotelink[href$=\"#hostid\"]")
       .add \recursivelink
 
     &style
