@@ -35,16 +35,7 @@ recaptcha = document.createElement \script
                 Recaptcha._finish_widget();
               }
              }())"
-        # this check is needed since the firefox loads the script before
-        # DOMContentLoaded, which causes it to fail (no captcha element), while
-        # chrome, since the script cannot run before DOMContentLoaded, is already
-        # in 'interactive' ready state, and a DOMContentLoaded listener added
-        # after it happens will never fire.
-        if document.readyState is \interactive
-          head.appendChild recaptcha
-        else
-          document.addEventListener \DOMContentLoaded !->
-            head.appendChild recaptcha
+        onready !-> head.appendChild recaptcha
     head.appendChild recaptcha
 head.appendChild recaptcha
 
