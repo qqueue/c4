@@ -13,7 +13,7 @@ munge = !(ctx) ->
       quote.after document.createTextNode " #{truncate comment.textContent, 100}"
 
       # compact post number
-      quote.textContent = ">>#{post.idx}"
+      quote.textContent = "»#{post.idx}"
       quote.classList.add \forcequoted
 
 onready !->

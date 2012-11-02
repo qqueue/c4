@@ -22,7 +22,7 @@ export class Post
         else
           idx = post
         html +=
-          "<a href=\"\#p#post\" class=\"backlink quotelink\">&lt;&lt;#idx</a> "
+          "<a href=\"\#p#post\" class=\"backlink quotelink\">«#idx</a> "
     ..new_backlinks[@id] = []
     return html
 
