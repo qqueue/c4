@@ -1,9 +1,85 @@
-# embed youtube links on click
-# TODO add close button somehow
-<-! onready
+# youtube embedding and title fetching
 
-delegate
-  .click \a.youtube !(e) ->
+const api-key = "AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA"
+const batch-size = 30
+const rate = 5000ms # time between requests
+
+request-queue = []
+ready = true
+queue = !(req) ->
+  request-queue.push req
+
+  req.addEventListener \loadend !->
+    request-queue.shift! # remove self
+
+    defer rate, !->
+      if request-queue.0 # there are more
+        that.send!
+      else
+        ready := true
+  if ready
+    ready := false
+    req.send!
+
+# video information cache
+cache = {}
+
+set-title = !(vid, data) ->
+  vid.title = "#{data.snippet.title}
+               \n\n
+               #{data.statistics.viewCount} views.
+                 \n\n
+               #{truncate data.snippet.description, 200}"
+
+# TODO detect videos whose data isn't returned
+# and set some sort of error title
+set-titles = !(vids) ->
+  to-fetch = {}
+
+  for vid of vids
+    if cache[vid.dataset.id]
+      set-title vid, that
+    else
+      to-fetch[vid.dataset.id] = true
+
+  batches = []
+  batch = []
+  for id in to-fetch
+    batch.push id
+    if batch.length is batch-size
+      batches.push batch
+      batch = []
+  batches.push batch
+
+  if batch.length > 0
+    for b of batches
+      let req = new XMLHttpRequest
+        req.open \GET "https://www.googleapis.com/youtube/v3/videos
+                    ?id=#{encodeURIComponent b}
+                    &part=snippet%2C+statistics
+                    &fields=items(id%2Csnippet%2Cstatistics)
+                    &key=#{api-key}"
+        req.addEventListener \load !->
+          data = JSON.parse @response
+          for v of data.items
+            cache[v.id] = v
+
+            for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
+              set-title vid, v
+
+        req.addEventListener \error !->
+          console.error "what happen" this
+
+        queue req
+
+onready !->
+
+  # initial fetch
+  set-titles $$ \.youtube
+
+  # embed iframes
+  # TODO add close button somehow
+  delegate.click \a.youtube !(e) ->
     unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
       e.preventDefault!
       @replace kup do
@@ -16,40 +92,7 @@ delegate
               &amp;wmode=transparent"
         frameborder: 0
         allowfullscreen: ''
-  .mouseover \a.youtube !->
-    return if @title
 
-    # this is a sad workaround for firefox, which doesn't display a new
-    # tooltip if the tooltip changes after it is displayed
-    @title = 'Loading video title... (mouse over preview again to refresh)'
-    # TODO instead of titles, use a custom js-based tooltip or man up and fetch
-    # all video titles an load, in batches of 50
-    # batch queries on youtube currently only are XML, which is lame.
-    # gotta wait till APIv3 isn't so alpha
-
-    link = this
-
-    new XMLHttpRequest
-      &open \get "https://gdata.youtube.com
-                  /feeds/api/videos/#{link.dataset.id}?v=2&alt=json"
-
-      # https://bugs.webkit.org/show_bug.cgi?id=73648 ;_;
-      # &responseType = \json
-
-      listen(&)
-        .on \load !->
-          try
-            data = JSON.parse @responseText
-            link.title =
-              "
-              #{data.entry.title.\$t}
-              \n\n
-              #{data.entry.'yt$statistics'.viewCount} views.
-                \n\n
-              #{truncate data.entry.'media$group'.'media$description'.\$t , 200}
-              "
-          catch
-            link.title = "Couldn't load video information."
-        .on \error -> link.title = "Couldn't load video information."
-      &send!
+onupdate !->
+  set-titles $$ '.new .youtube'
 
