@@ -6,8 +6,6 @@ toggle = (prefix, id) ->
   classify $$ ".quotelink[href$=\"##id\"]" .toggle \hiddenlink
   $ "#prefix#id" ?.classList.toggle \hidden
 
-<-! onready
-
 hidden = get \hidden or {threads: {}, posts: {}}
 
 # delete expired posts to keep object small
@@ -15,36 +13,38 @@ for type, hash in hidden
   for key, expiry in hash
     delete hash[key] if expiry < Date.now!
 
-delegate
-  .click '.reply button.hide' !->
-    toggle \p @value
-    if @value in hidden.posts
-      delete hidden.posts[@value]
-    else
-      hidden.posts[@value] = Date.now! + 604800000ms # 1 week
-
-  .click '.op button.hide' !->
-    toggle \t @value
-    if @value in hidden.threads
-      delete hidden.threads[@value]
-    else
-      # use Thread hash to always persist sticky threads
-      hidden.threads[@value] = if Thread[@value]?sticky
-        Number.MAX_VALUE
-      else
-        Date.now! + 604800000ms # otherwise, a week should be enough
-
 # persist
 listen window .on \beforeunload !-> set \hidden hidden
 
-# hide all previously hidden posts and threads
-# TODO do this at render time instead of post render for faster display
-for post of document.getElementsByClassName \post
-  id = post.dataset.id
-  toggle \p id if hidden.posts[id]
-for thread of document.getElementsByClassName \thread
-  id = thread.dataset.id
-  toggle \t id if hidden.threads[id]
+onready !->
+  for btn of $$ '.reply button.hide'
+    btn.addEventListener \click !->
+      toggle \p @value
+      if @value in hidden.posts
+        delete hidden.posts[@value]
+      else
+        hidden.posts[@value] = Date.now! + 604800000ms # 1 week
+
+  for btn of $$ '.op button.hide'
+    btn.addEventListener \click !->
+      toggle \t @value
+      if @value in hidden.threads
+        delete hidden.threads[@value]
+      else
+        # use Thread hash to always persist sticky threads
+        hidden.threads[@value] = if Thread[@value]?sticky
+          Number.MAX_VALUE
+        else
+          Date.now! + 604800000ms # otherwise, a week should be enough
+
+  # hide all previously hidden posts and threads
+  # TODO do this at render time instead of post render for faster display
+  for post of document.getElementsByClassName \post
+    id = post.dataset.id
+    toggle \p id if hidden.posts[id]
+  for thread of document.getElementsByClassName \thread
+    id = thread.dataset.id
+    toggle \t id if hidden.threads[id]
 
 onupdate !->
   for a of $$ ".new .quotelink"
