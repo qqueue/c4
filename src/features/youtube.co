@@ -1,17 +1,24 @@
 # youtube embedding and title fetching
 
 const api-key = "AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA"
-const batch-size = 30
-const rate = 5000ms
+const batch-size = 10
+const rate = 5000ms # time between requests
 
 request-queue = []
-queue = (req) !->
-  req.addEventListener \loadend !->
-    defer rate, !->
-      if request-queue.shift!
-        that.send!
+ready = true
+queue = !(req) ->
   request-queue.push req
-  if request-queue.length is 1
+
+  req.addEventListener \loadend !->
+    request-queue.shift! # remove self
+
+    defer rate, !->
+      if request-queue.0 # there are more
+        that.send!
+      else
+        ready := true
+  if ready
+    ready := false
     req.send!
 
 # video information cache
@@ -20,6 +27,8 @@ cache = {}
 <-! onready
 
 # initial fetch
+
+console.group \youtube
 
 to-fetch = {}
 
@@ -30,9 +39,10 @@ batches = []
 batch = []
 for id in to-fetch
   batch.push id
-  if batch.length > batch-size
-    batches.push batch.join \,
+  if batch.length is batch-size
+    batches.push batch
     batch = []
+batches.push batch
 console.log batches
 
 if batch.length > 0
@@ -50,7 +60,7 @@ if batch.length > 0
           cache[v.id] = v
 
           for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
-            vid.title = "#{v.title}
+            vid.title = "#{v.snippet.title}
                          \n\n
                          #{v.statistics.viewCount} views.
                            \n\n
@@ -60,6 +70,7 @@ if batch.length > 0
 
       queue req
 
+console.groupEnd \youtube
 # TODO onupdate
 
 
