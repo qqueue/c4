@@ -8,10 +8,6 @@ else \$& # don't replace
 # element and working with the DOM before taking the HTML would be slower
 parser.enhance = ->
   it.innerHTML
-
-    # fix quotelink refs
-    .replace /(href="[\w\/]+#)p(\d+)/g '$1$2'
-
     # unsplits urls (probably) split at 100 characters
     .replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
 
