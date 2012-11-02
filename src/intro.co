@@ -26,7 +26,7 @@ board
   &page        = parseInt page, 10 or 0
 
   &url         = "//boards.4chan.org/#{&name}/"
-  &threadurl   = &url + \res
+  &threadurl   = &url + \res/
   &thread-path = "/#{&name}/res/#{&thread-id}"
 
   &archive = switch &name

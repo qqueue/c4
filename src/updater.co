@@ -15,30 +15,29 @@ favicons =
 draw-favicon = debounce 200ms !->
   # the entire link needs to be replaced lest the icon won't update
   $ \favicon ?.remove!
-  document.head.appendChild(
-    document.createElement \link
-      &id   = \favicon
-      &rel  = \icon
-      &type = \image/x-icon # required for chrome, I guess
-      &href = do
-        document.createElement \canvas
-          &width = 16
-          &height = 16
+  link = document.createElement \link
+    &id   = \favicon
+    &rel  = \icon
+    &type = \image/x-icon # required for chrome, I guess
 
-          &getContext \2d
-            &drawImage favicons[if board.sfw then \sfw else \nsfw]
-            if unread > 0
-              &font         = '8px monospace'
-              &fillStyle    = \#000
-              &strokeStyle  = \#fff
-              &lineWidth    = 4
-              &textBaseline = \bottom
-              &textAlign    = \right
+  document.createElement \canvas
+    &width = 16
+    &height = 16
 
-              &strokeText unread, 16 16
-              &fillText   unread, 16 16
-          &toDataURL!
-      &)
+    &getContext \2d
+      &drawImage favicons[board.type], 0 0
+      if unread > 0
+        &font         = '8px monospace'
+        &fillStyle    = \#000
+        &strokeStyle  = \#fff
+        &lineWidth    = 4
+        &textBaseline = \bottom
+        &textAlign    = \right
+
+        &strokeText unread, 16 16
+        &fillText   unread, 16 16
+    link.href = &toDataURL \image/png
+  document.head.appendChild link
 
 export updater =
   update:  !->
@@ -89,7 +88,7 @@ export updater =
               \html5chan-update
               detail: {thread}
 
-            unread := it.detail.thread.new.length
+            unread += thread.new.length
             draw-favicon!
 
             fade-when-visible post for post of thread.new
