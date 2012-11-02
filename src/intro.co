@@ -37,6 +37,7 @@ if /404/.test document.title and board.archive
 export
   onready  = !-> document.addEventListener \html5chan-loaded it
   onupdate = !-> document.addEventListener \html5chan-update it
+  onpostinserted = !-> document.addEventListener \html5chan-postinserted it
 
 # used in rendering pipeline some
 export render_all = (objects, ...options) ->

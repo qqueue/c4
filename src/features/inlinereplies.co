@@ -66,6 +66,11 @@ onready !->
           wrapper.after inlined
         else
           wrapper.before inlined # 'natural' order
+
+        document.dispatchEvent new CustomEvent do
+          \html5chan-postinserted
+          detail: {post: inlined}
+
         @classList.add \inlinedlink
 
         $ \postpreview ?.remove!
