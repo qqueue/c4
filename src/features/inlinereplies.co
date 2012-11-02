@@ -15,65 +15,78 @@
       el.offsetLeft - last.offsetLeft
       el.offsetTop - last.offsetTop
 
+onclick = !(e) ->
+  return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+  return unless post = Post[id = @hash.substring 1]
+  e.preventDefault!
+
+  host = closest \.post, this .dataset.id
+  hostid = (host / \-)pop! # grab last (if nested inline post)
+  inlined_id = "#host-#id" # id is unique to hosting post and inlined post
+  stub_id = "#{id}-inlined-stub"
+
+  if inlined = $ inlined_id # toggle off
+
+    markScroll this
+
+    @classList.remove \inlinedlink
+    # remove original post's inlined status if this is the last inlining
+    # link
+    if $$ ".inline[data-id=\"#id\"]" .length is 1
+      $ "p#id" .classList.remove \inlined
+
+    # and for nested posts
+    for p of inlined.querySelectorAll '.post.inline'
+      id = (p.id / \-)pop!
+      if $$ ".inline[data-id=\"#id\"]" .length is 1
+        $ "p#id" .classList.remove \inlined
+
+    inlined.remove!
+
+    scroll!
+
+  else # create
+    inlined = post.element \article "inline hovered" inlined_id
+
+    # replace matching reply links
+    for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]"
+      link.className = \recursivelink
+      link.removeAttribute \href
+
+    # walk outside of inline elements like spoilers and greentext
+    wrapper = this
+    while wrapper.parentElement.matchesSelector 'a,span,font'
+      wrapper.=parentElement
+
+    markScroll this
+
+    if @classList.contains \backlink # post is backlinked
+      wrapper.after inlined
+    else
+      wrapper.before inlined # 'natural' order
+
+    document.dispatchEvent new CustomEvent do
+      \html5chan-postinserted
+      detail: {post: inlined}
+
+    @classList.add \inlinedlink
+
+    $ \postpreview ?.remove!
+
+    $ "p#id" .classList.add \inlined
+
+    scroll!
+
+follow = !->
+  window.location.hash = that if @hash # actually follow link
+
 onready !->
-  delegate
-    .click 'a.quotelink:not(.hiddenlink)' !(e) ->
-      return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-      return unless post = Post[id = @hash.substring 1]
-      e.preventDefault!
+  for link of $$ '.quotelink:not(.hiddenlink)'
+    link.addEventListener \click onclick
+    link.addEventListener \dblclick follow
 
-      host = closest \.post, this .dataset.id
-      hostid = (host / \-)pop! # grab last (if nested inline post)
-      inlined_id = "#host-#id" # id is unique to hosting post and inlined post
-      stub_id = "#{id}-inlined-stub"
-
-      if inlined = $ inlined_id # toggle off
-
-        markScroll this
-
-        @classList.remove \inlinedlink
-        # remove original post's inlined status if this is the last inlining
-        # link
-        if $$ ".inline[data-id=\"#id\"]" .length is 1
-          $ "p#id" .classList.remove \inlined
-
-        # and for nested posts
-        for p of inlined.querySelectorAll '.post.inline'
-          id = (p.id / \-)pop!
-          if $$ ".inline[data-id=\"#id\"]" .length is 1
-            $ "p#id" .classList.remove \inlined
-
-        inlined.remove!
-
-        scroll!
-
-      else # create
-        inlined = post.element \article "inline hovered" inlined_id
-
-        # replace matching reply links
-        for link of inlined.querySelectorAll "a.quotelink[href$=\"##hostid\"]"
-          link.className = \recursivelink
-          link.removeAttribute \href
-
-        # walk outside of inline elements like spoilers and greentext
-        wrapper = this
-        while wrapper.parentElement.matchesSelector 'a,span,font'
-          wrapper.=parentElement
-
-        markScroll this
-
-        if @classList.contains \backlink # post is backlinked
-          wrapper.after inlined
-        else
-          wrapper.before inlined # 'natural' order
-        @classList.add \inlinedlink
-
-        $ \postpreview ?.remove!
-
-        $ "p#id" .classList.add \inlined
-
-        scroll!
-
-  .on \dblclick \a.quotelink !->
-    window.location.hash = that if @hash # actually follow link
+onpostinserted !->
+  for link of it.detail.post.querySelector '.quotelink:not(.hiddenlink)'
+    link.addEventListener \click onclick
+    link.addEventListener \dblclick follow
 

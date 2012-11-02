@@ -1,6 +1,5 @@
-<-! onready
-
-delegate.click '.permalink .id' !(e) ->
+onclick = !(e) ->
+  e.preventDefault!
   selection = window.getSelection!toString!trim!
   selection = ">#selection\n" if selection
 
@@ -8,4 +7,10 @@ delegate.click '.permalink .id' !(e) ->
     &value += ">>#{@textContent}\n#selection"
     &focus!
 
-  e.preventDefault!
+onready !->
+  for id of $$ '.id'
+    id.addEventListener \click onclick
+
+onpostinserted !->
+  it.detail.post.querySelector '.id' .addEventListener \click onclick
+

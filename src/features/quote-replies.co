@@ -1,6 +1,7 @@
 # add quote text to >> replies to be able to identify them without hover
 
 munge = !(sel = '.quotelink:not(.backlink):not(.forcequoted)') ->
+  console.time "munging quotelinks..."
   for quote of $$ sel
     id = quote.href.split \# .1
     if (post = Post[id])
@@ -9,6 +10,7 @@ munge = !(sel = '.quotelink:not(.backlink):not(.forcequoted)') ->
       # compact post number
       quote.textContent = ">>#{post.idx}"
       quote.classList.add \forcequoted
+  console.timeEnd "munging quotelinks..."
 
 onready !-> munge!
 onupdate !-> munge '.new .quotelink:not(.backlink):not(.forcequoted)'

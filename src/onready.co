@@ -130,9 +130,6 @@ if window.location.hash and not sget document.URL
 
 console.timeEnd "render"
 
-# shortcut for use in features
-export delegate = listen $ \threads
-
 console.time "onready handlers"
 
 document.dispatchEvent new CustomEvent do

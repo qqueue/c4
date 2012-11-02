@@ -1,25 +1,20 @@
 # show a centered image preview when hovering over an image after a short
 # delay, and only remove it after the mouse moves out of the dead zone this is
 # similar to how tooltips are handled in firefox.
-delay = 200ms
-dead_zone = 10px
+const delay     = 200ms
+const dead-zone = 10px
 
-<-! onready
-
-delegate.mouseover 'img.thumb' !({clientX: x, clientY: y}) ->
-  $ \imgpreview ?.remove!
-
-  width = @parentElement.getAttribute \data-width
-  height = @parentElement.getAttribute \data-height
+handle-preview = !({clientX: x, clientY: y}) ->
+  {width, height} = @parentElement.dataset
   src = @parentElement.href
 
   # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
   # size of viewport excluding scrollbars
   docheight = document.documentElement.clientHeight - 20
-  docwidth = document.documentElement.clientWidth - 20
+  docwidth  = document.documentElement.clientWidth - 20
 
   ratio = Math.min 1, docheight/height, docwidth/width
-  width *= ratio
+  width  *= ratio
   height *= ratio
 
   l = $ \lightbox
@@ -27,56 +22,71 @@ delegate.mouseover 'img.thumb' !({clientX: x, clientY: y}) ->
   var timeout
   # until the image is displayed, continually reset
   # timeout on mousemovement
-  reset_image = (e) ->
+  reset-image = !(e) ->
     clearTimeout timeout
-    timeout := setTimeout create_image, delay
+    timeout := setTimeout create-image, delay
 
     # store the new current mouse position
     x := e.clientX
     y := e.clientY
 
-  create_image = ~>
+  var full
+  create-image = !~>
     l.classList.add \dark
-    l.appendChild do
-      kup \img {id: \imgpreview alt: "Loading...", src, width, height } ->
-        @on \load -> @removeAttribute \alt
-        @on \error -> @alt = "Unable to load image."
+    full ||:= document.createElement \img
+      &alt = "Loading..."
+      & <<< {src, width, height}
 
-        @css do
-          position: \absolute
-          top: "#{10 + (docheight - height) / 2}px"
-          left: "#{10 + (docwidth - width) / 2}px"
+      &addEventListener \load  -> @removeAttribute \alt
+      &addEventListener \error -> @alt = "Unable to load image."
 
-    this.classList.add \hovered-img
+      &style <<<
+        position: \absolute
+        top:  "#{10 + (docheight - height) / 2}px"
+        left: "#{10 + (docwidth  - width ) / 2}px"
+
+    l.appendChild full
+    @classList.add \hovered-img
 
     # swap creation with destruction
     listen this
-      .off \mousemove reset_image
-      .on \mousemove remove_image
+      .off \mousemove reset-image
+      .on \mousemove remove-image
 
-  remove_image = ({clientX: cx, clientY: cy}) ->
-    if Math.abs(x - cx) > dead_zone or Math.abs(y - cy) > dead_zone
+  remove-image = !({clientX: cx, clientY: cy}) ->
+    if Math.abs(x - cx) > dead-zone or Math.abs(y - cy) > dead-zone
       l.classList.remove \dark
-      this.classList.remove \hovered-img
-      $ \imgpreview ?.remove!
+      @classList.remove \hovered-img
+
+      full?remove!
 
       # restart tooltip timeout
-      timeout := setTimeout create_image, delay
+      timeout := setTimeout create-image, delay
       listen this
-        .on \mousemove reset_image
-        .off \mousemove remove_image
+        .on \mousemove reset-image
+        .off \mousemove remove-image
 
   # start initial timeout
-  timeout = setTimeout create_image, delay
+  timeout = setTimeout create-image, delay
 
   # add handlers
   listen this
-    .on \mousemove reset_image
-    .on \mouseout function destroy
-      $ \imgpreview ?.remove!
+    .on \mousemove reset-image
+    .once \mouseout !->
+      full?remove!
       clearTimeout timeout # stop image from appearing
       l.classList.remove \dark
       listen this
-        .off \mouseout destroy
-        .off \mousemove reset_image
-        .off \mousemove remove_image
+        .off \mousemove reset-image
+        .off \mousemove remove-image
+
+onready !->
+  console.time 'attach thumb hover listeners'
+  for img of $$ \.thumb
+    img.addEventListener \mouseover handle-preview
+  console.timeEnd 'attach thumb hover listeners'
+
+onpostinserted !->
+  it.detail.post.querySelector \.thumb ?
+    .addEventListener \mouseover handle-preview
+
