@@ -56,9 +56,9 @@ d = document.replaceChild html, document.documentElement
 # init
 <-! document.addEventListener \DOMContentLoaded
 
-time "render"
+console.time "render"
 
-time "parse page"
+console.time "parse page"
 # get other useful information
 board
   &title    = d.querySelector \.boardTitle .textContent
@@ -77,9 +77,9 @@ board
   # for post deletion
   &password = get \password or Math.random!toString!substr -8
 
-console.log board
+console.timeEnd "parse page"
 
-timeEnd "parse page"
+console.log board
 
 if board.isThread then
   board.thread = thread = parser.thread d
@@ -94,12 +94,12 @@ body
   &className = "#{board.type} \
                #{if board.isThread then \threadpage else \boardpage}"
 
-time "parse innerHTML"
+console.time "parse innerHTML"
 body.innerHTML =
   """
   %board.co.html%
   """
-timeEnd "parse innerHTML"
+console.timeEnd "parse innerHTML"
 
 #highlight current page
 if board.isBoard
@@ -128,10 +128,12 @@ if window.location.hash and not sget document.URL
     sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
-timeEnd "render"
+console.timeEnd "render"
 
 # shortcut for use in features
 export delegate = listen $ \threads
+
+console.time "onready handlers"
 
 document.dispatchEvent new CustomEvent do
   \html5chan-loaded

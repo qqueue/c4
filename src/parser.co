@@ -92,18 +92,18 @@ parse_post = (el, idx) ->
 export parser =
   # returns Array of threads
   board: (document) ->
-    time "parse board"
+    console.time "parse board"
     threads = Array::map.call do
       document.querySelectorAll \.thread
       parse_thread
-    timeEnd "parse board"
+    console.timeEnd "parse board"
 
     return threads
 
   thread: (document) ->
-    time "parse thread"
+    console.time "parse thread"
     thread = parse_thread document.querySelector \.thread
-    timeEnd "parse thread"
+    console.timeEnd "parse thread"
 
     return thread
 

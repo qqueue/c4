@@ -1,9 +1,8 @@
-timeEnd "init"
+console.timeEnd "init"
 
-<-! document.addEventListener \DOMContentLoaded
+onready !->
+  console.timeEnd "onready handlers"
+  console.timeEnd "interactive"
+  console.timeStamp "html5chan-loaded"
+  console.groupEnd!
 
-listen $ \dump-log .click -> console.log log.messages
-
-log "finished"
-
-$ \bottom .appendChild kup \pre log.messages
