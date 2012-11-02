@@ -33,10 +33,11 @@ set-title = !(vid, data) ->
 
 # TODO detect videos whose data isn't returned
 # and set some sort of error title
-set-titles = !(vids) ->
+handle = !(vids) ->
   to-fetch = {}
 
   for vid of vids
+    vid.addEventListener \click onclick
     if cache[vid.dataset.id]
       set-title vid, that
     else
@@ -72,27 +73,22 @@ set-titles = !(vids) ->
 
         queue req
 
-onready !->
+# embed iframes
+# TODO add close button somehow
+onclick = !(e) ->
+  unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+    e.preventDefault!
+    @replace kup do
+      \iframe
+      width: 560
+      height: 315
+      src: "//www.youtube.com/embed/#{@dataset.id}
+            ?#{@dataset.params or ''}
+            &amp;autoplay=1
+            &amp;wmode=transparent"
+      frameborder: 0
+      allowfullscreen: ''
 
-  # initial fetch
-  set-titles $$ \.youtube
-
-  # embed iframes
-  # TODO add close button somehow
-  delegate.click \a.youtube !(e) ->
-    unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-      e.preventDefault!
-      @replace kup do
-        \iframe
-        width: 560
-        height: 315
-        src: "//www.youtube.com/embed/#{@dataset.id}
-              ?#{@dataset.params or ''}
-              &amp;autoplay=1
-              &amp;wmode=transparent"
-        frameborder: 0
-        allowfullscreen: ''
-
-onupdate !->
-  set-titles $$ '.new .youtube'
+onready        !-> handle $$ \.youtube
+onpostinserted !-> handle it.detail.post.querySelectorAll \.youtube
 
