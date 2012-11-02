@@ -1,7 +1,7 @@
 # youtube embedding and title fetching
 
 const api-key = "AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA"
-const batch-size = 10
+const batch-size = 30
 const rate = 5000ms # time between requests
 
 request-queue = []
@@ -24,72 +24,75 @@ queue = !(req) ->
 # video information cache
 cache = {}
 
-<-! onready
+set-title = !(vid, data) ->
+  vid.title = "#{data.snippet.title}
+               \n\n
+               #{data.statistics.viewCount} views.
+                 \n\n
+               #{truncate data.snippet.description, 200}"
 
-# initial fetch
+# TODO detect videos whose data isn't returned
+# and set some sort of error title
+set-titles = !(vids) ->
+  to-fetch = {}
 
-console.group \youtube
+  for vid of vids
+    if cache[vid.dataset.id]
+      set-title vid, that
+    else
+      to-fetch[vid.dataset.id] = true
 
-to-fetch = {}
+  batches = []
+  batch = []
+  for id in to-fetch
+    batch.push id
+    if batch.length is batch-size
+      batches.push batch
+      batch = []
+  batches.push batch
 
-for vid of $$ \.youtube
-  to-fetch[vid.dataset.id] = true
+  if batch.length > 0
+    for b of batches
+      let req = new XMLHttpRequest
+        req.open \GET "https://www.googleapis.com/youtube/v3/videos
+                    ?id=#{encodeURIComponent b}
+                    &part=snippet%2C+statistics
+                    &fields=items(id%2Csnippet%2Cstatistics)
+                    &key=#{api-key}"
+        req.addEventListener \load !->
+          data = JSON.parse @response
+          for v of data.items
+            cache[v.id] = v
 
-batches = []
-batch = []
-for id in to-fetch
-  batch.push id
-  if batch.length is batch-size
-    batches.push batch
-    batch = []
-batches.push batch
-console.log batches
+            for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
+              set-title vid, v
 
-if batch.length > 0
-  for b of batches
-    let req = new XMLHttpRequest
-      req.open \GET "https://www.googleapis.com/youtube/v3/videos
-                  ?id=#{encodeURIComponent b}
-                  &part=snippet%2C+statistics
-                  &fields=items(id%2Csnippet%2Cstatistics)
-                  &key=#{api-key}"
-      req.addEventListener \load !->
-        data = JSON.parse @response
-        console.log data
-        for v of data.items
-          cache[v.id] = v
+        req.addEventListener \error !->
+          console.error "what happen" this
 
-          for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
-            vid.title = "#{v.snippet.title}
-                         \n\n
-                         #{v.statistics.viewCount} views.
-                           \n\n
-                         #{truncate v.snippet.description, 200}"
-      req.addEventListener \error !->
-        console.error "what happen" this
+        queue req
 
-      queue req
+onready !->
 
-console.groupEnd \youtube
-# TODO onupdate
+  # initial fetch
+  set-titles $$ \.youtube
 
+  # embed iframes
+  # TODO add close button somehow
+  delegate.click \a.youtube !(e) ->
+    unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+      e.preventDefault!
+      @replace kup do
+        \iframe
+        width: 560
+        height: 315
+        src: "//www.youtube.com/embed/#{@dataset.id}
+              ?#{@dataset.params or ''}
+              &amp;autoplay=1
+              &amp;wmode=transparent"
+        frameborder: 0
+        allowfullscreen: ''
 
-
-
-
-# embed iframes
-# TODO add close button somehow
-delegate.click \a.youtube !(e) ->
-  unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-    e.preventDefault!
-    @replace kup do
-      \iframe
-      width: 560
-      height: 315
-      src: "//www.youtube.com/embed/#{@dataset.id}
-            ?#{@dataset.params or ''}
-            &amp;autoplay=1
-            &amp;wmode=transparent"
-      frameborder: 0
-      allowfullscreen: ''
+onupdate !->
+  set-titles $$ '.new .youtube'
 
