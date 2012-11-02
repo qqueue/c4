@@ -13,15 +13,23 @@ toggle-highlight = (klass) ->
     sset \highlighting highlighting # persist
     post.classList.toggle \highlighted
 
+# activate highlight on new posts
+onupdate !->
+  highlight "new.#klass" if highlighting[klass] for klass in highlighting
+
 onready !->
-  delegate
-    .click '.admin .capcode' toggle-highlight \admin
-    .click '.mod .capcode' toggle-highlight \mod
+  for code of $$ '.admin .capcode'
+    code.addEventListener \click toggle-highlight \admin
+  for code of $$ '.mod .capcode'
+    code.addEventListener \click toggle-highlight \mod
 
   # set persisted highlight
   highlight klass if highlighting[klass] for klass in highlighting
 
-# activate highlight on new posts
-onupdate !->
-  highlight "new.#klass" if highlighting[klass] for klass in highlighting
+onpostinserted !->
+  {post} = it.detail
+  if post.querySelector '.capcode'
+    that.addEventListener \click toggle-highlight do
+      # XXX lame
+      if post.classList.contains \admin then \admin else \mod
 
