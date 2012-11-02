@@ -32,6 +32,10 @@ handle-preview = !->
 
     document.body.appendChild (&)
 
+  document.dispatchEvent new CustomEvent do
+    \html5chan-postinserted
+    detail: {post: preview}
+
   # highlight hovered replies
   classify $$ ".post[data-id=\"#id\"]" .add \hovered
 
