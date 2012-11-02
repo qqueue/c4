@@ -8,7 +8,11 @@ Element::matchesSelector ?=
 
 # DOM4 mutation methods
 mutation-macro = (nodes) ->
-  return nodes.0 if nodes.length > 0
+  if nodes.length is 1
+    return if typeof nodes.0 is \string
+      document.createTextNode nodes.0
+    else
+      nodes.0
 
   node = document.createDocumentFragment!
 

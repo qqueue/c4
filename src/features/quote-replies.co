@@ -4,24 +4,44 @@ munge = !(ctx) ->
   for quote of ctx.querySelectorAll '.quotelink:not(.backlink):not(.forcequoted)'
     id = quote.hash.substring 2
     if (post = Post[id])
-      comment = document.createElement \div
-        &innerHTML = post.comment
+      if post.comment.length > 0
+        comment = document.createElement \div
+          &innerHTML = post.comment
 
-      for q of comment.querySelectorAll \.quote
-        q.remove!
+        for q of comment.querySelectorAll \.quotelink
+          q.remove!
 
-      quote.after document.createTextNode " #{truncate comment.textContent, 100}"
+        quote.after " #{truncate comment.textContent, 100}"
+      if post.image
+        a = document.createElement \a
+          &setAttribute \data-width post.image.width
+          &setAttribute \data-height post.image.height
+          &href = post.image.url
+        img = document.createElement \img
+          &className = \thumb
+          &style <<<
+            max-height: \15px
+            display: \inline-block
+            vertical-align: \middle
+
+          &src = post.image.thumb.url
+
+          # XXX I'm cheating ....
+          &addEventListener \mouseover handle-preview
+
+        a.append img
+        quote.after ' ' a
 
       # compact post number
       quote.textContent = "»#{post.idx}"
       quote.classList.add \forcequoted
 
-onready !->
-  if board.isThread
+if board.isThread
+  onready !->
     console.time "munging quotelinks..."
     munge document
     console.timeEnd "munging quotelinks..."
 
-onpostinserted !->
-  munge it.detail.post if board.isThread
+  onpostinserted !->
+    munge it.detail.post
 

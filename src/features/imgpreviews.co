@@ -4,7 +4,7 @@
 const delay     = 200ms
 const dead-zone = 10px
 
-handle-preview = !({clientX: x, clientY: y}) ->
+export handle-preview = !({clientX: x, clientY: y}) ->
   {width, height} = @parentElement.dataset
   src = @parentElement.href
 
