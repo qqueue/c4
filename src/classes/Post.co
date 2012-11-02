@@ -17,7 +17,10 @@ export class Post
     backlinks = if only_new then Post.new_backlinks else Post.backlinks
     if backlinks[@id]
       for post in backlinks[@id]
-        {idx} = Post[post]
+        if board.isThread
+          {idx} = Post[post]
+        else
+          idx = post
         html +=
           "<a href=\"\#p#post\" class=\"backlink quotelink\">&lt;&lt;#idx</a> "
     ..new_backlinks[@id] = []

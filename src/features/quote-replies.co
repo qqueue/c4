@@ -4,16 +4,24 @@ munge = !(ctx) ->
   for quote of ctx.querySelectorAll '.quotelink:not(.backlink):not(.forcequoted)'
     id = quote.hash.substring 2
     if (post = Post[id])
-      quote.after document.createTextNode " #{truncate post.text, 100}"
+      comment = document.createElement \div
+        &innerHTML = post.comment
+
+      for q of comment.querySelectorAll \.quote
+        q.remove!
+
+      quote.after document.createTextNode " #{truncate comment.textContent, 100}"
 
       # compact post number
       quote.textContent = ">>#{post.idx}"
       quote.classList.add \forcequoted
 
 onready !->
-  console.time "munging quotelinks..."
-  munge document
-  console.timeEnd "munging quotelinks..."
+  if board.isThread
+    console.time "munging quotelinks..."
+    munge document
+    console.timeEnd "munging quotelinks..."
 
-onpostinserted !->  munge it.detail.post
+onpostinserted !->
+  munge it.detail.post if board.isThread
 
