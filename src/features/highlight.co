@@ -18,10 +18,6 @@ toggle =
   admin : toggle-highlight \admin
   mod   : toggle-highlight \mod
 
-# activate highlight on new posts
-onupdate !->
-  highlight "new.#klass" if highlighting[klass] for klass in highlighting
-
 onready !->
   for code of $$ '.admin .capcode'
     code.addEventListener \click toggle.admin
@@ -29,7 +25,11 @@ onready !->
     code.addEventListener \click toggle.mod
 
   # set persisted highlight
-  highlight klass if highlighting[klass] for klass in highlighting
+  highlight klass if hl for klass, hl in highlighting
+
+# activate highlight on new posts
+onupdate !->
+  highlight "new.#klass" if hl for klass, hl in highlighting
 
 onpostinsert !->
   {post} = it.detail
