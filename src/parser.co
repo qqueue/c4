@@ -59,7 +59,8 @@ parse_post = (el, idx) ->
     &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
     &sage = sage_regex.test that if &email
 
-    &comment = parser.enhance el.querySelector \.postMessage
+    &comment = parser.enhance do
+      el.querySelector \.postMessage .innerHTML
 
   # TODO uid
 
@@ -129,9 +130,13 @@ export parser =
 thumbs-base = "//thumbs.4chan.org/#{board.name}/thumb/"
 images-base = "//images.4chan.org/#{board.name}/src/"
 
-human-size = (bytes) ->
-  # TODO
-  bytes
+humanized = (bytes) ->
+  if bytes < 1024
+    bytes + \B
+  else if (kbytes = Math.floor bytes / 1024) < 1024
+    kbytes + \KB
+  else
+    "#{Math.floor kbytes / 1024}MB"
 
 # "this" is thread
 parse-api-post = (data) ->
@@ -147,7 +152,7 @@ parse-api-post = (data) ->
       &capcode  = data.capcode
       &email    = data.email
       &sage     = sage_regex.test that if &email
-      &comment  = parser.enhance {innerHTML: data.com}
+      &comment  = if data.com then parser.enhance that else ''
       if data.fsize
         &image =
           thumb:
@@ -160,7 +165,7 @@ parse-api-post = (data) ->
           width    : data.w
           height   : data.h
 
-          size     : human-sized fsize
+          size     : humanized data.fsize
           filename : "#{data.filename}.#{data.ext}"
           md5      : data.md5
 
