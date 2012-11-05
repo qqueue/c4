@@ -11,6 +11,6 @@ onready !->
   for id of $$ '.id'
     id.addEventListener \click onclick
 
-onpostinserted !->
+onpostinsert !->
   it.detail.post.querySelector '.id' .addEventListener \click onclick
 

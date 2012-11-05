@@ -89,6 +89,6 @@ onclick = !(e) ->
       frameborder: 0
       allowfullscreen: ''
 
-onready        !-> handle $$ \.youtube
-onpostinserted !-> handle it.detail.post.querySelectorAll \.youtube
+onready      !-> handle $$ \.youtube
+onpostinsert !-> handle it.detail.post.querySelectorAll \.youtube
 

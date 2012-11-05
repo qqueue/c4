@@ -42,6 +42,6 @@ if board.isThread
     munge document
     console.timeEnd "munging quotelinks..."
 
-  onpostinserted !->
+  onpostinsert !->
     munge it.detail.post
 
