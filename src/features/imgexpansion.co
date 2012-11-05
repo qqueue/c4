@@ -21,6 +21,11 @@ preload = !(a) -> kup \img src: a.href
 preloading = false
 expanding = false
 
+onclick = !(e) ->
+  unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+    expand this
+    e.preventDefault!
+
 onready !->
 
   # manage single-rule stylesheet so we don't have to iterate over elements
@@ -32,14 +37,6 @@ onready !->
   listen $ \img-display .on \change !->
     set \img-display @value
     fit-width.disabled = get(\img-display) is \full
-
-  # TODO think about 'custom' event plain-click or unmodified-click to abstract
-  # the unless statement
-  for file of $$ \.file
-    file.addEventListener \click !(e) ->
-      unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-        expand this
-        e.preventDefault!
 
   listen $ \preload-all .click ->
     if ! := preloading
@@ -58,7 +55,12 @@ onready !->
 
   listen $ \collapse-all .click !-> collapse img for img of $$ '.full'
 
+  file.addEventListener \click onclick for file of $$ \.file
+
 onupdate !->
   preload img for img of $$ '.new .file' if preloading
   expand  img for img of $$ '.new .file' if expanding
+
+onpostinsert !->
+  it.detail.post.querySelector \.file .addEventListener \click onclick
 
