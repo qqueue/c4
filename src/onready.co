@@ -111,7 +111,7 @@ document.title =
     board.thread.op
       "#{truncate do
            &title or
-           "#{if &poster is not \Anonymous then "#that - " else ''}
+           "#{if &poster is not \Anonymous then "#{&poster} - " else ''}
             #{&text or &image?filename or &time.relative_time!}"}
        \ - /#{board.name}/"
   else
