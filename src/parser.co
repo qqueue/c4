@@ -132,11 +132,11 @@ images-base = "//images.4chan.org/#{board.name}/src/"
 
 humanized = (bytes) ->
   if bytes < 1024
-    bytes + \B
-  else if (kbytes = Math.floor bytes / 1024) < 1024
-    kbytes + \KB
+    "#bytes B"
+  else if (kbytes = Math.round bytes / 1024) < 1024
+    "#kbytes KB"
   else
-    "#{Math.floor kbytes / 1024}MB"
+    "#{(kbytes / 1024).toString().substring(0, 3)} MB"
 
 # "this" is thread
 parse-api-post = (data, i) ->
