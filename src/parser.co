@@ -110,18 +110,20 @@ export parser =
 
   # transform API thread format to the data used here. Returns Thread.
   api: (data) ->
-    [op, ...replies] = data.posts
+    [op] = data.posts
 
-    t = new Thread
-      &id = op.no
-      &url = board.threadurl + &id
+    t = new Thread <<<
+      id  : op.no
+      url : board.threadurl + op.no
 
-      &preview = !!op.omitted_posts
-      &sticky  = !!op.sticky
-      &locked  = !!op.closed
+      preview : !!op.omitted_posts
+      sticky  : !!op.sticky
+      locked  : !!op.closed
 
-      &op = parse-api-post.call t, op, 0
-      &replies = replies.map parse-api-post, t
+    posts = data.posts.map parse-api-post, t
+
+    t.op      = posts.0
+    t.replies = posts.slice 1
 
     t.postprocess!
     t
