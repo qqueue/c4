@@ -147,7 +147,7 @@ parse-api-post = (data, i) ->
     thread   : this
     id       : data.no
     url      : @url
-    time     : new Date data.time
+    time     : new Date data.time * 1000
     title    : data.sub
     poster   : data.name
     tripcode : data.trip
