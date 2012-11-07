@@ -7,7 +7,7 @@ else \$& # don't replace
 # taking the regex approach with innerHTML because I believe that cloning the
 # element and working with the DOM before taking the HTML would be slower
 parser.enhance = ->
-  it.innerHTML
+  it
     # unsplits urls (probably) split at 100 characters
     .replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
 

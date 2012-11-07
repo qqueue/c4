@@ -59,7 +59,8 @@ parse_post = (el, idx) ->
     &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
     &sage = sage_regex.test that if &email
 
-    &comment = parser.enhance el.querySelector \.postMessage
+    &comment = parser.enhance do
+      el.querySelector \.postMessage .innerHTML
 
   # TODO uid
 
@@ -106,4 +107,73 @@ export parser =
     console.timeEnd "parse thread"
 
     return thread
+
+  # transform API thread format to the data used here. Returns Thread.
+  api: (data) ->
+    [op] = data.posts
+
+    t = new Thread <<<
+      id  : op.no
+      url : board.threadurl + op.no
+
+      preview : !!op.omitted_posts
+      sticky  : !!op.sticky
+      locked  : !!op.closed
+
+    posts = data.posts.map parse-api-post, t
+
+    t.op      = posts.0
+    t.replies = posts.slice 1
+
+    t.postprocess!
+    t
+
+# TODO cross-board linking will break this
+thumbs-base = "//thumbs.4chan.org/#{board.name}/thumb/"
+images-base = "//images.4chan.org/#{board.name}/src/"
+
+humanized = (bytes) ->
+  if bytes < 1024
+    "#bytes B"
+  else if (kbytes = Math.round bytes / 1024) < 1024
+    "#kbytes KB"
+  else
+    "#{(kbytes / 1024).toString().substring(0, 3)} MB"
+
+# "this" is thread
+parse-api-post = (data, i) ->
+  p = new Post <<<
+    idx      : i
+    thread   : this
+    id       : data.no
+    url      : @url
+    time     : new Date data.time * 1000
+    title    : data.sub
+    poster   : data.name
+    tripcode : data.trip
+    capcode  : data.capcode
+    email    : data.email
+    sage     : data.email is \sage
+    comment  : if data.com then parser.enhance that else ''
+    image    : if data.fsize
+      thumb:
+        url    : thumbs-base + data.tim + \s.jpg
+        width  : data.tn_w
+        height : data.tn_h
+
+      url      : "#{images-base}#{data.tim}#{data.ext}"
+
+      width    : data.w
+      height   : data.h
+
+      size     : humanized data.fsize
+      filename : "#{data.filename}.#{data.ext}"
+      md5      : data.md5
+
+      spoiler  : !!data.spoiler
+
+    deleted-image: !!data.filedeleted
+
+  p.postprocess!
+  p
 

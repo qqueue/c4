@@ -1,11 +1,50 @@
 # post hover previews
 
+# XXX also will break weirdly if there is a cross-board link to a board with
+# similar post numbers.  IDs will start to be overwritten since there are only
+# unique within a board.
+fetch-new-post = !(id) ->
+  [, board, , thread] = @pathname.split \/ # /<board>/res/<thread>
+
+  link = this
+  @style.cursor = \progress
+
+  # TODO guard against multiple requests in short time period
+  xhr = new XMLHttpRequest
+    &open \GET "//api.4chan.org/#board/res/#thread.json"
+    &onload = !->
+      # TODO handle 404 -> archive
+      if @status is 200
+        thread = parser.api JSON.parse @response
+        console.log thread
+
+        if still-hovered
+          link.style.removeProperty \cursor
+
+          # Post[] hash should now be updated
+          # XXX kind of bad global state, should change how this works
+          create-preview.call link, id, Post[id]
+
+    &send!
+
+  still-hovered = true
+
+  @addEventListener \mouseout function out
+    still-hovered := false
+    @style.removeProperty \cursor
+    @removeEventListener \mouseout out
+
 handle-preview = !->
-  return if @hash is '' or @classList.contains \inlinedlink
+  return if @classList.contains \inlinedlink
 
   id = @hash.substring 2 # "#p"
-  return unless post = Post[id]
 
+  if not post = Post[id]
+    fetch-new-post.call this, id
+  else
+    create-preview.call this, id, post
+
+create-preview = !(id, post) ->
   $ \postpreview ?.remove!
 
   host = closest \.post this
@@ -34,7 +73,7 @@ handle-preview = !->
 
   document.dispatchEvent new CustomEvent do
     \html5chan-postinsert
-    detail: {post: preview}
+    detail: post: preview
 
   # highlight hovered replies
   classify $$ ".post[data-id=\"#id\"]" .add \hovered
@@ -52,3 +91,4 @@ onready !->
 onpostinsert !->
   for link of it.detail.post.querySelectorAll \.quotelink
     link.addEventListener \mouseover handle-preview
+

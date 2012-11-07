@@ -62,5 +62,5 @@ onupdate !->
   expand  img for img of $$ '.new .file' if expanding
 
 onpostinsert !->
-  it.detail.post.querySelector \.file .addEventListener \click onclick
+  it.detail.post.querySelector \.file ?.addEventListener \click onclick
 
