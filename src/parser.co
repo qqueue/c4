@@ -120,7 +120,7 @@ export parser =
       &sticky  = !!op.sticky
       &locked  = !!op.closed
 
-      &op = parse-api-post.call t, op
+      &op = parse-api-post.call t, op, 0
       &replies = replies.map parse-api-post, t
 
     t.postprocess!
@@ -139,9 +139,9 @@ humanized = (bytes) ->
     "#{Math.floor kbytes / 1024}MB"
 
 # "this" is thread
-parse-api-post = (data) ->
+parse-api-post = (data, i) ->
     p = new Post
-      &idx      = 0
+      &idx      = i
       &thread   = this
       &id       = data.no
       &url      = @url
