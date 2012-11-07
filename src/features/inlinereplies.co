@@ -91,3 +91,8 @@ onpostinsert !->
     link.addEventListener \click onclick
     link.addEventListener \dblclick follow
 
+onbacklink !({detail}) ->
+  <-! defer 100ms
+  detail.post.querySelector ".backlink[href$=p#{detail.id}]"
+    &addEventListener \click onclick
+    &addEventListener \dblclick follow
