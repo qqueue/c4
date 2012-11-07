@@ -67,7 +67,7 @@ onclick = !(e) ->
       wrapper.before inlined # 'natural' order
 
     document.dispatchEvent new CustomEvent do
-      \html5chan-postinserted
+      \html5chan-postinsert
       detail: {post: inlined}
 
     @classList.add \inlinedlink
@@ -86,7 +86,7 @@ onready !->
     link.addEventListener \click onclick
     link.addEventListener \dblclick follow
 
-onpostinserted !->
+onpostinsert !->
   for link of it.detail.post.querySelectorAll '.quotelink:not(.hiddenlink)'
     link.addEventListener \click onclick
     link.addEventListener \dblclick follow

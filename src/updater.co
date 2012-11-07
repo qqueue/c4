@@ -78,7 +78,7 @@ export updater =
 
             for post of thread.new
               document.dispatchEvent new CustomEvent do
-                \html5chan-postinserted
+                \html5chan-postinsert
                 detail: post: $ "p#{post.id}"
 
             # refresh backlinks

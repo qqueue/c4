@@ -33,7 +33,7 @@ handle-preview = !->
     document.body.appendChild (&)
 
   document.dispatchEvent new CustomEvent do
-    \html5chan-postinserted
+    \html5chan-postinsert
     detail: {post: preview}
 
   # highlight hovered replies
@@ -49,6 +49,6 @@ onready !->
     link.addEventListener \mouseover handle-preview
   console.timeEnd 'attach post hover listeners'
 
-onpostinserted !->
+onpostinsert !->
   for link of it.detail.post.querySelectorAll \.quotelink
     link.addEventListener \mouseover handle-preview

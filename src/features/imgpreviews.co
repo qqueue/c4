@@ -86,7 +86,7 @@ onready !->
     img.addEventListener \mouseover handle-preview
   console.timeEnd 'attach thumb hover listeners'
 
-onpostinserted !->
+onpostinsert !->
   it.detail.post.querySelector \.thumb ?
     .addEventListener \mouseover handle-preview
 
