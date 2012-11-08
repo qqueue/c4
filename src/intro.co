@@ -24,8 +24,6 @@ board
       "http://fuuka.warosu.org/#that/thread"
     case <[diy g sci]>
       "http://archive.installgentoo.net/#that/thread"
-    case <[3 adv an ck co fa fit int k mu n o p po pol r9k soc sp toy trv vp x]>
-      "http://archive.no-ip.org/#that/thread"
 
 # early abort for archive redirection
 if /404/.test document.title and board.archive
