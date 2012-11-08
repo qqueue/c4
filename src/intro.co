@@ -1,5 +1,6 @@
 console.group "html5chan"
 
+console.timeStamp "html5chan-init"
 console.time "init"
 console.time "interactive"
 
