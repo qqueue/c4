@@ -20,7 +20,7 @@ parser.enhance = ->
             ([\w\-_]+) # video id
             (\?[&=\w\-_;\#]*)? # options
           |
-          (?:www\.)youtube\.com\/watch\?
+          (?:www\.)?youtube\.com\/watch\?
             ([&=\w\-_;\.\?\#\%]*) # pre video id options (annoying, since this
                                 # will have to give up matches)
             v=([\w\-_]+) # video id
