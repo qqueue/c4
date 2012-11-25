@@ -82,14 +82,14 @@ follow = !->
   window.location.hash = that if @hash # actually follow link
 
 onready !->
-  for link of $$ '.quotelink:not(.hiddenlink)'
-    link.addEventListener \click onclick
-    link.addEventListener \dblclick follow
+  for $$ '.quotelink:not(.hiddenlink)'
+    &addEventListener \click onclick
+    &addEventListener \dblclick follow
 
 onpostinsert !->
-  for link of it.detail.post.querySelectorAll '.quotelink:not(.hiddenlink)'
-    link.addEventListener \click onclick
-    link.addEventListener \dblclick follow
+  for it.detail.post.querySelectorAll '.quotelink:not(.hiddenlink)'
+    &addEventListener \click onclick
+    &addEventListener \dblclick follow
 
 onbacklink !({detail}) ->
   <-! defer 100ms

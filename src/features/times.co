@@ -4,7 +4,7 @@
 # but that was too expensive to have DOM reflows every update
 # so posts now update every hour/5minutes/1minute
 
-set_update = (el) ->
+set-update = (el) ->
   # stupid ff doesn't have the HTMLTimeElement's datetime attribute yet
   time = new Date( el.getAttribute \datetime )
 
@@ -14,7 +14,7 @@ set_update = (el) ->
     setTimeout do
       ->
         el.textContent = time.relative_time!
-        set_update el # set next update
+        set-update el # set next update
 
       if diff > 3_600_000ms # one hour
         diff % 3_600_000ms # time til the next whole hour diff
@@ -33,9 +33,9 @@ set_update = (el) ->
       else # under a minute ( or in the future )
         60_000ms # one minute
 
-onready !-> set_update time for time of document.getElementsByTagName \time
+onready !-> for document.getElementsByTagName \time => set-update &
 onupdate !->
-  set_update time for time of $$ '.new time'
+  for $$ '.new time' => set-update &
 
   # attempt to update other times that have changed during the page reflow
   # that occurs on update anyway.

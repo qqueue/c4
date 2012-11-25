@@ -1,22 +1,20 @@
 dimension_regex = /(\d+)x(\d+)/
-  size_regex = /[\d\.]+ [KM]?B/
-filename_regex = /title="([^"]+)"/
-spoiler_regex = /^Spoiler Image/
-
-sage_regex = /^sage$/i
+size_regex      = /[\d\.]+ [KM]?B/
+filename_regex  = /title           = "([^"]+)"/
+spoiler_regex   = /^Spoiler Image/
+sage_regex      = /^sage$/i
 
 # slow(?!) DOM querying parser
 # shit, why is this so much faster, even with nested functions and
 # lots of querySelector calls? Did switching to standards mode make
 # dom querying faster or something? TODO test this, somehow
-parse_thread = (el) ->
-  t = new Thread
-  t.id = el.id.substring 1 # t12345
-  t.url = board.threadurl + t.id
-  t.preview = true
+parse_thread = (el) -> new Thread
+  &id = el.id.substring 1 # t12345
+  &url = board.threadurl + &id
+  &preview = true
 
   if omitted = el.querySelector \.summary
-    t.omitted =
+    &omitted =
       replies:
         parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
       imageReplies:
@@ -24,21 +22,19 @@ parse_thread = (el) ->
 
   # TODO sticky and locked
 
-  t.op = parse_post.call t, el.querySelector( \.op )
-  t.op.idx = 0
-  t.replies = Array::map.call do
+  &op = parse_post.call (&), el.querySelector( \.op )
+  &op.idx = 0
+  &replies = Array::map.call do
     el.getElementsByClassName( \reply )
     parse_post
-    t # this for map calls
+    & # this for map calls
 
-  t.postprocess!
-
-  return t
+  &postprocess!
 
 parse_post = (el, idx) ->
   thread = this
 
-  p = new Post
+  new Post
     &idx = idx + 1
     &thread = thread
     &id = el.id.substring 1
@@ -62,33 +58,32 @@ parse_post = (el, idx) ->
     &comment = parser.enhance do
       el.querySelector \.postMessage .innerHTML
 
-  # TODO uid
+    # TODO uid
 
-  if img = el.querySelector \.fileThumb
-    if img.firstElementChild.alt is "File deleted."
-      p.deletedImage = true
-    else
-      thumb = img.firstElementChild
-      info = el.querySelector \.fileInfo .innerHTML
-      dimensions = dimension_regex.exec info
-      p.image =
-        thumb:
-          url: thumb.src
-          width: parseInt thumb.style.width, 10
-          height: parseInt thumb.style.height, 10
-        url: thumb.parentNode.href
+    if img = el.querySelector \.fileThumb
+      if img.firstElementChild.alt is "File deleted."
+        &deletedImage = true
+      else
+        thumb = img.firstElementChild
+        info = el.querySelector \.fileInfo .innerHTML
+        dimensions = dimension_regex.exec info
+        &image =
+          thumb:
+            url: thumb.src
+            width: parseInt thumb.style.width, 10
+            height: parseInt thumb.style.height, 10
+          url: thumb.parentNode.href
 
-        width: parseInt dimensions.1, 10
-        height: parseInt dimensions.2, 10
+          width: parseInt dimensions.1, 10
+          height: parseInt dimensions.2, 10
 
-        size: size_regex.exec thumb.alt .0
-        filename: filename_regex.exec(info)?1
-        md5: thumb.dataset.md5
+          size: size_regex.exec thumb.alt .0
+          filename: filename_regex.exec(info)?1
+          md5: thumb.dataset.md5
 
-        spoiler: spoiler_regex.test thumb.alt
-  p.postprocess!
+          spoiler: spoiler_regex.test thumb.alt
 
-  return p
+    &postprocess!
 
 export parser =
   # returns Array of threads
@@ -109,24 +104,17 @@ export parser =
     return thread
 
   # transform API thread format to the data used here. Returns Thread.
-  api: (data) ->
-    [op] = data.posts
+  api: ({posts: [op]}: data) -> new Thread
+    &id  = op.no
+    &url = board.threadurl + op.no
 
-    t = new Thread <<<
-      id  : op.no
-      url : board.threadurl + op.no
+    &preview = !!op.omitted_posts
+    &sticky  = !!op.sticky
+    &locked  = !!op.closed
 
-      preview : !!op.omitted_posts
-      sticky  : !!op.sticky
-      locked  : !!op.closed
+    &[\op ...\replies] = data.posts.map parse-api-post, &
 
-    posts = data.posts.map parse-api-post, t
-
-    t.op      = posts.0
-    t.replies = posts.slice 1
-
-    t.postprocess!
-    t
+    &postprocess!
 
 # TODO cross-board linking will break this
 thumbs-base = "//thumbs.4chan.org/#{board.name}/thumb/"
@@ -138,42 +126,40 @@ humanized = (bytes) ->
   else if (kbytes = Math.round bytes / 1024) < 1024
     "#kbytes KB"
   else
-    "#{(kbytes / 1024).toString().substring(0, 3)} MB"
+    "#{(kbytes / 1024)toString!substring 0 3} MB"
 
 # "this" is thread
-parse-api-post = (data, i) ->
-  p = new Post <<<
-    idx      : i
-    thread   : this
-    id       : data.no
-    url      : @url
-    time     : new Date data.time * 1000
-    title    : data.sub
-    poster   : data.name
-    tripcode : data.trip
-    capcode  : data.capcode
-    email    : data.email
-    sage     : data.email is \sage
-    comment  : if data.com then parser.enhance that else ''
-    image    : if data.fsize
-      thumb:
-        url    : thumbs-base + data.tim + \s.jpg
-        width  : data.tn_w
-        height : data.tn_h
+parse-api-post = (data, i) -> new Post
+  &idx      = i + 1
+  &thread   = this
+  &id       = data.no
+  &url      = @url
+  &time     = new Date data.time * 1000
+  &title    = data.sub
+  &poster   = data.name
+  &tripcode = data.trip
+  &capcode  = data.capcode
+  &email    = data.email
+  &sage     = data.email is \sage
+  &comment  = if data.com then parser.enhance that else ''
+  &image    = if data.fsize
+    &thumb <<<
+      url    : thumbs-base + data.tim + \s.jpg
+      width  : data.tn_w
+      height : data.tn_h
 
-      url      : "#{images-base}#{data.tim}#{data.ext}"
+    &url      = "#{images-base}#{data.tim}#{data.ext}"
 
-      width    : data.w
-      height   : data.h
+    &width    = data.w
+    &height   = data.h
 
-      size     : humanized data.fsize
-      filename : "#{data.filename}.#{data.ext}"
-      md5      : data.md5
+    &size     = humanized data.fsize
+    &filename = "#{data.filename}#{data.ext}"
+    &md5      = data.md5
 
-      spoiler  : !!data.spoiler
+    &spoiler  = !!data.spoiler
 
-    deleted-image: !!data.filedeleted
+  &deleted-image = !!data.filedeleted
 
-  p.postprocess!
-  p
+  &postprocess!
 

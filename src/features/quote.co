@@ -8,8 +8,7 @@ onclick = !(e) ->
     &focus!
 
 onready !->
-  for id of $$ '.id'
-    id.addEventListener \click onclick
+  for $$ '.id' => &addEventListener \click onclick
 
 onpostinsert !->
   it.detail.post.querySelector '.id' .addEventListener \click onclick

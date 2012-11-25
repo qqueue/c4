@@ -82,8 +82,7 @@ export handle-preview = !({clientX: x, clientY: y}) ->
 
 onready !->
   console.time 'attach thumb hover listeners'
-  for img of $$ \.thumb
-    img.addEventListener \mouseover handle-preview
+  for $$ \.thumb => &addEventListener \mouseover handle-preview
   console.timeEnd 'attach thumb hover listeners'
 
 onpostinsert !->

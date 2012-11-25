@@ -84,13 +84,12 @@ create-preview = !(id, post) ->
 
 onready !->
   console.time 'attach post hover listeners'
-  for link of $$ \.quotelink
-    link.addEventListener \mouseover handle-preview
+  for $$ \.quotelink => &addEventListener \mouseover handle-preview
   console.timeEnd 'attach post hover listeners'
 
 onpostinsert !->
-  for link of it.detail.post.querySelectorAll \.quotelink
-    link.addEventListener \mouseover handle-preview
+  for it.detail.post.querySelectorAll \.quotelink
+    &addEventListener \mouseover handle-preview
 
 onbacklink !({detail}) ->
   <-! defer 100ms

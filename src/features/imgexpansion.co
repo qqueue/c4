@@ -58,8 +58,8 @@ onready !->
   file.addEventListener \click onclick for file of $$ \.file
 
 onupdate !->
-  preload img for img of $$ '.new .file' if preloading
-  expand  img for img of $$ '.new .file' if expanding
+  if preloading => for $$ '.new .file' => preload &
+  if expanding  => for $$ '.new .file' => expand  &
 
 onpostinsert !->
   it.detail.post.querySelector \.file ?.addEventListener \click onclick
