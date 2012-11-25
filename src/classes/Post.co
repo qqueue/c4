@@ -123,7 +123,7 @@ export class Post
     return wrapper.firstElementChild
 
   text:~ ->
-    document.createElement \div
+    document.createElement \div |> do
       &innerHTML = @comment
       &textContent
 

@@ -101,7 +101,7 @@ if board.isBoard
 
 document.title =
   if board.isThread
-    board.thread.op
+    board.thread.op |>
       "#{truncate do
            &title or
            "#{if &poster is not \Anonymous then "#{&poster} - " else ''}
