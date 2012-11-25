@@ -17,13 +17,7 @@ compile = (it, options) ->
   catch
     throw new Error "Compiling #it:\n\t#{e.message}"
 
-compile-all = ->
-  for ls it => compile & # check for errors
-  try
-    coco.compile join do
-      for ls it => read &
-  catch
-    throw new Error "Compiling #it:\n\t#{e.message}"
+compile-all = -> (for ls it => compile &).join ''
 
 stylus.nib = -> stylus it .use nib!
 
