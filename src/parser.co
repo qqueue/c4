@@ -135,29 +135,31 @@ parse-api-post = (data, i) -> new Post
   &id       = data.no
   &url      = @url
   &time     = new Date data.time * 1000
-  &title    = data.sub
-  &poster   = data.name
-  &tripcode = data.trip
-  &capcode  = data.capcode
-  &email    = data.email
-  &sage     = data.email is \sage
+  & <<< data{
+    title: sub
+    poster: name
+    tripcode: trip
+    capcode
+    email
+  }
+  &sage     = &email is \sage
   &comment  = if data.com then parser.enhance that else ''
   &image    = if data.fsize
-    &thumb <<<
-      url    : thumbs-base + data.tim + \s.jpg
-      width  : data.tn_w
-      height : data.tn_h
+    thumb:
+     url    : thumbs-base + data.tim + \s.jpg
+     width  : data.tn_w
+     height : data.tn_h
 
-    &url      = "#{images-base}#{data.tim}#{data.ext}"
+    url      : "#{images-base}#{data.tim}#{data.ext}"
 
-    &width    = data.w
-    &height   = data.h
+    width    : data.w
+    height   : data.h
 
-    &size     = humanized data.fsize
-    &filename = "#{data.filename}#{data.ext}"
-    &md5      = data.md5
+    size     : humanized data.fsize
+    filename : "#{data.filename}#{data.ext}"
+    md5      : data.md5
 
-    &spoiler  = !!data.spoiler
+    spoiler  : !!data.spoiler
 
   &deleted-image = !!data.filedeleted
 
