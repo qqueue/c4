@@ -17,6 +17,14 @@ compile = (it, options) ->
   catch
     throw new Error "Compiling #it:\n\t#{e.message}"
 
+compile-all = ->
+  for ls it => compile & # check for errors
+  try
+    coco.compile join do
+      for ls it => read &
+  catch
+    throw new Error "Compiling #it:\n\t#{e.message}"
+
 stylus.nib = -> stylus it .use nib!
 
 outfile = \html5chan.user.js
@@ -33,19 +41,20 @@ task \build 'build userscript' ->
         '(function(){' # IIFE wrapper
         '"use strict";'
         compile \src/intro.co
-        coco.compile join do
-          read f for f of ls \src/utils
-        coco.compile join do
-          read f for f of ls \src/classes
+        compile-all \src/utils
+        compile-all \src/classes
         compile \src/parser.co
         compile \src/enhancer.co
         compile \src/updater.co
         compile \src/poster.co
-        coco.compile do
-          read \src/onready.co
-            .replace /%hakase\.css%/ css
-            .replace /%board\.co\.html%/ read \templates/board.co.html
-        compile feature for feature of ls \src/features
+        try
+          coco.compile do
+            read \src/onready.co
+              .replace /%hakase\.css%/ css
+              .replace /%board\.co\.html%/ read \templates/board.co.html
+        catch
+          throw new Error "Compiling onready.co:\n\t#{e.message}"
+        compile-all \src/features
         compile \src/outro.co
         '}.call(this))'
     console.log "compiled script to #{outfile}"
