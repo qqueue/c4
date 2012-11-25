@@ -35,7 +35,10 @@ recaptcha = document.createElement \script
                 Recaptcha._finish_widget();
               }
              }())"
-        onready !-> head.appendChild recaptcha
+        if board.ready
+          head.appendChild recaptcha
+        else
+          onready !-> head.appendChild recaptcha
     head.appendChild recaptcha
 head.appendChild recaptcha
 
@@ -135,4 +138,6 @@ console.time "onready handlers"
 document.dispatchEvent new CustomEvent do
   \html5chan-loaded
   detail: {thread, threads}
+
+board.ready = true
 
