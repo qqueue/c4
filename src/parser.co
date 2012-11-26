@@ -1,6 +1,6 @@
 dimension_regex = /(\d+)x(\d+)/
 size_regex      = /[\d\.]+ [KM]?B/
-filename_regex  = /title           = "([^"]+)"/
+filename_regex  = /title="([^"]+)"/
 spoiler_regex   = /^Spoiler Image/
 sage_regex      = /^sage$/i
 
