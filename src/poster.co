@@ -60,9 +60,9 @@ checkValidity = (e) ->
       data.append \email \sage
 
       #ajax time!
-    with new XMLHttpRequest
-      @open \POST form.action
-      listen this
+    new XMLHttpRequest
+      &open \POST form.action
+      listen &
         .on \load ->
           html = document.createElement \div
           html.innerHTML = @response
@@ -107,10 +107,10 @@ checkValidity = (e) ->
         .on \loadend ->
           $ \progress .hidden = true # hide progress bar
 
-      listen @upload .on \progress (e) ->
+      listen &upload .on \progress (e) ->
         $ \progress .value = 100 * e.loaded / e.total
 
-      @send data
+      &send data
 
 
   return false # prevent normal submission
