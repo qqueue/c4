@@ -2,6 +2,9 @@
 
 munge = !(ctx) ->
   for quote of ctx.querySelectorAll '.quotelink:not(.backlink):not(.forcequoted)'
+    # these capcodeReplies get messy, so skip for now
+    continue if quote.parentNode.className is \smaller
+
     id = quote.hash.substring 2
     if (post = Post[id])
       if post.comment.length > 0
