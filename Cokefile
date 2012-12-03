@@ -1,7 +1,6 @@
 fs     = require \fs
 coco   = require \coco
 stylus = require \stylus
-nib    = require \nib
 
 ls = -> "#it/#file" for file of fs.readdirSync it
 
@@ -9,6 +8,7 @@ flatten = -> Array::concat.apply [], it # shallow flatten
 
 join = -> flatten @@ .join \\n
 read = -> fs.readFileSync it, \utf8
+
 compile = (it, options) ->
   try
     coco.compile do
@@ -17,40 +17,59 @@ compile = (it, options) ->
   catch
     throw new Error "Compiling #it:\n\t#{e.message}"
 
-compile-all = -> (for ls it => compile &).join ''
+wrap = -> "let\n  #{read it .replace /\n/g '\n  '}"
 
-stylus.nib = -> stylus it .use nib!
+# stuff each file into a `let` IEFE, and then compile, which
+# avoids coco's redefinition of boilerplate
+compile-all = (css, paths) ->
+  source = []
+  for path of paths
+    if fs.existsSync "src/#path/"
+      # directory
+      for ls "src/#path"
+        compile & # detect compile errors
+        source.push wrap &
+    else
+      # single file
+      compile "src/#path.co"
+      source.push wrap "src/#path.co"
+  try
+    coco.compile do
+      source
+        .join \\n
+        .replace /%hakase\.css%/ css
+        .replace /%board\.co\.html%/ read \templates/board.co.html
+      {+bare} # IEFE is added later
+  catch
+    throw new Error "Compiling all:\n\t#{e.message}"
+
+nib = -> stylus it .use require(\nib)!
 
 outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-  err, css <-! stylus.nib read(\css/hakase.styl) .render
+  err, css <-! nib read(\css/hakase.styl) .render
   try
     throw err if err
     fs.writeFileSync do
       outfile
       join do
         metadata
-        '(function(){' # IIFE wrapper
+        "(function(){"
         '"use strict";'
-        compile \src/intro.co
-        compile-all \src/utils
-        compile-all \src/classes
-        compile \src/parser.co
-        compile \src/enhancer.co
-        compile \src/updater.co
-        compile \src/poster.co
-        try
-          coco.compile do
-            read \src/onready.co
-              .replace /%hakase\.css%/ css
-              .replace /%board\.co\.html%/ read \templates/board.co.html
-        catch
-          throw new Error "Compiling onready.co:\n\t#{e.message}"
-        compile-all \src/features
-        compile \src/outro.co
-        '}.call(this))'
+        compile-all css, <[
+          intro
+          utils
+          classes
+          parser
+          enhancer
+          updater
+          poster
+          onready
+          features
+          outro]>
+        "}).call(this)"
     console.log "compiled script to #{outfile}"
   catch
     console.error e.message
@@ -71,3 +90,4 @@ task \watch 'watch for changes and rebuild automatically' ->
     fs.watch it, interval: 1000, debounce 1000 (event, filename) ->
       console.log "#event event detected on #filename. rebuilding..."
       invoke \build
+
