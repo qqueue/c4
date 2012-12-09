@@ -5,6 +5,8 @@
 //
 // @match       *://boards.4chan.org/*
 // @exclude     *://boards.4chan.org/f/*
+// @exclude     *://boards.4chan.org/*/catalog
+// @exclude     *://boards.4chan.org/*/catalog/*
 // @exclude     *://boards.4chan.org/robots.txt
 //
 // @run-at      document-start
