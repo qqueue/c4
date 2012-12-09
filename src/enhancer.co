@@ -57,12 +57,12 @@ parser.enhance = ->
     # specialcase linkify urls without a protocol but with a common tld
     .replace do
       //
-      (^|[^a]>|;|\s) # to avoid linking parts of urls inside hrefs, must start
+      (^|>|;|\s) # to avoid linking parts of urls inside hrefs, must start
                      # with one of these
       (
         [\w\.\-]+\. # domain
-        (?:com|net|org|eu|jp|us)/ # non-exhaustive
-        [^<\s]* # rest of the url until space or <br>
+        (?:com|net|org|eu|jp|us) # non-exhaustive
+        (/[^<\s]*)? # rest of the url until space or <br>
       )
       //g
       '$1<a class="external" \
