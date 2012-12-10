@@ -46,11 +46,11 @@ parse_post = (el, idx) ->
     &time = new Date do
       parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
 
-    &title = el.querySelector '.postInfo.desktop .subject' .textContent
+    &title = el.querySelector '.postInfo.desktop .subject' .innerHTML
 
-    &poster = el.querySelector \.name .textContent
-    &tripcode = el.querySelector \.postertrip ?.textContent
-    &capcode = el.querySelector \.capcode ?.textContent
+    &poster = el.querySelector \.name .innerHTML
+    &tripcode = el.querySelector \.postertrip ?.innerHTML
+    &capcode = el.querySelector \.capcode ?.innerHTML
 
     &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
     &sage = sage_regex.test that if &email
