@@ -322,15 +322,12 @@ a.permalink .id, a.saucelink
 	font-weight normal
 	color #789922
 
-.spoiler 
+// should really be qualified with class=spoiler, moot
+s
 	text-decoration none
 	color transparent !important
 	text-shadow 0 0 7px black
 	transition-duration 1s
-	// what the fuck, css
-	// people actually make nested spoiler tags too :/
-	*:not(:hover):not(.spoiler)
-		color transparent !important
 	&:hover
 		text-shadow none
 		color black !important
