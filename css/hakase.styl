@@ -2,7 +2,7 @@
 
 html 
 	min-height 100%
-	font-family Georgia, serif
+	font-family Droid Serif, serif
 	font-size 10pt
 
 body.sfw
@@ -17,7 +17,7 @@ body.sfw
 		background-color #d6bad0 !important
 	.reply, #postpreview
 		background #d6daf0
-	.reply
+	.reply, .inline
 		border-color #b7c5d9
 	.reply:before 
 		color #b7c5d9
@@ -141,7 +141,7 @@ body > header
 .replies > .post > .fileinfo
 	counter-increment image
 	&:before
-		content '#'counter(image, decimal)
+		content '#'counter(image, decimal)' '
 		color rgba(0,0,0,.4)
 
 .reply.new
@@ -377,16 +377,12 @@ s
 
 .post.inline 
 	margin-left 0
-	border 1px solid #666
-	border-left-width 0
+	border-left 1px solid
 	padding-left 0
 	clear left
 	.comment
 		padding-left 1em
 		margin-left 0
-
-.post.inline
-	background-color rgba(255,255,255,0.25)
 
 .backlink+.post.inline 
 	margin-left 20px
@@ -395,7 +391,18 @@ s
 		padding 0 1em
 
 .inline .backlinks > .recursivelink 
-	opacity 0
+	display none
+
+.forcedimage
+	text-decoration none
+
+.recursivelink, .inlinedlink
+	& ~ .forcedimage, & ~ .forcedquote
+		display none
+
+.backlink.inlinedlink
+	display block
+	width 0 // otherwise it stretches the anchor hit area, lame
 
 .hovered 
 	outline 3px dashed #00f

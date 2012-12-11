@@ -30,6 +30,7 @@ onclick = !(e) ->
     markScroll this
 
     @classList.remove \inlinedlink
+    @parentNode.classList.remove \inlinedquote
 
     # remove original post's inlined status if this is the last inlining
     # link
@@ -37,8 +38,8 @@ onclick = !(e) ->
       $ "p#id" .classList.remove \inlined
 
     # and for nested posts
-    for p of inlined.querySelectorAll '.post.inline'
-      id = (p.id / \-)pop!
+    for inlined.querySelectorAll '.post.inline'
+      id = (&id / \-)pop!
       if $$ ".inline[data-id=\"#id\"]" .length is 1
         $ "p#id" .classList.remove \inlined
 
@@ -48,12 +49,6 @@ onclick = !(e) ->
 
   else # create
     inlined = post.element \article "inline hovered" inlined_id
-
-    # replace matching reply links
-    for link of inlined.querySelectorAll "a.quotelink[href$=\"#hostid\"]"
-      link.className = \recursivelink
-      link.removeAttribute \href
-
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
     while wrapper.parentElement.matchesSelector 'a,span,font'
@@ -61,16 +56,31 @@ onclick = !(e) ->
 
     markScroll this
 
-    if @classList.contains \backlink # post is backlinked
-      wrapper.after inlined
-    else
-      wrapper.before inlined # 'natural' order
+    # insert post in "natural" reading order
+    wrapper[if @classList.contains \backlink then \after else \before] inlined
 
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: {post: inlined}
 
+    # replace matching reply links
+    # done after postinsert so quote-replies will work
+    for inlined.querySelectorAll "a.quotelink[href$=\"#hostid\"]"
+      &className = \recursivelink
+      &removeAttribute \href
+
+    # remove unecessary first quote (implied by nesting
+    inlined.querySelector \.comment ?.firstElementChild
+      if &?firstChild?className is \recursivelink
+        &nextSibling?remove! # the <br>
+        &remove!
+
+
+
+
+
     @classList.add \inlinedlink
+    @parentNode.classList.add \inlinedquote
 
     $ \postpreview ?.remove!
 

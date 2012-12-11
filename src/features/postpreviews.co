@@ -35,7 +35,8 @@ fetch-new-post = !(id) ->
     @removeEventListener \mouseout out
 
 handle-preview = !->
-  return if @classList.contains \inlinedlink
+  return if @classList.contains \inlinedlink \
+         or @classList.contains \recursivelink
 
   id = @hash.substring 2 # "#p"
 
