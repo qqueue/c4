@@ -338,40 +338,30 @@ s
 	border 3px solid 
 	border-color #C6312B 
 	border-radius 10px
-
-	overflow hidden // prevents corners of image from covering rounded border
 	transition .5s
 
+	overflow hidden // prevents corners of image from covering rounded border
+
 	display inline-block
+	vertical-align top
+	margin 0.25em
 
 	width 120px
 	height 90px
 
 	&:hover
 		border-color #FFA200
-		&:after
-			opacity 1
 	&:after
-		transition .5s
-		opacity 0
-
-		content "\u25B6" // right arrow
-
-		// center, WITHOUT flexbox. so. cool.
-		position absolute
-		margin auto
-		bottom 0
-		top 0
-		left 0
-		
-		height 32px
-		font-size 32px
-
-		width 100%
-		text-align center
-
-		color #C6312B
-		text-shadow 0 0 10px white
+		absolute top left
+		width 115px
+		font-size smaller
+		font-family sans-serif
+		color white
+		background rgba(0,0,0,.5)
+		padding 0 .5em
+		content: attr(data-title)
+	&:not(:hover):after
+		overflow ellipsis
 
 .backlinks 
 	clear both

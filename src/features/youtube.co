@@ -25,11 +25,10 @@ queue = !(req) ->
 cache = {}
 
 set-title = !(vid, data) ->
-  vid.title = "#{data.snippet.title}
-               \n\n
-               #{data.statistics.viewCount} views.
+  vid.title = "#{data.statistics.viewCount} views.
                  \n\n
                #{truncate data.snippet.description, 200}"
+  vid.dataset.title = data.snippet.title
 
 # TODO detect videos whose data isn't returned
 # and set some sort of error title
