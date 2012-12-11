@@ -323,15 +323,13 @@ a.permalink .id, a.saucelink
 	color #789922
 
 // should really be qualified with class=spoiler, moot
-s
+s 
 	text-decoration none
-	color transparent !important
-	text-shadow 0 0 7px black
 	transition-duration 1s
-	&:hover
-		text-shadow none
-		color black !important
-
+	&:not(:hover)
+		& > *, &
+			color transparent !important
+			text-shadow 0 0 7px black
 
 .youtube 
 	position relative
