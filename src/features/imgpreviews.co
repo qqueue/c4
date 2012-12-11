@@ -17,8 +17,6 @@ export handle-preview = !({clientX: x, clientY: y}) ->
   width  *= ratio
   height *= ratio
 
-  l = $ \lightbox
-
   var timeout
   # until the image is displayed, continually reset
   # timeout on mousemovement
@@ -32,7 +30,6 @@ export handle-preview = !({clientX: x, clientY: y}) ->
 
   var full
   create-image = !~>
-    l.classList.add \dark
     full ||:= document.createElement \img
       &alt = "Loading..."
       & <<< {src, width, height}
@@ -41,11 +38,28 @@ export handle-preview = !({clientX: x, clientY: y}) ->
       &addEventListener \error -> @alt = "Unable to load image."
 
       &style <<<
-        position: \absolute
-        top:  "#{10 + (docheight - height) / 2}px"
-        left: "#{10 + (docwidth  - width ) / 2}px"
+        position: \fixed
+        left: 0
+        top: 0
+        pointer-events: \none
+        padding: "#{10 + (docheight - height) / 2}px \
+                  #{10 + (docwidth  - width ) / 2}px"
+        background-color: 'rgba(0,0,0,.5)'
+        transition-duration: \.5s
+        opacity: 0
 
-    l.appendChild full
+      # remove once faded
+      &addEventListener \transitionend ({propertyName}: e) ->
+        if propertyName is \opacity and @style.opacity is '0'
+          @remove!
+
+    document.body.appendChild full
+
+    # fade in
+    defer 100ms !->
+      full?style <<<
+        opacity: 1
+
     @classList.add \hovered-img
 
     # swap creation with destruction
@@ -55,10 +69,9 @@ export handle-preview = !({clientX: x, clientY: y}) ->
 
   remove-image = !({clientX: cx, clientY: cy}) ->
     if Math.abs(x - cx) > dead-zone or Math.abs(y - cy) > dead-zone
-      l.classList.remove \dark
       @classList.remove \hovered-img
 
-      full?remove!
+      full?style.opacity = 0
 
       # restart tooltip timeout
       timeout := setTimeout create-image, delay
@@ -73,9 +86,8 @@ export handle-preview = !({clientX: x, clientY: y}) ->
   listen this
     .on \mousemove reset-image
     .once \mouseout !->
-      full?remove!
+      full?style.opacity = 0
       clearTimeout timeout # stop image from appearing
-      l.classList.remove \dark
       listen this
         .off \mousemove reset-image
         .off \mousemove remove-image
