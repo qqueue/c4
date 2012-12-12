@@ -5,15 +5,12 @@
 # scroll! returns to the scroll position when
 # markScroll! was last called
 {markScroll, scroll} = let
-  last = {}
-  var el
+  var last, el
   markScroll: ->
     el := it
-    last{offsetLeft, offsetTop} = el
+    last := el.getBoundingClientRect!top
   scroll: ->
-    window.scrollBy do
-      el.offsetLeft - last.offsetLeft
-      el.offsetTop - last.offsetTop
+    window.scrollBy 0, el.getBoundingClientRect!top - last
 
 onclick = !(e) ->
   return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
@@ -35,13 +32,13 @@ onclick = !(e) ->
     # remove original post's inlined status if this is the last inlining
     # link
     if $$ ".inline[data-id=\"#id\"]" .length is 1
-      $ "p#id" .classList.remove \inlined
+      $ "p#id" ?.classList.remove \inlined
 
     # and for nested posts
     for inlined.querySelectorAll '.post.inline'
-      id = (&id / \-)pop!
-      if $$ ".inline[data-id=\"#id\"]" .length is 1
-        $ "p#id" .classList.remove \inlined
+      pid = (&id / \-)pop!
+      if $$ ".inline[data-id=\"#pid\"]" .length is 1
+        $ "p#pid" ?.classList.remove \inlined
 
     inlined.remove!
 
@@ -51,7 +48,7 @@ onclick = !(e) ->
     inlined = post.element \article "inline hovered" inlined_id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
-    while wrapper.parentElement.matchesSelector 'a,span,font'
+    while wrapper.parentElement.matchesSelector 'a,span,p'
       wrapper.=parentElement
 
     markScroll this
@@ -70,8 +67,8 @@ onclick = !(e) ->
       &removeAttribute \href
 
     # remove unecessary first quote (implied by nesting
-    inlined.querySelector \.comment ?.firstElementChild
-      if &?firstChild?className is \recursivelink
+    inlined.querySelector \.comment ?.firstElementChild?firstElementChild
+      if &?firstElementChild?className is \recursivelink
         &nextSibling?remove! # the <br>
         &remove!
 
@@ -83,6 +80,7 @@ onclick = !(e) ->
     $ "p#id" ?.classList.add \inlined
 
     scroll!
+
 
 follow = !->
   window.location.hash = that if @hash # actually follow link

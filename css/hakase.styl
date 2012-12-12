@@ -372,10 +372,12 @@ s
 	margin-left 0
 	border-left 1px solid
 	padding-left 0
-	clear left
 	.comment
 		padding-left 1em
 		margin-left 0
+
+.comment .post.inline
+	display table // quasi-clears images properly
 
 .backlink+.post.inline 
 	margin-left 20px
@@ -394,8 +396,7 @@ s
 		display none
 
 .backlink.inlinedlink
-	display block
-	width 0 // otherwise it stretches the anchor hit area, lame
+	display table // block without expansion
 
 .hovered 
 	outline 3px dashed #00f
