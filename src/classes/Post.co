@@ -71,9 +71,9 @@ export class Post
       #{if @image
         "
         <div class=fileinfo>
+          <span class=filename>#{@image.filename or ''}</span> \
           <span class=dimensions>#{@image.width}x#{@image.height}</span> \
           <span class=size>#{@image.size}</span> \
-          <span class=filename>#{@image.filename or ''}</span> \
           <a class=saucelink \
              href='http://iqdb.org/?url=#{@image.url}' \
              target=_blank>iqdb</a> \

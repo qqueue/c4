@@ -187,6 +187,17 @@ body > header
 
 .fileinfo
 	margin-left 20px
+	display table // prevent full width
+
+	// hide extended attributes until hovered
+	&:not(:hover)
+		& > .saucelink, & > .dimensions, & > .size
+			transition-delay .5s
+			opacity 0
+
+.saucelink, .dimensions, .size
+	transition-duration .5s
+
 .file 
 	display block
 	float left
@@ -282,10 +293,10 @@ a,strong
 		font-weight bold
 		color #000
 
-a.replylink
+.replylink
 	text-decoration none
 
-a.permalink 
+.permalink 
 	text-decoration none
 	color inherit
 	float right
@@ -295,11 +306,7 @@ a.permalink
 	// line-height adjusts a to look in line with rest of text
 	// bit weird, since a becomes a block element
 
-a.saucelink 
-	color inherit
-	text-decoration none
-
-a.permalink .id, a.saucelink
+.permalink .id
 	&:hover
 		text-decoration underline
 
