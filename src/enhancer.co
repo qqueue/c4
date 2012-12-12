@@ -62,7 +62,7 @@ parser.enhance = ->
       (
         [\w\.\-]+\. # domain
         (?:com|net|org|eu|jp|us) # non-exhaustive
-        (/[^<\s]*)?(?=[\s<]) # rest of the url until space or <br>
+        (/[^<\s]*)?(?=[\s<]|$) # rest of the url until space or <br> or end
       )
       //g
       '$1<a class="external" \
