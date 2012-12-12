@@ -75,10 +75,6 @@ onclick = !(e) ->
         &nextSibling?remove! # the <br>
         &remove!
 
-
-
-
-
     @classList.add \inlinedlink
     @parentNode.classList.add \inlinedquote
 
@@ -104,5 +100,6 @@ onpostinsert !->
 onbacklink !({detail}) ->
   <-! defer 100ms
   detail.post.querySelector ".backlink[href$=p#{detail.id}]"
+    return unless &?
     &addEventListener \click onclick
     &addEventListener \dblclick follow

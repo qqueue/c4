@@ -48,12 +48,7 @@ else
   </ul>
   """
 }
-<form id="delform" method="POST" action="https://sys.4chan.org/#{board.name}/imgboard.php">
-  <input name="mode" value="usrdel" type="hidden">
-  <label>Password <input name="pwd" size="8" maxlength="8" type="password" tabindex="20" id="delpassword" value="#{board.password}" title="#{board.password}"></label>
-  <button type="submit" value="Delete" tabindex="20">Delete Post</button>
-  <button name="onlyimgdel" value="on" type="submit" value="Delete" tabindex="20">Delete File Only</button>
-</form>
+
 <form id="reportform" method="GET" action="https://sys.4chan.org/#{board.name}/imgboard.php" target="_blank">
   <input type="hidden" name="mode" value="report"/>
 </form>

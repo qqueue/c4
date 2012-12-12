@@ -51,7 +51,6 @@ export class Post
                  class='#classes #{@className!}' \
                  id='#{id or "p#{@id}"}'>
       <h1>
-        <input type=checkbox value=delete name=#{@id} form=delform>
         <button type=button class=hide value=#{@id}>&times;</button>
         <button type=submit \
                 form=reportform \
