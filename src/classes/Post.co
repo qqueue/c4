@@ -12,9 +12,9 @@ export class Post
 
     ..[@id] = this # register this post as having been parsed
 
-  backlinks: (only_new) -> # renders backlinks
+  backlinks: (only-new, post-el) -> # renders backlinks
     html = ""
-    backlinks = if only_new then Post.new_backlinks else Post.backlinks
+    backlinks = if only-new then Post.new_backlinks else Post.backlinks
     if backlinks[@id]
       for post in backlinks[@id]
         if board.isThread
@@ -23,6 +23,13 @@ export class Post
           idx = post
         html +=
           "<a href=\"\#p#post\" class=\"backlink quotelink\">«#idx</a> "
+        if only-new
+          document.dispatchEvent new CustomEvent do
+            \html5chan-backlink
+            detail:
+              id: post
+              post: post-el
+
     return html
 
   className: -> # generates the correct classes to use

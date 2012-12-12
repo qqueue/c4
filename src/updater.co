@@ -87,13 +87,9 @@ export updater =
             for backlinks of $$ '.thread .backlinks'
               backlinks.insertAdjacentHTML do
                 \beforeend
-                Post[backlinks.parentNode.dataset.id]backlinks true
-
-              document.dispatchEvent new CustomEvent do
-                \html5chan-backlink
-                detail:
-                  id: backlinks.parentNode.dataset.id
-                  post: backlinks.parentNode
+                Post[backlinks.parentNode.dataset.id]backlinks do
+                  true
+                  backlinks.parentNode # passed in for backlink event XXX
 
             Post.new_backlinks = {} # cleared
 
