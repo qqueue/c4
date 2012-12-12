@@ -64,7 +64,7 @@ parser.enhance = ->
                      # with one of these
       (
         [\w\.\-]+\. # domain
-        (?:com|net|org|eu|jp|us) # non-exhaustive
+        (?:com|net|org|eu|jp|us|co\.uk) # non-exhaustive
         (/[^<\s]*)?(?=[\s<]|$) # rest of the url until space or <br> or end
       )
       //g
