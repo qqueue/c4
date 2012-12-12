@@ -48,7 +48,7 @@ onclick = !(e) ->
     inlined = post.element \article "inline hovered" inlined_id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
-    while wrapper.parentElement.matchesSelector 'a,span,p'
+    while wrapper.parentElement.matchesSelector 'a,span'
       wrapper.=parentElement
 
     markScroll this
@@ -67,7 +67,7 @@ onclick = !(e) ->
       &removeAttribute \href
 
     # remove unecessary first quote (implied by nesting
-    inlined.querySelector \.comment ?.firstElementChild?firstElementChild
+    inlined.querySelector \.comment ?.firstElementChild
       if &?firstElementChild?className is \recursivelink
         &nextSibling?remove! # the <br>
         &remove!

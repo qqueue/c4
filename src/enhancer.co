@@ -10,9 +10,7 @@ else \$& # don't replace
 # also, insert better markup when possible
 parser.enhance = ->
   return it if it.length is 0
-  "<p>" + it
-    .replace /<br><br>/g '<p>' # re-paragraph
-
+  it
     # unsplits urls (probably) split at 100 characters
     .replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
 

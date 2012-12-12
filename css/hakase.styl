@@ -201,7 +201,6 @@ img.full
 	// seems to fix weird left-margin in firefox
 	display block
 
-
 .capcode 
 	font-weight 800
 
@@ -268,12 +267,6 @@ a.quotelink
 .smaller
 	font-size smaller
 
-.oplink:after 
-	content " (OP)"
-
-.crossthread:after 
-	content " (Crossthread)"
-
 a,strong
 	&.quotelink.inlinedlink
 		font-weight bold
@@ -310,6 +303,8 @@ a,strong
 	margin 1em 1em 1em 40px
 	word-wrap break-word
 	line-height 1.8em
+	// pleasant reading width
+	width 40em
 
 .quote 
 	font-weight normal
