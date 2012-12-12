@@ -8,6 +8,8 @@ export handle-preview = !({clientX: x, clientY: y}) ->
   {width, height} = @parentElement.dataset
   src = @parentElement.href
 
+  $ \imgpreview ?.remove!
+
   # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
   # size of viewport excluding scrollbars
   docheight = document.documentElement.clientHeight - 20
@@ -31,6 +33,7 @@ export handle-preview = !({clientX: x, clientY: y}) ->
   var full
   create-image = !~>
     full ||:= document.createElement \img
+      &id = \imgpreview
       &alt = "Loading..."
       & <<< {src, width, height}
 
@@ -55,10 +58,8 @@ export handle-preview = !({clientX: x, clientY: y}) ->
 
     document.body.appendChild full
 
-    # fade in
-    defer 100ms !->
-      full?style <<<
-        opacity: 1
+    # fade in, deferred to trigger transition
+    defer 100ms !-> full?style.opacity = 1
 
     @classList.add \hovered-img
 
@@ -87,6 +88,10 @@ export handle-preview = !({clientX: x, clientY: y}) ->
     .on \mousemove reset-image
     .once \mouseout !->
       full?style.opacity = 0
+
+      # make sure the image removes itself
+      defer 100ms !-> full?remove!
+
       clearTimeout timeout # stop image from appearing
       listen this
         .off \mousemove reset-image
