@@ -16,7 +16,7 @@ munge = !(ctx) ->
           text = &textContent.replace /\s/g ' ' # replace linebreaks
 
         quote.after with document.createElement \span
-          &textContent = " #{truncate text, 100}"
+          &textContent = " #{truncate text, 70}"
           &className = \forcedquote
 
       if post.image
