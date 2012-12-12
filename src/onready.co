@@ -103,9 +103,7 @@ document.title =
   if board.isThread
     board.thread.op |>
       "#{truncate do
-           &title or
-           "#{if &poster is not \Anonymous then "#{&poster} - " else ''}
-            #{&text or &image?filename or &time.relative_time!}"}
+           &title or &text or &image?filename or &time.relative_time!}
        \ - /#{board.name}/"
   else
     board.title
