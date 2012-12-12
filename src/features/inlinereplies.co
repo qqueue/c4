@@ -69,7 +69,8 @@ onclick = !(e) ->
     # remove unecessary first quote (implied by nesting
     inlined.querySelector \.comment ?.firstElementChild
       if &?firstElementChild?className is \recursivelink
-        &nextSibling?remove! # the <br>
+        # clear out redundant space
+        &nextSibling.remove! while &nextSibling?tagName is \BR
         &remove!
 
     @classList.add \inlinedlink

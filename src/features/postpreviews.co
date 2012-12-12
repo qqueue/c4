@@ -58,6 +58,14 @@ create-preview = !(id, post) ->
     classify (&querySelectorAll ".quotelink[href$=\"#hostid\"]")
       .add \recursivelink
 
+    # remove unecessary first quote XXX copypasta from inlinereplies
+    &querySelector \.comment ?.firstElementChild
+      console.log &?firstElementChild
+      if &?firstElementChild?classList.contains \recursivelink
+        # clear out redundant space
+        &nextSibling.remove! while &nextSibling?tagName is \BR
+        &remove!
+
     &style
       &position = \fixed
       if left > (docWidth = document.documentElement.clientWidth) / 2
