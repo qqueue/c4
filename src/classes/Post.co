@@ -49,6 +49,7 @@ export class Post
   render: (container, classes = '', id) ->
     "<#container data-id=#{@id} \
                  class='#classes #{@className!}' \
+                 data-idx=#{@idx} \
                  id='#{id or "p#{@id}"}'>
       <h1>
         <button type=button class=hide value=#{@id}>&times;</button>

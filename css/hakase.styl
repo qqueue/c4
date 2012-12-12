@@ -124,12 +124,7 @@ body > header
 .post 
 	margin-top 3px
 
-.replies
-	counter-reset reply
-	counter-reset image
-
 .reply 
-	counter-increment reply
 	padding 2px
 	margin-left 2em
 	border-style solid
@@ -138,12 +133,6 @@ body > header
 	transition-property background-color
 	transition-duration 4s
 
-.replies > .post > .fileinfo
-	counter-increment image
-	&:before
-		content '#'counter(image, decimal)' '
-		color rgba(0,0,0,.4)
-
 .reply.new
 	background-color #feffbf !important
 
@@ -151,7 +140,7 @@ body > header
 	content " (sage)"
 
 .reply:before 
-	content counter(reply, decimal)
+	content attr(data-idx)
 	position absolute
 	text-align right
 	display inline-block
@@ -258,15 +247,12 @@ button.report
 		.file, .comment, .backlinks, .fileinfo
 			display: none
 
+// hidden to prevent repeats
 .post.inlined
-	// visually hidden only to keep post numbering
-	border 0
-	clip rect(0,0,0,0)
-	height 0
-	overflow hidden
-	padding 0
-	margin 0
-	outline 0
+	display none
+	// unless it's the hash
+	&:target
+		display block 
 
 .post.highlighted
 	background-color #D6BAD0 !important
