@@ -23,13 +23,6 @@ export class Post
           idx = post
         html +=
           "<a href=\"\#p#post\" class=\"backlink quotelink\">«#idx</a> "
-        if only_new
-          document.dispatchEvent new CustomEvent do
-            \html5chan-backlink
-            detail:
-              post: $ "p#{@id}"
-              id: post
-    ..new_backlinks[@id] = []
     return html
 
   className: -> # generates the correct classes to use

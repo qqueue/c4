@@ -130,7 +130,7 @@ humanized = (bytes) ->
 
 # "this" is thread
 parse-api-post = (data, i) -> new Post
-  &idx      = i + 1
+  &idx      = i
   &thread   = this
   &id       = data.no
   &url      = @url

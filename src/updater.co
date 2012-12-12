@@ -89,6 +89,14 @@ export updater =
                 \beforeend
                 Post[backlinks.parentNode.dataset.id]backlinks true
 
+              document.dispatchEvent new CustomEvent do
+                \html5chan-backlink
+                detail:
+                  id: backlinks.parentNode.dataset.id
+                  post: backlinks.parentNode
+
+            Post.new_backlinks = {} # cleared
+
             document.dispatchEvent new CustomEvent do
               \html5chan-update
               detail: {thread}
