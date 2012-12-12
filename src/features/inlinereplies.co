@@ -80,7 +80,7 @@ onclick = !(e) ->
 
     $ \postpreview ?.remove!
 
-    $ "p#id" .classList.add \inlined
+    $ "p#id" ?.classList.add \inlined
 
     scroll!
 
