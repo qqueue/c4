@@ -82,6 +82,9 @@ else
 
 console.log threads
 
+# XXX clear out backlinks, coupled
+Post.new-backlinks = {}
+
 body
   &id = board.name
   &className = "#{board.type} \

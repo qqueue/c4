@@ -91,7 +91,7 @@ export updater =
                   true
                   backlinks.parentNode # passed in for backlink event XXX
 
-            Post.new_backlinks = {} # cleared
+            Post.new-backlinks = {} # cleared
 
             document.dispatchEvent new CustomEvent do
               \html5chan-update

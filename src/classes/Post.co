@@ -7,14 +7,14 @@ export class Post
         quoted = link.substring 8
         backlinks = Post.backlinks@[quoted]
         if not backlinks[@id] #it's new
-          Post.new_backlinks@[quoted][@id] = true
+          Post.new-backlinks@[quoted][@id] = true
           backlinks[@id] = true
 
     ..[@id] = this # register this post as having been parsed
 
   backlinks: (only-new, post-el) -> # renders backlinks
     html = ""
-    backlinks = if only-new then Post.new_backlinks else Post.backlinks
+    backlinks = if only-new then Post.new-backlinks else Post.backlinks
     if backlinks[@id]
       for post in backlinks[@id]
         if board.isThread
@@ -128,7 +128,7 @@ export class Post
       &textContent
 
   ..backlinks = {}
-  ..new_backlinks = {}
+  ..new-backlinks = {}
   ..tripcodes = {}
   ..uids = {}
 

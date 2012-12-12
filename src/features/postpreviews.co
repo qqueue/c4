@@ -94,8 +94,6 @@ onpostinsert !->
 
 onbacklink !({detail}) ->
   <-! defer 100ms
-  console.log "adding backlink #{detail.id}"
   detail.post.querySelector ".backlink[href$=p#{detail.id}]"
-    log &
     &addEventListener \mouseover handle-preview
 
