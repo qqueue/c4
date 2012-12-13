@@ -53,7 +53,11 @@ onready !->
     else
       @textContent = "Expand all"
 
-  listen $ \collapse-all .click !-> collapse img for img of $$ '.full'
+  listen $ \collapse-all .click !->
+    for $$ '.full'
+      &nextSibling.hidden = false
+      &remove!
+
 
   file.addEventListener \click onclick for file of $$ \.file
 
