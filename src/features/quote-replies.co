@@ -17,8 +17,9 @@ munge = !(ctx) ->
           for &querySelectorAll \s => &remove!
 
           text = &textContent
-        quote.after with document.createElement \span
-          &textContent = truncate text, 70
+        quote.after ' ' with document.createElement \span
+          # trim beginning whitespace
+          &textContent = ' ' + truncate text, 70 .replace /^\s+/ ''
           &className = \forcedquote
 
       if post.image

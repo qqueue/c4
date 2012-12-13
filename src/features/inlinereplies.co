@@ -66,12 +66,13 @@ onclick = !(e) ->
       &className = \recursivelink
       &removeAttribute \href
 
-    # remove unecessary first quote (implied by nesting
-    inlined.querySelector \.comment ?.firstElementChild
-      if &?firstElementChild?className is \recursivelink
-        # clear out redundant space
-        &nextSibling.remove! while &nextSibling?tagName is \BR
-        &remove!
+    # remove unecessary first quote (implied by nesting) if it's the only one
+    if inlined.querySelectorAll \.quotelink .length is 0
+      inlined.querySelector \.comment ?.firstElementChild
+        if &?firstElementChild?className is \recursivelink
+          # clear out redundant space
+          &nextSibling.remove! while &nextSibling?tagName is \BR
+          &remove!
 
     @classList.add \inlinedlink
     @parentNode.classList.add \inlinedquote
