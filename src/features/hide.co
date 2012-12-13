@@ -42,9 +42,11 @@ onready !->
   for post of document.getElementsByClassName \post
     id = post.dataset.id
     toggle \p id if hidden.posts[id]
-  for thread of document.getElementsByClassName \thread
-    id = thread.dataset.id
-    toggle \t id if hidden.threads[id]
+
+  if board.is-board # don't bother on the actual thread page
+    for thread of document.getElementsByClassName \thread
+      id = thread.dataset.id
+      toggle \t id if hidden.threads[id]
 
 onupdate !->
   for a of $$ ".new .quotelink"
