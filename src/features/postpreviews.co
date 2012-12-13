@@ -16,7 +16,6 @@ fetch-new-post = !(id) ->
       # TODO handle 404 -> archive
       if @status is 200
         thread = parser.api JSON.parse @response
-        console.log thread
 
         if still-hovered
           link.style.removeProperty \cursor
@@ -61,7 +60,6 @@ create-preview = !(id, post) ->
     # remove unecessary first quote XXX copypasta from inlinereplies
     if &querySelectorAll \.quotelink .length is 1
       &querySelector \.comment ?.firstElementChild
-        console.log &?firstElementChild
         if &?firstElementChild?classList.contains \recursivelink
           # clear out redundant space
           &nextSibling.remove! while &nextSibling?tagName is \BR
