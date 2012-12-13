@@ -51,14 +51,14 @@ export class Post
                  class='#classes #{@className!}' \
                  data-idx=#{@idx} \
                  id='#{id or "p#{@id}"}'>
-      <h1>
+      <h1 class=post-header>
         <button type=button class=hide value=#{@id}>&times;</button>
         <button type=submit \
                 form=reportform \
                 class=report \
                 name=no \
                 value=#{@id}>!</button>
-        <a href='#{@url}' class=title>#{@title or ''}</a> \
+        <a href='#{@url}' class=subject>#{@title or ''}</a> \
         <a class=poster \
            #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a> \
 

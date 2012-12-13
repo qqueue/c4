@@ -2,3 +2,11 @@
 export truncate = (it, length = 20) ->
   if it.length > length then "#{it.substring 0 length}..." else it
 
+export humanized = (bytes) ->
+  if bytes < 1024
+    "#bytes B"
+  else if (kbytes = Math.round bytes / 1024) < 1024
+    "#kbytes KB"
+  else
+    "#{(kbytes / 1024)toString!substring 0 3} MB"
+

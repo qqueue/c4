@@ -1,168 +1,63 @@
-# fake ajax posting
-
-postStatus = ->
-  $ \post-status .textContent = it
-#
-# set .visible class on postform-wrapper when at the bottom of the screen
-# so stylesheet can make it visible
-# kinda stylesheet specific, oh well
-
-# FIXME this logic sucks
-visible = false # hold visible
-showform = -> $ \postform-wrapper .classList.add \visible if bottom or visible
-hideform = -> $ \postform-wrapper .classList.remove \visible unless bottom or visible
-
-bottom = false # at the bottom of screen, set by scroller
-
 <-! onready
 
-checkValidity = (e) ->
-  e.preventDefault!
+var file
 
+document.addEventListener \dragenter !-> it.preventDefault!
+document.addEventListener \drop !->
+  console.log it
+  it.preventDefault!
+  file := it.dataTransfer.files[0]
+
+  $ \filename .textContent = file.name
+  $ \size .textContent = humanized file.size
+  $ \file
+    &firstChild?remove!
+    &append with new Image
+      &onload = !->
+        $ \dimensions .textContent = "#{@naturalWidth}x#{@naturalHeight}"
+      &style <<< max-width: \152px max-height: \152px # TODO 4chan dimensions
+      &src = url = URL.createObjectURL file
+
+  #URL.revokeObjectURL url
+
+!function post
   form = $ \postform
   captcha = $ \recaptcha_response_field
   file = $ \file
   comment = $ \comment
   email = $ \email
 
-  # noko would load the thread into the iframe and break
-  # sys.4chan.org posting a message back here
-  email.value = '' if /^noko$/i.test email.value
+  # TODO validate
 
-  captcha.setCustomValidity unless captcha.value
-    "You forgot the captcha!"
-  else ''
+  # TODO handle pass, once I get one myself...
+  #
+  # formdata initialized with captcha form
+  data = new FormData $ \captcha
+    # required static fields
+    &append \MAX_FILE_SIZE 3145728 # TODO different on different boards
+    &append \resto board.thread-id if board.is-thread
+    &append \mode \regist # not sure what this is
+    &append \password get \password
 
-  file.setCustomValidity if !file.value and board.isBoard
-    "You forgot your image!"
-  else ''
+    &append \name name
+    &append \email email
+    &append \sub subject
+    &append \com comment
 
-  comment.setCustomValidity if !file.value and !comment.value
-    "You didn't enter a comment or select a file!"
-  else ''
+    &append \upfile file if file
+    &append \spoiler spoiler
 
-  if form.checkValidity!
-    $ \post .disabled = true
-    $ \sage ?.disabled = true
+    # TODO other recaptcha_set field
+    &append \recaptcha_response_field captcha
 
-    visible := true
-    showform! # make sure the form stays visible
+  new XMLHttpRequest
+    &open \POST form.action
+    &onload !->
+      html = document.createElement \div
+      html.innerHTML = @response
+      console.log html
 
-    postStatus "Posting..."
-    $ \progress
-      &hidden = false # show progress bar
-      &value = 0
+    &onerror !-> console.error 'posting error!' it
 
-    data = new FormData form
-    # since we're ajaxing this, need to replace email with sage
-    # if that was used to submit
-    if this is $ \sage # sage button clicked
-      data.append \email \sage
-
-      #ajax time!
-    new XMLHttpRequest
-      &open \POST form.action
-      listen &
-        .on \load ->
-          html = document.createElement \div
-          html.innerHTML = @response
-          console.log html
-
-          captcha = $ \recaptcha_response_field
-          file = $ \file
-          comment = $ \comment
-
-          $ \post .disabled = false
-          $ \sage ?.disabled = false
-
-          if /Post successful!|uploaded!/.test html.textContent
-            postStatus 'Post successful!'
-            cooldown!
-
-            visible := false # don't need to show form anymore
-            hideform!
-
-            $ \postform .reset!
-            $ \name .value = get \name or '' # persist name
-            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-
-            # update and show new post, giving some time for 4chan to process it
-            updater.countdown.restart 3sec
-            # reset last_parse to force an update, since 4chan's timestamp
-            # often lies
-            parser.last_parse = 0
-
-          # TODO check for other errors
-          else if /mistyped the verification/.test html.textContent
-            postStatus 'You mistyped the verification!'
-            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-            captcha
-              &value = ''
-              &focus!
-          else if /duplicate file entry detected/
-            # TODO select for link to duplicate file
-            $ \postform .reset!
-            $ \name .value = get \name or '' # persist name
-            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-        .on \loadend ->
-          $ \progress .hidden = true # hide progress bar
-
-      listen &upload .on \progress (e) ->
-        $ \progress .value = 100 * e.loaded / e.total
-
-      &send data
-
-
-  return false # prevent normal submission
-
-listen $ \post .click checkValidity
-listen $ \sage .click checkValidity
-
-cooldown = ->
-  post = $ \post
-  sage = $ \sage
-  post.disabled = true
-  sage?disabled = true
-
-  message = post.textContent
-
-  tminus = 30sec
-  post.textContent = tminus
-  setTimeout do
-    function tick
-      if tminus-- is 0
-        post.textContent = message
-        post.disabled = false
-        sage?disabled = false
-      else
-        post.textContent = tminus
-        setTimeout tick, 1000ms
-    1000ms
-
-# persist entered name and tripcode
-listen $ \name .on \input ->
-  set name: @value
-$ \name ?.value = get \name or ''
-
-listen window .scroll ->
-  y = window.scrollMaxY - window.scrollY
-  if bottom := y < 100
-    showform!
-  else
-    hideform!
-
-# if form is focused, don't hide
-$ \postform ?.addEventListener do
-  \focus
-  ->
-    visible := true
-    showform!
-  true # have to use capture for non-bubbling focus events
-
-$ \postform ?.addEventListener do
-  \blur
-  ->
-    visible := false
-    hideform!
-  true # have to use capture for non-bubbling focus events
+    &send data
 

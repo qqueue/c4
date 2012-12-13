@@ -119,15 +119,6 @@ export parser =
 # TODO cross-board linking will break this
 thumbs-base = "//thumbs.4chan.org/#{board.name}/thumb/"
 images-base = "//images.4chan.org/#{board.name}/src/"
-
-humanized = (bytes) ->
-  if bytes < 1024
-    "#bytes B"
-  else if (kbytes = Math.round bytes / 1024) < 1024
-    "#kbytes KB"
-  else
-    "#{(kbytes / 1024)toString!substring 0 3} MB"
-
 # "this" is thread
 parse-api-post = (data, i) -> new Post
   &idx      = i

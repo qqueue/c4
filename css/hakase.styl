@@ -136,7 +136,7 @@ body > header
 .reply.new
 	background-color #feffbf !important
 
-.sage > h1 > .poster:after 
+.sage > .post-header > .poster:after 
 	content " (sage)"
 
 .reply:before 
@@ -148,16 +148,16 @@ body > header
 	width 2em
 	font-size 10pt
 
-.post h1 
+.post-header
 	margin 0 0 0 0.25em
 	padding 0
 	font-size 100%
 	font-weight normal
 
-.op > h1 
+.op > .post-header 
 	font-size 130%
 
-.post .title 
+.subject 
 	color #0f0c5d
 	font-weight 800
 	text-decoration none
@@ -438,25 +438,17 @@ s
 	fixed bottom left
 	width 100%
 
-#postform-wrapper.visible, #sticky:hover #postform-wrapper
-	height 250px
-	transition height .25s
-
-#postform-wrapper
-	height 0
-	overflow hidden
-	transition .5s
-	transition-delay .5s
-
 #postform 
-	display table
 	margin 1em auto
 
-	#comment, #recaptcha_response_field
-		width 100%
+#file
+	@extend .file
 
-#name, #email, #subject
-	width 31.3%
+#comment
+	@extend .comment
+	min-height 10em
+
+#recaptcha_response_field
 
 #recaptcha_image
 	display block
