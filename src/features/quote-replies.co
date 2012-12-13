@@ -9,14 +9,16 @@ munge = !(ctx) ->
     if (post = Post[id])
       if post.comment.length > 0
         document.createElement \div
-          &innerHTML = post.comment
+          # <br>s don't show in textContent for some reason
+          &innerHTML = post.comment.replace /<br>/g ' '
 
           for &querySelectorAll \.quotelink => &remove!
+          # manually splitting spoiler elements is tiring, so just remove
+          for &querySelectorAll \s => &remove!
 
-          text = &textContent.replace /\s/g ' ' # replace linebreaks
-
+          text = &textContent
         quote.after with document.createElement \span
-          &textContent = " #{truncate text, 70}"
+          &textContent = truncate text, 70
           &className = \forcedquote
 
       if post.image
