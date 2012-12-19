@@ -20,7 +20,7 @@ munge = !(ctx) ->
         quote.after ' ' with document.createElement \span
           # trim beginning whitespace
           &textContent = ' ' + truncate text, 70 .replace /^\s+/ ''
-          &className = \forcedquote
+          &className = 'quote forcedquote'
 
       if post.image
         quote.after with document.createElement \a
