@@ -11,8 +11,14 @@ else \$& # don't replace
 parser.enhance = ->
   return it if it.length is 0
   it
-    # unsplits urls (probably) split at 100 characters
-    .replace /([\w\-\._~:\/?#\[\]\(\)@!$&'*+,;=%]{100,})<br>/g '$1'
+
+    # 4chan started putting <wbr>s in every ~50ish characters for unbroken
+    # words in its markup, which kinda nice but doing it in pure CSS
+    # (whitespace:break word) would be better, since the <wbr>s are just placed
+    # at a character limit anyway, not at semantically significant points (e.g.
+    # hyphens) which is for which <wbr> was meant. Also, breaks the linkifier,
+    # so just remove all of them.
+    .replace /<wbr>/g ''
 
     #youtube thumbnails
     .replace do
