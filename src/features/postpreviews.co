@@ -53,17 +53,25 @@ create-preview = !(id, post) ->
   {width, height, left, top} = @getBoundingClientRect!
 
   preview = post.element \article, , \postpreview
+    document.dispatchEvent new CustomEvent do
+      \html5chan-postinsert
+      detail: post: preview
 
-    classify (&querySelectorAll ".quotelink[href$=\"#hostid\"]")
-      .add \recursivelink
+    for &querySelectorAll ".quotelink[href$=\"#hostid\"]"
+      &className = \recursivelink
+      &removeAttribute \href
 
     # remove unecessary first quote XXX copypasta from inlinereplies
-    if &querySelectorAll \.quotelink .length is 1
-      &querySelector \.comment ?.firstElementChild
-        if &?firstElementChild?classList.contains \recursivelink
-          # clear out redundant space
-          &nextSibling.remove! while &nextSibling?tagName is \BR
-          &remove!
+    &querySelector \.comment
+      if &querySelectorAll \.quotelink .length is 0
+        &firstElementChild
+          if &?className is \recursivelink
+            # clear out redundant space
+            while &nextSibling?tagName is \BR \
+               or &nextSibling?classList?contains \forcedquote \
+               or &nextSibling?classList?contains \forcedimage
+              &nextSibling.remove!
+            &remove!
 
     &style
       &position = \fixed
@@ -79,9 +87,6 @@ create-preview = !(id, post) ->
 
     document.body.appendChild (&)
 
-  document.dispatchEvent new CustomEvent do
-    \html5chan-postinsert
-    detail: post: preview
 
   # highlight hovered replies
   classify $$ ".post[data-id=\"#id\"]" .add \hovered

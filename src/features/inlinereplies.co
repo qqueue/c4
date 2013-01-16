@@ -67,12 +67,16 @@ onclick = !(e) ->
       &removeAttribute \href
 
     # remove unecessary first quote (implied by nesting) if it's the only one
-    if inlined.querySelectorAll \.quotelink .length is 0
-      inlined.querySelector \.comment ?.firstElementChild
-        if &?firstElementChild?className is \recursivelink
-          # clear out redundant space
-          &nextSibling.remove! while &nextSibling?tagName is \BR
-          &remove!
+    inlined.querySelector \.comment
+      if &querySelectorAll \.quotelink .length is 0
+        &firstElementChild
+          if &?className is \recursivelink
+            # clear out redundant space
+            while &nextSibling?tagName is \BR \
+               or &nextSibling?classList?contains \forcedquote \
+               or &nextSibling?classList?contains \forcedimage
+              &nextSibling.remove!
+            &remove!
 
     @classList.add \inlinedlink
     @parentNode.classList.add \inlinedquote

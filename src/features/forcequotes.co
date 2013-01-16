@@ -17,7 +17,7 @@ munge = !(ctx) ->
           for &querySelectorAll \s => &remove!
 
           text = &textContent
-        quote.after ' ' with document.createElement \span
+        quote.after with document.createElement \span
           # trim beginning whitespace
           &textContent = ' ' + truncate text, 70 .replace /^\s+/ ''
           &className = 'quote forcedquote'
