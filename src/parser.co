@@ -9,9 +9,9 @@ sage-regex      = /^sage$/i
 # lots of querySelector calls? Did switching to standards mode make
 # dom querying faster or something? TODO test this, somehow
 parse-thread = (el) -> new Thread
-  &id = el.id.substring 1 # t12345
-  &url = board.threadurl + &id
-  &preview = true
+  &id        = el.id.substring 1 # t12345
+  &url       = board.threadurl + &id
+  &preview   = true
 
   if omitted = el.querySelector \.summary
     &omitted =
@@ -22,8 +22,9 @@ parse-thread = (el) -> new Thread
 
   # TODO sticky and locked
 
-  &op = parse-post.call (&), el.querySelector( \.op )
+  &op     = parse-post.call (&), el.querySelector( \.op )
   &op.idx = 0
+
   &replies = Array::map.call do
     el.getElementsByClassName( \reply )
     parse-post
@@ -35,25 +36,27 @@ parse-post = (el, idx) ->
   thread = this
 
   new Post
-    &idx = idx + 1
+    &idx    = idx + 1
     &thread = thread
-    &id = el.id.substring 1
+    &id     = el.id.substring 1
+
     &url =
       if &op = el.classList.contains \op
         thread.url
       else
         "#{thread.url}\#p#{&id}"
+
     &time = new Date do
       parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
 
-    &title = el.querySelector '.postInfo.desktop .subject' .innerHTML
+    &title    = el.querySelector '.postInfo.desktop .subject' .innerHTML
 
-    &poster = el.querySelector \.name .innerHTML
-    &tripcode = el.querySelector \.postertrip ?.innerHTML
-    &capcode = el.querySelector \.capcode ?.innerHTML
+    &poster   = el.querySelector \.name                       .innerHTML
+    &tripcode = el.querySelector \.postertrip                ?.innerHTML
+    &capcode  = el.querySelector \.capcode                   ?.innerHTML
 
-    &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
-    &sage = sage-regex.test that if &email
+    &email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
+    &sage     = sage-regex.test that if &email
 
     &comment = parser.enhance do
       el.querySelector \.postMessage .innerHTML
@@ -64,24 +67,25 @@ parse-post = (el, idx) ->
       if img.firstElementChild.alt is "File deleted."
         &deletedImage = true
       else
-        thumb = img.firstElementChild
-        info = el.querySelector \.fileInfo .innerHTML
+        thumb      = img.firstElementChild
+        info       = el.querySelector \.fileInfo .innerHTML
         dimensions = dimension-regex.exec info
         &image =
           thumb:
-            url: thumb.src
-            width: parseInt thumb.style.width, 10
-            height: parseInt thumb.style.height, 10
-          url: thumb.parentNode.href
+            url    : thumb.src
+            width  : parseInt thumb.style.width, 10
+            height : parseInt thumb.style.height, 10
 
-          width: parseInt dimensions.1, 10
-          height: parseInt dimensions.2, 10
+          url      : thumb.parentNode.href
 
-          size: size-regex.exec thumb.alt .0
-          filename: filename-regex.exec(info)?1
-          md5: thumb.dataset.md5
+          width    : parseInt dimensions.1, 10
+          height   : parseInt dimensions.2, 10
 
-          spoiler: spoiler-regex.test thumb.alt
+          size     : size-regex.exec thumb.alt .0
+          filename : filename-regex.exec(info)?1
+          md5      : thumb.dataset.md5
+
+          spoiler  : spoiler-regex.test thumb.alt
 
     &postprocess!
 
