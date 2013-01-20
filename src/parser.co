@@ -58,7 +58,7 @@ parse-post = (el, idx) ->
     &comment = parser.enhance do
       el.querySelector \.postMessage .innerHTML
 
-    &uid = el.querySelector \.hand .textContent # hand?
+    &uid = el.querySelector \.hand ?.textContent # hand?
 
     if img = el.querySelector \.fileThumb
       if img.firstElementChild.alt is "File deleted."
