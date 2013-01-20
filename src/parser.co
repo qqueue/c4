@@ -1,14 +1,14 @@
-dimension_regex = /(\d+)x(\d+)/
-size_regex      = /[\d\.]+ [KM]?B/
-filename_regex  = /title="([^"]+)"/
-spoiler_regex   = /^Spoiler Image/
-sage_regex      = /^sage$/i
+dimension-regex = /(\d+)x(\d+)/
+size-regex      = /[\d\.]+ [KM]?B/
+filename-regex  = /title="([^"]+)"/
+spoiler-regex   = /^Spoiler Image/
+sage-regex      = /^sage$/i
 
 # slow(?!) DOM querying parser
 # shit, why is this so much faster, even with nested functions and
 # lots of querySelector calls? Did switching to standards mode make
 # dom querying faster or something? TODO test this, somehow
-parse_thread = (el) -> new Thread
+parse-thread = (el) -> new Thread
   &id = el.id.substring 1 # t12345
   &url = board.threadurl + &id
   &preview = true
@@ -22,16 +22,16 @@ parse_thread = (el) -> new Thread
 
   # TODO sticky and locked
 
-  &op = parse_post.call (&), el.querySelector( \.op )
+  &op = parse-post.call (&), el.querySelector( \.op )
   &op.idx = 0
   &replies = Array::map.call do
     el.getElementsByClassName( \reply )
-    parse_post
+    parse-post
     & # this for map calls
 
   &postprocess!
 
-parse_post = (el, idx) ->
+parse-post = (el, idx) ->
   thread = this
 
   new Post
@@ -53,7 +53,7 @@ parse_post = (el, idx) ->
     &capcode = el.querySelector \.capcode ?.innerHTML
 
     &email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
-    &sage = sage_regex.test that if &email
+    &sage = sage-regex.test that if &email
 
     &comment = parser.enhance do
       el.querySelector \.postMessage .innerHTML
@@ -66,7 +66,7 @@ parse_post = (el, idx) ->
       else
         thumb = img.firstElementChild
         info = el.querySelector \.fileInfo .innerHTML
-        dimensions = dimension_regex.exec info
+        dimensions = dimension-regex.exec info
         &image =
           thumb:
             url: thumb.src
@@ -77,11 +77,11 @@ parse_post = (el, idx) ->
           width: parseInt dimensions.1, 10
           height: parseInt dimensions.2, 10
 
-          size: size_regex.exec thumb.alt .0
-          filename: filename_regex.exec(info)?1
+          size: size-regex.exec thumb.alt .0
+          filename: filename-regex.exec(info)?1
           md5: thumb.dataset.md5
 
-          spoiler: spoiler_regex.test thumb.alt
+          spoiler: spoiler-regex.test thumb.alt
 
     &postprocess!
 
@@ -91,14 +91,14 @@ export parser =
     console.time "parse board"
     threads = Array::map.call do
       document.querySelectorAll \.thread
-      parse_thread
+      parse-thread
     console.timeEnd "parse board"
 
     return threads
 
   thread: (document) ->
     console.time "parse thread"
-    thread = parse_thread document.querySelector \.thread
+    thread = parse-thread document.querySelector \.thread
     console.timeEnd "parse thread"
 
     return thread
