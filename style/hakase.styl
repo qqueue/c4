@@ -21,6 +21,8 @@ body.sfw
 		border-color #b7c5d9
 	.reply:before 
 		color #b7c5d9
+	.inline:before
+		color #91a5cb
 	#postpreview.op 
 		background-color #eef2ff
 	.quotelink 
@@ -43,6 +45,8 @@ body.nsfw
 		border-color #d9bfb7
 	.reply:before 
 		color #d9bfb7
+	.inline:before 
+		color #a98f87
 	#postpreview.op 
 		background-color #ffe
 	.quotelink 
@@ -139,7 +143,7 @@ body > header
 .sage > h1 > .poster:after 
 	content " (sage)"
 
-.reply:before 
+.reply:before, .inline:before
 	content attr(data-idx)
 	position absolute
 	text-align right
@@ -373,22 +377,16 @@ s
 	box-shadow 5px 5px 10px rgba(0,0,0,.5)
 	margin 0
 
-.post.inline 
+.inline 
 	margin-left 0
 	border-left 1px solid
 	padding-left 0
-	.comment
-		padding-left 1em
-		margin-left 0
 
-.comment .post.inline
+.comment .inline
 	display table // quasi-clears images properly
 
-.backlink+.post.inline 
-	margin-left 20px
-	& > .comment 
-		margin 1em 40px 1em 0
-		padding 0 1em
+.backlink + .inline 
+	margin-left 40px
 
 .inline .backlinks > .recursivelink 
 	display none
