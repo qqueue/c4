@@ -139,6 +139,7 @@ parse-api-post = (data, i) -> new Post
     title: sub
     poster: name
     tripcode: trip
+    uid: id
     capcode
     email
   }
