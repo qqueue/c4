@@ -1,6 +1,4 @@
 # inline replies
-# with lots of delicious messy logic to ensure
-# mouse position is maintained
 
 # scroll! returns to the scroll position when
 # markScroll! was last called
@@ -12,6 +10,31 @@
   scroll: ->
     window.scrollBy 0, el.getBoundingClientRect!top - last
 
+toggle-off = !(link, inlined) ->
+  id = link.hash.substring 2
+
+  link.hidden = false
+
+  markScroll link
+
+  link.classList.remove \inlinedlink
+  link.parentNode.classList.remove \inlinedquote
+
+  # remove original post's inlined status if this is the last inlining
+  # link
+  if $$ ".inline[data-id=\"#id\"]" .length is 1
+    $ "p#id" ?.classList.remove \inlined
+
+  # and for nested posts
+  for inlined.querySelectorAll '.post.inline'
+    pid = (&id / \-)pop!
+    if $$ ".inline[data-id=\"#pid\"]" .length is 1
+      $ "p#pid" ?.classList.remove \inlined
+
+  inlined.remove!
+
+  scroll!
+
 onclick = !(e) ->
   return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
   return unless post = Post[id = @hash.substring 2]
@@ -22,29 +45,10 @@ onclick = !(e) ->
   inlined_id = "#{host}-p#id" # id is unique to hosting post and inlined post
   stub_id = "#{id}-inlined-stub"
 
-  if inlined = $ inlined_id # toggle off
-
-    markScroll this
-
-    @classList.remove \inlinedlink
-    @parentNode.classList.remove \inlinedquote
-
-    # remove original post's inlined status if this is the last inlining
-    # link
-    if $$ ".inline[data-id=\"#id\"]" .length is 1
-      $ "p#id" ?.classList.remove \inlined
-
-    # and for nested posts
-    for inlined.querySelectorAll '.post.inline'
-      pid = (&id / \-)pop!
-      if $$ ".inline[data-id=\"#pid\"]" .length is 1
-        $ "p#pid" ?.classList.remove \inlined
-
-    inlined.remove!
-
-    scroll!
-
+  if inlined = $ inlined_id
+    toggle-off this, inlined
   else # create
+    is-backlink = @classList.contains \backlink
     inlined = post.element \article "inline hovered" inlined_id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
@@ -54,7 +58,17 @@ onclick = !(e) ->
     markScroll this
 
     # insert post in "natural" reading order
-    wrapper[if @classList.contains \backlink then \after else \before] inlined
+    wrapper[if is-backlink then \after else \before] inlined
+
+    if is-backlink
+      # prepend backlink number element (instead of pseudo element) that will
+      # remove inlined post on click
+      inlined.prepend with document.createElement \a
+        &textContent = post.idx
+        &className = \inlined-idx
+        &addEventListener \click !~> toggle-off this, inlined
+
+      this.hidden = true # don't need two links
 
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
@@ -85,8 +99,7 @@ onclick = !(e) ->
 
     $ "p#id" ?.classList.add \inlined
 
-    scroll!
-
+    scroll! unless is-backlink # since backlink got hidden
 
 follow = !->
   window.location.hash = that if @hash # actually follow link
