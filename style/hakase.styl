@@ -21,7 +21,7 @@ body.sfw
     border-color #b7c5d9
   .reply:before
     color #b7c5d9
-  .inline:before
+  .inlined-idx
     color #91a5cb
   #postpreview.op
     background-color #eef2ff
@@ -45,7 +45,7 @@ body.nsfw
     border-color #d9bfb7
   .reply:before
     color #d9bfb7
-  .inline:before
+  .inlined-idx
     color #a98f87
   #postpreview.op
     background-color #ffe
@@ -143,7 +143,7 @@ body > header
 .sage > h1 > .poster:after
   content " (sage)"
 
-.reply:before, .inline:before
+.reply:before, .inlined-idx
   content attr(data-idx)
   position absolute
   text-align right
@@ -151,6 +151,11 @@ body > header
   margin-left -2.5em
   width 2em
   font-size 10pt
+
+.inlined-idx
+  cursor pointer
+  &:hover
+    text-decoration underline
 
 .post h1
   margin 0 0 0 0.25em
@@ -197,9 +202,10 @@ body > header
   margin 3px 20px
   position relative
 
-  // display block overrides hidden style...
-  &[hidden]
-    display none
+// hidden attribute strangely has less precedence than style="display: none" by
+// default
+[hidden]
+  display none !important
 
 img.full
   // seems to fix weird left-margin in firefox
