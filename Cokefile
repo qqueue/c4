@@ -49,7 +49,7 @@ outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-  err, css <-! nib read(\css/hakase.styl) .render
+  err, css <-! nib read(\style/hakase.styl) .render
   try
     throw err if err
     fs.writeFileSync do
@@ -86,7 +86,7 @@ debounce = (delay, fn) ->
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
-  for it of <[css src templates src/features src/classes src/utils]>
+  for it of <[style src templates src/features src/classes src/utils]>
     fs.watch it, interval: 1000, debounce 1000 (event, filename) ->
       console.log "#event event detected on #filename. rebuilding..."
       invoke \build
