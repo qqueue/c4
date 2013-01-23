@@ -1,9 +1,4 @@
 # adds features at the comment html level
-
-board.archivelink = if board.archive
-  """$1<a href="#{board.archive}/$2" class="archivelink">&gt;&gt;$2</a>"""
-else \$& # don't replace
-
 # taking the regex approach with innerHTML because I believe that cloning the
 # element and working with the DOM before taking the HTML would be slower
 #
@@ -82,15 +77,19 @@ parser.enhance = ->
             target="_blank">$2</a>'
 
     # attempt to redirect broken post links to the archive
-    # uses ultra clever atomic group mimickry with lookahead
-    # http://blog.stevenlevithan.com/archives/mimic-atomic-groups
-    # not preceded by ; to avoid grabbing stuff like '>>>9gag.com'
     .replace do
       //
-      (^|[^;]) # avoid >>> (the first ';' of '&gt;&gt;&gt;')
-      &gt;&gt; # >>
-      (?=(\d+))\2 # \2 is the post number, which must be entirely matched
-      (?!<\/a>) # avoid already linked posts
+      <span\x20class="deadlink">
+      &gt;&gt;
+      # TODO (?: &gt;/(\w+)/(\d+) # crosboard >>>/q/12325 link
+      #|
+        (\d+)                     # crossthread >>/13252 link
+      #)
+      </span>
       //g
       board.archivelink
+
+board.archivelink = if board.archive
+  """<a href="#{board.archive}/$1" class="deadlink">&gt;&gt;$1</a>"""
+else \$& # don't replace
 
