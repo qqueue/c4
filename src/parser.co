@@ -20,7 +20,8 @@ parse-thread = (el) -> new Thread
       imageReplies:
         parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 
-  # TODO sticky and locked
+  &sticky = el.querySelector(\.stickyIcon)? # XXX implicit call doens't work with ?
+  &closed = el.querySelector(\.closedIcon)?
 
   &op     = parse-post.call (&), el.querySelector( \.op )
   &op.idx = 0
@@ -114,7 +115,7 @@ export parser =
 
     &preview = !!op.omitted_posts
     &sticky  = !!op.sticky
-    &locked  = !!op.closed
+    &closed  = !!op.closed
 
     &[\op ...\replies] = data.posts.map parse-api-post, &
 
