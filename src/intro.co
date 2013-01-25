@@ -41,7 +41,3 @@ export
   onpostinsert = !-> document.addEventListener \html5chan-postinsert it
   onbacklink   = !-> document.addEventListener \html5chan-backlink   it
 
-# used in rendering pipeline some
-export render_all = (objects, ...options) ->
-  (obj.render.apply obj, options for obj of objects).join ''
-

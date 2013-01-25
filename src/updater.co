@@ -76,7 +76,7 @@ export updater =
             $ "t#{thread.id}" .lastElementChild # .replies
               .insertAdjacentHTML do
                 \beforeend
-                render_all thread.new, \article, 'new reply'
+                (for thread.new => &render \article, 'new reply')join ''
 
             for post of thread.new
               document.dispatchEvent new CustomEvent do

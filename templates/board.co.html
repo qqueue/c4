@@ -22,7 +22,7 @@ else ''}
   <a href="\#bottom">Bottom</a>
   """
 else ''}
-<div id="threads">#{render_all threads, \article}</div>
+<div id="threads">#{(for threads => &render \article)join ''}</div>
 #{if board.isThread
   """
   <a href="#{board.url}">Return</a>
