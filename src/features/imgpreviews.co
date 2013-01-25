@@ -1,101 +1,71 @@
-# show a centered image preview when hovering over an image after a short
-# delay, and only remove it after the mouse moves out of the dead zone this is
-# similar to how tooltips are handled in firefox.
-const delay     = 200ms
-const dead-zone = 10px
+# show a centered image preview when hovering over an image after a short delay
 
-export handle-preview = !({clientX: x, clientY: y}) ->
-  {width, height} = @parentElement.dataset
-  src = @parentElement.href
+# scaled width and height from original width and height. manual version of CSS
+# object-fit (only in opera)
+object-fit = (container, width, height) ->
+  ratio = Math.min do
+    1
+    container.height / height
+    container.width  / width
 
-  $ \imgpreview ?.remove!
+  width  : ratio * width
+  height : ratio * height
 
-  # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
-  # size of viewport excluding scrollbars
-  docheight = document.documentElement.clientHeight - 20
-  docwidth  = document.documentElement.clientWidth - 20
+export handle-preview = tooltip do
+  show: !->
+    @style.cursor = \none # hide cursor while hovering
 
-  ratio = Math.min 1, docheight/height, docwidth/width
-  width  *= ratio
-  height *= ratio
+    a = @parentElement
 
-  var timeout
-  # until the image is displayed, continually reset
-  # timeout on mousemovement
-  reset-image = !(e) ->
-    clearTimeout timeout
-    timeout := setTimeout create-image, delay
+    # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
+    # size of viewport excluding scrollbars.
+    viewport =
+      width  : document.documentElement.clientWidth
+      height : document.documentElement.clientHeight
 
-    # store the new current mouse position
-    x := e.clientX
-    y := e.clientY
-
-  var full
-  create-image = !~>
-    full ||:= document.createElement \img
+    document.body.append with document.createElement \img
       &id = \imgpreview
       &alt = "Loading..."
-      & <<< {src, width, height}
+      &src = a.href
+
+      &{width, height} = object-fit do
+        viewport
+        a.dataset.width
+        a.dataset.height
 
       &addEventListener \load  -> @removeAttribute \alt
       &addEventListener \error -> @alt = "Unable to load image."
 
       &style <<<
-        position: \fixed
-        left: 0
-        top: 0
-        pointer-events: \none
-        padding: "#{10 + (docheight - height) / 2}px \
-                  #{10 + (docwidth  - width ) / 2}px"
-        background-color: 'rgba(0,0,0,.5)'
-        transition-duration: \.5s
-        opacity: 0
+        position            : \fixed
+        left                : 0
+        top                 : 0
+        pointer-events      : \none
 
-      # remove once faded
+        # give a lightbox-like shading to the page
+        background-color    : 'rgba(0,0,0,.5)'
+
+        # pad out the background-color to the entire viewport
+        padding             : "#{(viewport.height - &height) / 2}px \
+                               #{(viewport.width  - &width ) / 2}px"
+
+        transition-duration : \.5s
+        opacity             : 0
+
+      # remove once faded completely.
       &addEventListener \transitionend ({propertyName}: e) ->
         if propertyName is \opacity and @style.opacity is '0'
           @remove!
 
-    document.body.appendChild full
+      # fade in, deferred to trigger transition animation.
+      defer 100ms !-> &style.opacity = 1
 
-    # fade in, deferred to trigger transition
-    defer 100ms !-> full?style.opacity = 1
+  hide: !->
+    # fade out. would be nice if DOM removal triggered CSS opacity transitions,
+    # but it doesn't.
+    $ \imgpreview ?.style.opacity = 0
 
-    @classList.add \hovered-img
-
-    # swap creation with destruction
-    listen this
-      .off \mousemove reset-image
-      .on \mousemove remove-image
-
-  remove-image = !({clientX: cx, clientY: cy}) ->
-    if Math.abs(x - cx) > dead-zone or Math.abs(y - cy) > dead-zone
-      @classList.remove \hovered-img
-
-      full?style.opacity = 0
-
-      # restart tooltip timeout
-      timeout := setTimeout create-image, delay
-      listen this
-        .on \mousemove reset-image
-        .off \mousemove remove-image
-
-  # start initial timeout
-  timeout = setTimeout create-image, delay
-
-  # add handlers
-  listen this
-    .on \mousemove reset-image
-    .once \mouseout !->
-      full?style.opacity = 0
-
-      # make sure the image removes itself
-      defer 100ms !-> full?remove!
-
-      clearTimeout timeout # stop image from appearing
-      listen this
-        .off \mousemove reset-image
-        .off \mousemove remove-image
+    @style.removeProperty \cursor
 
 onready !->
   console.time 'attach thumb hover listeners'

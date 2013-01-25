@@ -1,0 +1,66 @@
+# show a tooltip for a given element only after the user mouses over and keeps
+# the mouse still for a short delay. remove the tooltip if the mouse moves
+# outside a small deadzone. This is similar to how title tooltips interact in
+# firefox, but for arbitrary content.
+const delay     = 200ms
+const dead-zone = 10px
+
+# a function suitable for attachment to a 'mouseover' event that
+# handles tooltip-like behavior according to mouse movement over an element.
+#
+# the `show` fn is called, with the element as context and the event object as
+# an argument, when the tooltip should be shown.
+#
+# the `hide` fn is called with the same context and arguments when the
+# tooltip content should be removed from view.
+export tooltip = ({show, hide}) -> !({clientX: x, clientY: y}) ->
+  var timeout
+
+  # called when user hasn't moved mouse for 'delay' seconds
+  create-tooltip = !(e) ~>
+    show ...
+
+    # swap creation for destruction
+    listen this
+      .off \mousemove reset-timeout
+      .on \mousemove remove-tooltip
+
+  # mousemove handler when tooltip is hidden but mouse is over element, to
+  # ensure tooltip is only shown after 'delay' seconds of no movement
+  reset-timeout = !(e) ->
+    clearTimeout timeout
+    timeout := setTimeout create-tooltip, delay
+
+    # store the new current mouse position
+    {clientX: x, clientY: y} := e
+
+  # mousemove handler when tooltip is shown, to remove tooltip when mouse is
+  # moved outside the deadzone. The deadzone ensures the tooltip doesn't get
+  # removed by accidental small mouse movements, only intentional movements.
+  remove-tooltip = !({clientX: cx, clientY: cy}) ->
+    if Math.abs(x - cx) > dead-zone or Math.abs(y - cy) > dead-zone
+      hide ...
+
+      # restart tooltip timeout, just in case user doesn't move mouse after
+      # reaching the deadzone, which would trigger reset-timeout.
+      timeout := setTimeout create-tooltip, delay
+
+      # swap destruction for creation
+      listen this
+        .on \mousemove reset-timeout
+        .off \mousemove remove-tooltip
+
+  # start initial timeout
+  timeout = setTimeout create-tooltip, delay
+
+  listen this
+    .on \mousemove reset-timeout
+    .once \mouseout !->
+      # clean up tooltip and handlers
+      hide ...
+
+      clearTimeout timeout
+      listen this
+        .off \mousemove reset-timeout
+        .off \mousemove remove-tooltip
+
