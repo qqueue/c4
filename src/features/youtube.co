@@ -77,16 +77,15 @@ handle = !(vids) ->
 onclick = !(e) ->
   unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
     e.preventDefault!
-    @replace kup do
-      \iframe
-      width: 560
-      height: 315
-      src: "//www.youtube.com/embed/#{@dataset.id}
-            ?#{@dataset.params or ''}
-            &amp;autoplay=1
-            &amp;wmode=transparent"
-      frameborder: 0
-      allowfullscreen: ''
+    @replace with document.createElement \iframe
+      &width = 560
+      &height = 315
+      &src = "//www.youtube.com/embed/#{@dataset.id}
+             ?#{@dataset.params or ''}
+             &amp;autoplay=1
+             &amp;wmode=transparent"
+      &frameborder = 0
+      &allowfullscreen = ''
 
 onready      !-> handle $$ \.youtube
 onpostinsert !-> handle it.detail.post.querySelectorAll \.youtube

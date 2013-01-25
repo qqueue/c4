@@ -3,8 +3,10 @@
 expand = !(a) ->
   return if a.hidden # already expanded
   a.hidden = true
-  a.before kup \img src: a.href, className: \full, !->
-    @on \click !-> collapse a
+  a.before with document.createElement \img
+    &src =  a.href
+    &className = \full
+    &onclick = !-> collapse a
   $ \imgpreview ?.remove!
 
 collapse = !(a, scroll = true) ->
@@ -16,7 +18,7 @@ collapse = !(a, scroll = true) ->
     window.scrollBy 0, top # scroll so it is visible
 
 # force browser fetch by creating img element
-preload = !(a) -> kup \img src: a.href
+preload = !(a) -> with document.createElement \img => &src = a.href
 
 preloading = false
 expanding = false
@@ -29,7 +31,8 @@ onclick = !(e) ->
 onready !->
 
   # manage single-rule stylesheet so we don't have to iterate over elements
-  fit-width = kup \style '.full { max-width: 100%; }'
+  fit-width = with document.createElement \style
+    &textContent = '.full { max-width: 100%; }'
   document.head.append fit-width
 
   fit-width.disabled = get(\img-display) is \full
