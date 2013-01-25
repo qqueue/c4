@@ -65,6 +65,11 @@ export handle-preview = tooltip do
     # but it doesn't.
     $ \imgpreview ?.style.opacity = 0
 
+    # if this is called before the deferred opacity -> 1 fn is called above,
+    # then the above opacity line won't trigger transitionend, so ensure the
+    # preview is removed eventually.
+    defer 100ms !-> $ \imgpreview ?.remove!
+
     @style.removeProperty \cursor
 
 onready !->
