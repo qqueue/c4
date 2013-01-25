@@ -8,17 +8,18 @@ const dead-zone = 10px
 # a function suitable for attachment to a 'mouseover' event that
 # handles tooltip-like behavior according to mouse movement over an element.
 #
-# the `show` fn is called, with the element as context and the event object as
-# an argument, when the tooltip should be shown.
+# the `show` fn is called, with the element as context and the last mousemove
+# or mouseover event object as an argument, when the tooltip should be shown.
 #
 # the `hide` fn is called with the same context and arguments when the
 # tooltip content should be removed from view.
-export tooltip = ({show, hide}) -> !({clientX: x, clientY: y}) ->
+export tooltip = ({show, hide}) -> !({clientX: x, clientY: y}: e) ->
   var timeout
+  last-event = e
 
   # called when user hasn't moved mouse for 'delay' seconds
-  create-tooltip = !(e) ~>
-    show ...
+  create-tooltip = !~>
+    show.call this, last-event
 
     # swap creation for destruction
     listen this
@@ -33,6 +34,8 @@ export tooltip = ({show, hide}) -> !({clientX: x, clientY: y}) ->
 
     # store the new current mouse position
     {clientX: x, clientY: y} := e
+
+    last-event := e
 
   # mousemove handler when tooltip is shown, to remove tooltip when mouse is
   # moved outside the deadzone. The deadzone ensures the tooltip doesn't get
