@@ -1,10 +1,12 @@
 # embed full image on click
 
-expand = !(a) ->
-  return if a.hidden # already expanded
-  a.hidden = true
-  a.before with document.createElement \img
-    &src =  a.href
+onclick = !(e) -> unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+  e.preventDefault!
+
+  a = this
+  @hidden = true
+  @before with document.createElement \img
+    &src =  @href
     &className = \full
     &style <<<
       display: \block
@@ -16,24 +18,14 @@ expand = !(a) ->
       if @width is not @naturalWidth
         @style.removeProperty \max-width
       else
-        collapse a
-  $ \imgpreview ?.remove!
+        a.hidden = false
+        a.previousSibling?remove! # the full image
 
-collapse = !(a, scroll = true) ->
-  a.hidden = false
-  a.previousSibling?remove! # the full image
+        # top of thumb is above scroll
+        if scroll and (top = a.getBoundingClientRect!.top) < 0
+          window.scrollBy 0, top # scroll so it is visible
 
-  # top of thumb is above scroll
-  if scroll and (top = a.getBoundingClientRect!.top) < 0
-    window.scrollBy 0, top # scroll so it is visible
-
-onclick = !(e) ->
-  unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-    expand this
-    e.preventDefault!
-
-onready !->
-  for $$ \.file => &addEventListener \click onclick
+onready !-> for $$ \.file => &addEventListener \click onclick
 
 onpostinsert !->
   it.detail.post.querySelector \.file ?.addEventListener \click onclick
