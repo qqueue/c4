@@ -1,120 +1,30 @@
-# chainable, delegatable wrapper for addEventListener
-# Lots of logic to keep references to delegated versions of handlers. At some
-# point, I'll have to look at how jQuery keeps track of those things, and see
-# how my version compares
+# chainable wrapper for addEventListener
 export listen = class
   (@element) ~>
 
-  on: (event, selector, handler) ->
-    return this unless @element
-
-    # handle space separated events
-    if (events = event / ' ')length > 1
-      @on e, selector, handler for e of events
-      return this
-
-    # "selector" argument is optional
-    if typeof selector is \function
-      handler = selector
-      selector = null
-
-    if selector
-      delegated-handler = !({target}: e) ->
-        if target?matchesSelector "#selector, #selector *"
-          # find delegated target
-          target.=parentElement until target.matchesSelector selector
-
-          handler.call target, e
-
-      if delegated-elements.has @element
-        delegated-handlers = delegated-elements.get @element
-      else
-        delegated-handlers = {}
-        delegated-elements.set @element, delegated-handlers
-
-      delegated-handlers[selector] ?= new Map
-        &set handler, delegated-handler
-
-    @element.addEventListener event, delegated-handler || handler
-
+  on: (event, handler) ->
+    @element?addEventListener event, handler
     return this
 
   # attach a handler that will be removed after it runs
-  once: (event, selector, handler) ->
-    return this unless @element
-
-    if (events = event / ' ')length > 1 # handle space separated events
-      @off e, handler for e of events
-      return
-
-    # "selector" argument is optional
-    if typeof selector is \function
-      handler = selector
-      selector = null
-
-    el = @element
-
-    # I'm not entirely sure this check is needed, but I can imagine that more
-    # than one event can be fired before the handler is removed, thus resulting
-    # in multiple runs
-    ran = false
-
-    el.addEventListener event, function once ({target}: e)
-      return if ran
-      ran := true
-
-      if selector
-        if target?matchesSelector "#selector, #selector *"
-          # find delegated target
-          target.=parentElement until target.matchesSelector selector
-
-          handler.call target, e
-      else
-        handler ...
-
-      el.removeEventListener event, once
-      void
-
-  off: (event, selector, handler) ->
-    return this unless @element
-
-    if (events = event / ' ')length > 1 # handle space separated events
-      @off e, handler for e of events
-      return
-
-    # "selector" argument is optional
-    if typeof selector is \function
-      handler = selector
-      selector = null
-
-    # find delegated handler
-    if selector
-      # if delegated handler was never added
-      return unless delegated-elements.has @element
-
-      delegated-handlers = delegated-elements.get @element
-
-      if delegated-handlers[selector]?get handler
-        delegated-handler = that
-        delegated-handlers[selector]delete handler
-
-        # clean up references
-        if delegated-handlers[selector].size() is 0
-          delete delegated-handlers[selector]
-          if Object.keys(delegated-handlers).length is 0
-            delegated-elements.delete @element
-      else
-        return
-
-    @element.removeEventListener event, delegated-handler || handler
-
+  once: (event, handler) ->
+    @element?addEventListener event, function once ({target}: e)
+      @removeEventListener event, once
+      handler ...
     return this
 
-  # to avoid using expando properties on elements to store their delegated
-  # listeners, this global map stores the association
-  delegated-elements = new Map
+  off: (event, handler) ->
+    @element?removeEventListener event, handler
+    return this
+
+  # handle space separated events
+  <[on once off]>forEach !(method) ->
+    original = ::[method]
+    ::[method] = (event, handler) ->
+      for event / ' ' => original.call this, &, handler
+      return this
 
   # jQuery-like shortcuts for some common handlers
-  <[ click mouseover scroll]>.forEach !(e) ->
+  <[click mouseover scroll]>forEach !(e) ->
     ::[e] = (selector, handler) -> @on e, selector, handler
 
