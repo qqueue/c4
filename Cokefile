@@ -19,6 +19,11 @@ compile = (it, options) ->
 
 wrap = -> "let\n  #{read it .replace /\n/g '\n  '}"
 
+compile-css = (cb) ->
+  # XXX kind of relying on lexicographic ordering here
+  source = (for ls \style => read &)join \\n
+  nib source .render cb
+
 # stuff each file into a `let` IEFE, and then compile, which
 # avoids coco's redefinition of boilerplate
 compile-all = (css, paths) ->
@@ -49,7 +54,7 @@ outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-  err, css <-! nib read(\style/hakase.styl) .render
+  err, css <- compile-css
   try
     throw err if err
     fs.writeFileSync do

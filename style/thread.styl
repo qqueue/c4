@@ -1,0 +1,22 @@
+.thread
+  padding-bottom 5px
+  border-style solid
+  border-width 0
+  border-bottom-width 1px
+  clear both
+
+  &:first-child
+    border-top-width 1px
+
+.thread-info
+  clear left
+  text-align right
+
+.thread.hidden
+  opacity 0.6
+  .replies, .thread-info
+    display none
+  .op
+    .file, .comment, .backlinks, .fileinfo
+      display: none
+

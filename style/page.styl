@@ -1,0 +1,72 @@
+// squish the board links into the top right corner
+// looks just fine for my fonts. good thing nobody else uses this
+#toplinks
+  float right
+  width 300px
+
+header-color = #af0a0f
+
+#header
+  margin 1em 0
+  color header-color
+
+#board-name
+  font-size 24pt
+  margin 0
+  a
+    color header-color !important
+    text-decoration none
+    &:hover
+      text-decoration underline
+
+#board-subtitle
+  font-size 10px
+  font-weight normal
+
+#banner
+  margin-right 1em
+  float left
+
+#motd
+  margin 1em 0
+
+#hide-motd
+  text-align right
+  font-size 10pt
+
+#message
+  clear both
+
+.boardlinks
+  font-size 9pt
+  text-align center
+  a
+    text-decoration none // cleaner looks
+
+#threads
+  clear both
+
+#pages
+  text-align center
+
+  margin 0pt
+  padding 0pt
+
+  li
+    display inline
+
+  a
+    border-color #aaa
+    border-style solid
+    border-width 1px 0
+    color #000
+    display inline-block
+    margin 0.25em
+    padding 0.5em 1em
+    text-decoration none
+    &#current, &:hover
+      background-color rgba(200,200,200,0.70)
+
+#updater
+  float right
+

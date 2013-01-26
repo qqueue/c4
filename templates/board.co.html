@@ -1,11 +1,11 @@
 <nav class="boardlinks" id="toplinks">#{board.nav}</nav>
-<header>
+<header id=header>
   <a href="//boards.4chan.org/#{board.name}/" id="banner">
     <img src="#{board.banner}" alt="4chan::"/>
   </a>
   <hgroup>
-    <h1><a href="//boards.4chan.org/#{board.name}/">#{board.title}</a></h1>
-    <h2>#{board.subtitle}</h2>
+    <h1 id=board-name><a href="//boards.4chan.org/#{board.name}/">#{board.title}</a></h1>
+    <h2 id=board-subtitle>#{board.subtitle}</h2>
   </hgroup>
 </header>
 #{if board.motd

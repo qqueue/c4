@@ -1,0 +1,64 @@
+sfw-light      = #eef2ff
+sfw-dark       = #d6daf0
+sfw-highlight  = #d6bad0
+sfw-border     = #b7c5d9
+sfw-links      = #34345c
+sfw-lightlinks = #89a
+sfw-quotelinks = #d00
+
+body.sfw
+  background sfw-light url(//static.4chan.org/image/fade-blue.png) repeat-x
+  & > header a, & > footer a, .boardlinks a
+    color sfw-links
+  .boardlinks
+    color sfw-lightlinks
+  .thread
+    border-color sfw-border
+  .post:target
+    background-color sfw-highlight !important
+  .reply, #postpreview
+    background sfw-dark
+  .reply, .inline
+    border-color sfw-border
+  .reply:before
+    color sfw-border
+  .inlined-idx
+    color sfw-border - 20%
+  #postpreview.op
+    background-color sfw-light
+  .quotelink
+    color sfw-quotelinks
+
+nsfw-light        = #ffe
+nsfw-dark         = #d9bfb7
+nsfw-highlight    = #f0c0b0
+nsfw-border       = #d9bfb7
+nsfw-threadborder = #808080
+nsfw-links        = #800
+nsfw-lightlinks   = #b86
+nsfw-quotelinks   = #000080
+
+body.nsfw
+  background nsfw-light url(//static.4chan.org/image/fade.png) repeat-x
+  color #800000
+  & > header a, & > footer a, .boardlinks a
+    color nsfw-links
+  .boardlinks
+    color nsfw-lightlinks
+  .thread
+    border-color nsfw-threadborder
+  .post:target
+    background-color nsfw-highlight !important
+  .reply, #postpreview
+    background-color nsfw-dark
+  .reply
+    border-color nsfw-border
+  .reply:before
+    color nsfw-border
+  .inlined-idx
+    color nsfw-border - 20%
+  #postpreview.op
+    background-color nsfw-light
+  .quotelink
+    color nsfw-quotelinks
+

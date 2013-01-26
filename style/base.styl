@@ -1,0 +1,33 @@
+@import 'nib'
+
+html
+  min-height 100%
+  font-family Droid Serif, serif
+  font-size 10pt
+
+// appropriately hideous selection color
+selection = #29df75
+::selection
+  background selection
+  color #000
+
+::-moz-selection
+  background selection
+  color #000
+
+// hidden attribute strangely has less precedence than style="display: none" by
+// default
+[hidden]
+  display none !important
+
+// make buttons seem more 'clickable'
+// pretty much all modern websites seem to do this, I wonder why it isn't default
+button:enabled
+  cursor pointer
+
+// what the fuck, moot
+.bold
+  font-weight bold
+.smaller
+  font-size smaller
+

@@ -51,7 +51,7 @@ export class Post
                  class='#classes #{@className!}' \
                  data-idx=#{@idx} \
                  id='#{id or "p#{@id}"}'>
-      <h1>
+      <h1 class=post-header>
         <button type=button class=hide value=#{@id}>&times;</button>
         <button type=submit \
                 form=reportform \
