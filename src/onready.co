@@ -124,11 +124,14 @@ if window.location.hash and not sget document.URL
 
 console.timeEnd "render"
 
-console.time "onready handlers"
+console.time "initial post insertion handlers"
 
-document.dispatchEvent new CustomEvent do
-  \html5chan-loaded
-  detail: {thread, threads}
+for post of $$ \.post
+  document.dispatchEvent new CustomEvent do
+    \html5chan-postinsert
+    detail: {post}
+
+console.timeEnd "initial post insertion handlers"
 
 board.ready = true
 

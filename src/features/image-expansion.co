@@ -1,32 +1,28 @@
 # embed full image on click
 
-onclick = !(e) -> unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-  e.preventDefault!
+on-posts \.file : click: !(e)->
+  unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
+    e.preventDefault!
 
-  a = this
-  @hidden = true
-  @before with document.createElement \img
-    &src =  @href
-    &className = \full
-    &style <<<
-      display: \block
-      max-width: \100%
-    &onclick = !->
-      # if the image is scaled down, first cycle to full size, then remove.
-      # This is a good comprimize to having a selector between "fit-width" and
-      # "100%" globally.
-      if @width is not @naturalWidth
-        @style.removeProperty \max-width
-      else
-        a.hidden = false
-        a.previousSibling?remove! # the full image
+    a = this
+    @hidden = true
+    @before with document.createElement \img
+      &src =  @href
+      &className = \full
+      &style <<<
+        display: \block
+        max-width: \100%
+      &onclick = !->
+        # if the image is scaled down, first cycle to full size, then remove.
+        # This is a good comprimize to having a selector between "fit-width" and
+        # "100%" globally.
+        if @width is not @naturalWidth
+          @style.removeProperty \max-width
+        else
+          a.hidden = false
+          a.previousSibling?remove! # the full image
 
-        # top of thumb is above scroll
-        if scroll and (top = a.getBoundingClientRect!.top) < 0
-          window.scrollBy 0, top # scroll so it is visible
-
-onready !-> for $$ \.file => &addEventListener \click onclick
-
-onpostinsert !->
-  it.detail.post.querySelector \.file ?.addEventListener \click onclick
+          # top of thumb is above scroll
+          if scroll and (top = a.getBoundingClientRect!.top) < 0
+            window.scrollBy 0, top # scroll so it is visible
 
