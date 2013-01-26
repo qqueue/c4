@@ -36,7 +36,7 @@ if /404/.test document.title and board.archive
 
 # shortcuts for custom events
 export
-  onready      = !-> document.addEventListener \html5chan-loaded     it
+  onready      = !-> document.addEventListener \html5chan-ready      it
   onupdate     = !-> document.addEventListener \html5chan-update     it
   onpostinsert = !-> document.addEventListener \html5chan-postinsert it
   onbacklink   = !-> document.addEventListener \html5chan-backlink   it

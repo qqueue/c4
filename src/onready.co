@@ -135,3 +135,7 @@ console.timeEnd "initial post insertion handlers"
 
 board.ready = true
 
+document.dispatchEvent new CustomEvent do
+  \html5chan-ready
+  detail: {post}
+
