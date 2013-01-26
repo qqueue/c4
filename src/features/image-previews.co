@@ -17,7 +17,7 @@ export handle-preview = tooltip do
     # size of viewport excluding scrollbars.
     viewport = document.documentElement{width: clientWidth, height: clientHeight}
 
-    document.body.append with document.createElement \img
+    document.body.append with L \img
       &id = \imgpreview
       &alt = "Loading..."
       &src = a.href

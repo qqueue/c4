@@ -118,12 +118,12 @@ export class Post
     </#container>
     "
   element: (container, classes = '', id) ->
-    wrapper = document.createElement \div
-    wrapper.innerHTML = @render container, classes, id
+    wrapper = L \div
+      &innerHTML = @render container, classes, id
     return wrapper.firstElementChild
 
   text:~ ->
-    document.createElement \div |> do
+    L \div |> do
       &innerHTML = @comment
       &textContent
 

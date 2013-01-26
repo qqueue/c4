@@ -49,8 +49,8 @@ checkValidity = (e) ->
       &open \POST form.action
       listen &
         .on \load ->
-          html = document.createElement \div
-          html.innerHTML = @response
+          html = L \div
+            &innerHTML = @response
           console.log html
 
           captcha = $ \recaptcha_response_field

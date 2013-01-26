@@ -3,6 +3,9 @@
 export $ = -> document.getElementById it
 export $$ = -> document.querySelectorAll it
 
+# get it, 'L'ement?
+export L = -> document.createElement it
+
 Element::matchesSelector ?=
   Element::mozMatchesSelector or Element::webkitMatchesSelector
 

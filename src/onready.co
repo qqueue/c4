@@ -1,22 +1,22 @@
 # pre-create new DOM
-html = document.createElement \html
-  &appendChild with head = document.createElement \head
-    &appendChild document.createElement \title
-    &appendChild with document.createElement \style
+html = L \html
+  &appendChild with head = L \head
+    &appendChild L \title
+    &appendChild with L \style
       &id = \html5chan-style
       &textContent =
         '''
         %hakase.css%
         '''
 
-    &appendChild with document.createElement \script
+    &appendChild with L \script
       &src = '//www.google.com/recaptcha/api/challenge?
               k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc'
       &addEventListener \load !->
-        head.appendChild with document.createElement \script
+        head.appendChild with L \script
           &src = \//www.google.com/recaptcha/api/js/recaptcha.js
           &addEventListener \load !->
-            document.createElement \script
+            L \script
               &textContent =
                 # secret secrets, gained from digging around in the recaptcha js
                 "(function() {
@@ -36,7 +36,7 @@ html = document.createElement \html
               else
                 onready !-> head.appendChild &
 
-  &appendChild body = document.createElement \body
+  &appendChild body = L \body
 
 # replace the original html with the new, but keep a reference to query and
 # parse. This speeds up re-rendering consideraby, since the browser doesn't

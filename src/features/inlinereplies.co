@@ -63,7 +63,7 @@ onclick = !(e) ->
     if is-backlink
       # prepend backlink number element (instead of pseudo element) that will
       # remove inlined post on click
-      inlined.prepend with document.createElement \a
+      inlined.prepend with L \a
         &textContent = post.idx
         &className = \inlined-idx
         &addEventListener \click !~> toggle-off this, inlined

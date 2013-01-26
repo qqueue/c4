@@ -42,7 +42,7 @@ export class Thread
     "
 
   element: (container, classes, id) ->
-    d = document.createElement \div
+    d = L \div
       &innerHTML = @render container, classes, id
     return d.firstElementChild
 

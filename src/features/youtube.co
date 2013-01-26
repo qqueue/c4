@@ -88,7 +88,7 @@ load-info = debounce 2000ms !->
 onclick = !(e) ->
   unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
     e.preventDefault!
-    @replace with document.createElement \iframe
+    @replace with L \iframe
       &width = 560
       &height = 315
       &src = "//www.youtube.com/embed/#{@dataset.id}

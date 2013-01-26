@@ -6,7 +6,7 @@ on-posts \.file : click: !(e)->
 
     a = this
     @hidden = true
-    @before with document.createElement \img
+    @before with L \img
       &src =  @href
       &className = \full
       &style <<<

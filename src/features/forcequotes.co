@@ -8,7 +8,7 @@ munge = !(ctx) ->
     id = quote.hash.substring 2
     if (post = Post[id])
       if post.comment.length > 0
-        document.createElement \div
+        L \div
           # <br>s don't show in textContent for some reason
           &innerHTML = post.comment.replace /<br>/g ' '
 
@@ -17,19 +17,19 @@ munge = !(ctx) ->
           for &querySelectorAll \s => &remove!
 
           text = &textContent
-        quote.after with document.createElement \span
+        quote.after with L \span
           # trim beginning whitespace
           &textContent = ' ' + truncate text, 70 .replace /^\s+/ ''
           &className = 'quote forcedquote'
 
       if post.image
-        quote.after with document.createElement \a
+        quote.after with L \a
           &className = \forcedimage
           &textContent = ' '
           &setAttribute \data-width post.image.width
           &setAttribute \data-height post.image.height
           &href = post.image.url
-          &appendChild with document.createElement \img
+          &appendChild with L \img
             &className = \thumb
             &style <<<
               max-height: \15px
