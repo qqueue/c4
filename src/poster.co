@@ -1,18 +1,6 @@
 # fake ajax posting
 
-postStatus = ->
-  $ \post-status .textContent = it
-#
-# set .visible class on postform-wrapper when at the bottom of the screen
-# so stylesheet can make it visible
-# kinda stylesheet specific, oh well
-
-# FIXME this logic sucks
-visible = false # hold visible
-showform = -> $ \postform-wrapper .classList.add \visible if bottom or visible
-hideform = -> $ \postform-wrapper .classList.remove \visible unless bottom or visible
-
-bottom = false # at the bottom of screen, set by scroller
+postStatus = -> $ \post-status .textContent = it
 
 <-! onready
 
@@ -45,9 +33,6 @@ checkValidity = (e) ->
     $ \post .disabled = true
     $ \sage ?.disabled = true
 
-    visible := true
-    showform! # make sure the form stays visible
-
     postStatus "Posting..."
     $ \progress
       &hidden = false # show progress bar
@@ -59,7 +44,7 @@ checkValidity = (e) ->
     if this is $ \sage # sage button clicked
       data.append \email \sage
 
-      #ajax time!
+    #ajax time!
     new XMLHttpRequest
       &open \POST form.action
       listen &
@@ -78,9 +63,6 @@ checkValidity = (e) ->
           if /Post successful!|uploaded!/.test html.textContent
             postStatus 'Post successful!'
             cooldown!
-
-            visible := false # don't need to show form anymore
-            hideform!
 
             $ \postform .reset!
             $ \name .value = get \name or '' # persist name
@@ -112,7 +94,6 @@ checkValidity = (e) ->
 
       &send data
 
-
   return false # prevent normal submission
 
 listen $ \post .click checkValidity
@@ -140,29 +121,6 @@ cooldown = ->
     1000ms
 
 # persist entered name and tripcode
-listen $ \name .on \input ->
-  set name: @value
+listen $ \name .on \input -> set name: @value
 $ \name ?.value = get \name or ''
-
-listen window .scroll ->
-  y = window.scrollMaxY - window.scrollY
-  if bottom := y < 100
-    showform!
-  else
-    hideform!
-
-# if form is focused, don't hide
-$ \postform ?.addEventListener do
-  \focus
-  ->
-    visible := true
-    showform!
-  true # have to use capture for non-bubbling focus events
-
-$ \postform ?.addEventListener do
-  \blur
-  ->
-    visible := false
-    hideform!
-  true # have to use capture for non-bubbling focus events
 
