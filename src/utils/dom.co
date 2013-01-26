@@ -6,8 +6,7 @@ export $$ = -> document.querySelectorAll it
 # get it, 'L'ement?
 export L = -> document.createElement it
 
-Element::matchesSelector ?=
-  Element::mozMatchesSelector or Element::webkitMatchesSelector
+Element::matchesSelector ?= Element::mozMatchesSelector
 
 # DOM4 mutation methods
 mutation-macro = (nodes) ->

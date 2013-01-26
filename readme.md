@@ -5,9 +5,8 @@ to make your 4chan browsing experience as hipster as possible. It's got some
 features you'll love, some you'll never need, and plenty of missing features
 you'd actually want.
 
-`html5chan` is developed primarily on Firefox with Greasemonkey 1+, but it
-likely works on Chrome too. I don't really care about Opera, but hey, it's just
-javascript, right? Try it out and see.
+`html5chan` works on Firefox 18+, but not on Chrome, because it's too much of
+a hassle to test and polyfill for webkit.
 
 # Development Stages
 
