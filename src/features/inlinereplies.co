@@ -101,21 +101,15 @@ onclick = !(e) ->
 
     scroll! unless is-backlink # since backlink got hidden
 
-follow = !->
-  window.location.hash = that if @hash # actually follow link
+follow = !-> window.location.hash = that if @hash # actually follow link
 
-onready !->
-  for $$ '.quotelink:not(.hiddenlink)'
-    &addEventListener \click onclick
-    &addEventListener \dblclick follow
-
-onpostinsert !->
-  for it.detail.post.querySelectorAll '.quotelink:not(.hiddenlink)'
-    &addEventListener \click onclick
-    &addEventListener \dblclick follow
+on-posts '.quotelink:not(.hiddenlink)':
+  click:    onclick
+  dblclick: follow
 
 onbacklink !({detail}) ->
   <-! defer 100ms
   detail.post.querySelector ".backlink[href$=p#{detail.id}]"
     &addEventListener \click onclick
     &addEventListener \dblclick follow
+
