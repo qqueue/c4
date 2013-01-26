@@ -46,11 +46,5 @@ munge = !(ctx) ->
       quote.classList.add \forcequoted
 
 if board.isThread
-  onready !->
-    console.time "munging quotelinks..."
-    munge document
-    console.timeEnd "munging quotelinks..."
-
-  onpostinsert !->
-    munge it.detail.post
+  onpostinsert !-> munge it.detail.post
 

@@ -13,27 +13,12 @@ toggle-highlight = (klass) ->
     sset \highlighting highlighting # persist
     post.classList.toggle \highlighted
 
-# XXX I can do better
-toggle =
-  admin : toggle-highlight \admin
-  mod   : toggle-highlight \mod
+on-posts do
+  '.admin .capcode': click: toggle-highlight \admin
+  '.mod   .capcode': click: toggle-highlight \mod
 
-onready !->
-  for code of $$ '.admin .capcode'
-    code.addEventListener \click toggle.admin
-  for code of $$ '.mod .capcode'
-    code.addEventListener \click toggle.mod
-
-  # set persisted highlight
-  highlight klass if hl for klass, hl in highlighting
-
+# set persisted highlight
+onready !-> highlight klass if hl for klass, hl in highlighting
 # activate highlight on new posts
-onupdate !->
-  highlight "new.#klass" if hl for klass, hl in highlighting
-
-onpostinsert !->
-  {post} = it.detail
-  if post.querySelector '.capcode'
-    that.addEventListener \click toggle[
-      if post.classList.contains \admin then \admin else \mod]
+onupdate !-> highlight "new.#klass" if hl for klass, hl in highlighting
 

@@ -3,14 +3,10 @@
 # scaled width and height from original width and height. manual version of CSS
 # object-fit (only in opera)
 object-fit = (container, width, height) ->
-  ratio = Math.min do
-    1
-    container.height / height
-    container.width  / width
+  ratio = Math.min 1, container.height/height, container.width/width
+  width: ratio * width, height: ratio * height
 
-  width  : ratio * width
-  height : ratio * height
-
+# XXX export so forcequotes can preview the little quoted images
 export handle-preview = tooltip do
   show: !->
     @style.cursor = \none # hide cursor while hovering
@@ -19,19 +15,14 @@ export handle-preview = tooltip do
 
     # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
     # size of viewport excluding scrollbars.
-    viewport =
-      width  : document.documentElement.clientWidth
-      height : document.documentElement.clientHeight
+    viewport = document.documentElement{width: clientWidth, height: clientHeight}
 
     document.body.append with document.createElement \img
       &id = \imgpreview
       &alt = "Loading..."
       &src = a.href
 
-      &{width, height} = object-fit do
-        viewport
-        a.dataset.width
-        a.dataset.height
+      &{width, height} = object-fit viewport, a.dataset.width, a.dataset.height
 
       &addEventListener \load  -> @removeAttribute \alt
       &addEventListener \error -> @alt = "Unable to load image."
@@ -72,12 +63,5 @@ export handle-preview = tooltip do
 
     @style.removeProperty \cursor
 
-onready !->
-  console.time 'attach thumb hover listeners'
-  for $$ \.thumb => &addEventListener \mouseover handle-preview
-  console.timeEnd 'attach thumb hover listeners'
-
-onpostinsert !->
-  it.detail.post.querySelector \.thumb ?
-    .addEventListener \mouseover handle-preview
+on-posts \.thumb : mouseover: handle-preview
 

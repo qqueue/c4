@@ -30,17 +30,25 @@ set-title = !(vid, data) ->
                #{truncate data.snippet.description, 200}"
   vid.dataset.title = data.snippet.title
 
+# post insert adds any found videos to this, which is flushed by load-info
+pending-videos = []
+
 # TODO detect videos whose data isn't returned
 # and set some sort of error title
-handle = !(vids) ->
+#
+# debounced so postinsert can call it without the initial postinsert rush at
+# onready sending out one request per video
+load-info = debounce 2000ms !->
   to-fetch = {}
 
-  for vid of vids
+  for vid of pending-videos
     vid.addEventListener \click onclick
     if cache[vid.dataset.id]
       set-title vid, that
     else
       to-fetch[vid.dataset.id] = true
+
+  pending-videos := []
 
   batches = []
   batch = []
@@ -60,12 +68,15 @@ handle = !(vids) ->
                     &fields=items(id%2Csnippet%2Cstatistics)
                     &key=#{api-key}"
         req.addEventListener \load !->
-          data = JSON.parse @response
-          for v of data.items
-            cache[v.id] = v
+          if 200 <= @status < 400
+            data = JSON.parse @response
+            for v of data.items
+              cache[v.id] = v
 
-            for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
-              set-title vid, v
+              for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
+                set-title vid, v
+          else
+            console.error "error fetching youtube info!" this
 
         req.addEventListener \error !->
           console.error "what happen" this
@@ -87,6 +98,7 @@ onclick = !(e) ->
       &frameborder = 0
       &allowfullscreen = ''
 
-onready      !-> handle $$ \.youtube
-onpostinsert !-> handle it.detail.post.querySelectorAll \.youtube
+onpostinsert !->
+  Array::push.apply pending-videos, it.detail.post.querySelectorAll \.youtube
+  load-info!
 

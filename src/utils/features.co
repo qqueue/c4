@@ -1,0 +1,18 @@
+# features helpers, specific to html5chan
+# extracting out boilerplate for fewer absolute SLOC
+
+# define listeners that are attached to every post. e.g.
+#
+# on-posts do
+#   '.file': click: -> handler...
+#   '.poster': mouseover: -> handler...
+#
+# attaches the click handler to all '.file' elements in each post, the
+# mouseover handler to all '.poster' els, and so on.
+export on-posts = !(listener-spec) ->
+  onpostinsert !->
+    for selector, listeners in listener-spec
+      for it.detail.post.querySelectorAll selector
+        for event, listener in listeners
+          &addEventListener event, listener
+
