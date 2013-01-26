@@ -13,7 +13,7 @@ set-update = (el) ->
   if (diff = Date.now! - time.getTime! ) < 8_640_000ms
     setTimeout do
       ->
-        el.textContent = time.relative_time!
+        el.textContent = time.relative-time!
         set-update el # set next update
 
       if diff > 3_600_000ms # one hour

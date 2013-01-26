@@ -42,14 +42,14 @@ onclick = !(e) ->
 
   host = closest \.post, this .id
   hostid = (host / \-)pop! # grab last (if nested inline post)
-  inlined_id = "#{host}-p#id" # id is unique to hosting post and inlined post
-  stub_id = "#{id}-inlined-stub"
+  inlined-id = "#{host}-p#id" # id is unique to hosting post and inlined post
+  stub-id = "#{id}-inlined-stub"
 
-  if inlined = $ inlined_id
+  if inlined = $ inlined-id
     toggle-off this, inlined
   else # create
     is-backlink = @classList.contains \backlink
-    inlined = post.element \article "inline hovered" inlined_id
+    inlined = post.element \article "inline hovered" inlined-id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
     while wrapper.parentElement.matchesSelector 'a,span'

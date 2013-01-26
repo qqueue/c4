@@ -67,7 +67,7 @@ export class Post
         <span class=posteruid>#{if @uid then "(ID: #that)" else ''}</span> \
         <time pubdate \
               datetime='#{@time.toISOString!}' \
-              title='#{@time}'>#{@time.relative_time!}</time> \
+              title='#{@time}'>#{@time.relative-time!}</time> \
         #{if @op and @thread.sticky
             '<img alt=sticky src=//static.4chan.org/image/sticky.gif> '
           else ''}

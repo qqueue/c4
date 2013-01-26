@@ -3,7 +3,7 @@
 pluralize = (number, unit) ->
   "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
 
-Date::relative_time = ->
+Date::relative-time = ->
   if ( days = ( ( diff = Date.now! - @getTime! ) / 86400000 ) ) > 1
     pluralize days, \day
   else if ( hours = days * 24 ) > 1

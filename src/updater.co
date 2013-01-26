@@ -1,4 +1,4 @@
-last_update = new Date
+last-update = new Date
 
 unread = 0
 
@@ -50,7 +50,7 @@ export updater =
       &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.id}.json"
       # &responseType = \JSON
 
-      &setRequestHeader \If-Modified-Since last_update.toUTCString!
+      &setRequestHeader \If-Modified-Since last-update.toUTCString!
 
       listen(&)
         .on \load !->
@@ -62,14 +62,14 @@ export updater =
             updater.countdown.restart!
             return
 
-          last_modified = new Date @getResponseHeader \Last-Modified
+          last-modified = new Date @getResponseHeader \Last-Modified
 
-          unless last_modified > last_update
+          unless last-modified > last-update
             updater.countdown.restart!
             return
 
           updater.status.textContent = "update detected, parsing"
-          last_update := last_modified
+          last-update := last-modified
 
           thread = parser.api JSON.parse @response
           if thread.new.length > 0
