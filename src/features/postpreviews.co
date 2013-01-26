@@ -95,14 +95,7 @@ create-preview = !(id, post) ->
     preview.remove!
     classify $$ ".post[data-id=\"#id\"]" .remove \hovered
 
-onready !->
-  console.time 'attach post hover listeners'
-  for $$ \.quotelink => &addEventListener \mouseover handle-preview
-  console.timeEnd 'attach post hover listeners'
-
-onpostinsert !->
-  for it.detail.post.querySelectorAll \.quotelink
-    &addEventListener \mouseover handle-preview
+on-posts \.quotelink : mouseover: handle-preview
 
 onbacklink !({detail}) ->
   <-! defer 100ms
