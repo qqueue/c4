@@ -37,7 +37,7 @@ parse-post = (el, idx) ->
   thread = this
 
   new Post
-    &idx    = idx + 1
+    &idx    = 1 + idx + (thread.omitted?replies || 0)
     &thread = thread
     &id     = el.id.substring 1
 
