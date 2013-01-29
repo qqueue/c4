@@ -33,6 +33,16 @@ toggle-off = !(link, inlined) ->
 
   inlined.remove!
 
+  # unhide forcedquote for quotelinks
+  # XXX messy
+  if link.nextElementSibling
+    if that.classList.contains \forcedquote \
+    or that.classList.contains \forcedimage
+      link.nextElementSibling.hidden = false
+    if link.nextElementSibling.nextElementSibling
+      if that.classList.contains \forcedquote
+        link.nextElementSibling.nextElementSibling.hidden = false
+
   scroll!
 
 onclick = !(e) ->
@@ -98,6 +108,17 @@ onclick = !(e) ->
     $ \postpreview ?.remove!
 
     $ "p#id" ?.classList.add \inlined
+
+    # hide unnecessary forcedquote for quotelinks
+    # XXX messy
+    unless is-backlink
+      if @nextElementSibling
+        if that.classList.contains \forcedquote \
+        or that.classList.contains \forcedimage
+          @nextElementSibling.hidden = true
+        if @nextElementSibling.nextElementSibling
+          if that.classList.contains \forcedquote
+            @nextElementSibling.nextElementSibling.hidden = true
 
     scroll! unless is-backlink # since backlink got hidden
 
