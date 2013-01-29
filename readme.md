@@ -1,42 +1,47 @@
-# html5chan: Perpetually Alpha for the Perpetually Alpha
+# html5chan: A brave new 4chan
 
-`html5chan` is an excessively modern 4chan userscript, built from the ground up
-to make your 4chan browsing experience as hipster as possible. It's got some
-features you'll love, some you'll never need, and plenty of missing features
-you'd actually want.
+html5chan aims to be the most seamless interface possible for participating
+on 4chan. Currently, it is implemented as a Greasemonkey userscript for Firefox
+18+.
 
-`html5chan` works on Firefox 18+, but not on Chrome, because it's too much of
-a hassle to test and polyfill for webkit.
+While html5chan is currently a userscript, technology is only an
+implementation detail. The html5chan github wiki has more on the [philosophy of
+html5chan], if you're curious.
 
-# Development Stages
+[philosophy of html5chan]: https://github.com/qqueue/html5chan/wiki/Philosophy
 
-* (Current) on the whimsy of queue's personal use and tastes
-* (2013??) Magical, revolutionary reading experience
-* (20XX) Amazing posting experience
-* (NaN) stable releases
+## Compilation and installing from source
 
-# Building From Source
+html5chan depends on [node.js], [coco], [stylus], and [nib] for
+building. To automatically install the dependencies, run:
 
-I'm too pure to put the compiled .js into the repository, so you'll have to man
-up and compile the bitch if you really want to use it. It keeps out the
-riff-raff.
-
-html5chan depends on [node.js](http://nodejs.org/),
-[coco](https://github.com/satyr/coco),
-[stylus](http://learnboost.github.com/stylus/), and
-[nib](http://visionmedia.github.com/nib/) and for building. To attempt to
-automatically install the dependencies, run:
-
-```
-sudo npm install
-```
+    sudo npm install
 
 Root permissions are required, since stylus and coco want to install their
-repective command line tools to `/bin`; annoying, I know.
+repective command line tools to `/bin`; annoying, I know. You'll also want to run
 
-Once you've got the deps, run `coke build` to build the script, or run `coke
-watch` to rebuild the script when something changes.
+    sudo npm install -g coco
 
-I usually make a symbolic link from the copy in the repo to the copy in
-Greasmonkey's folder inside my Firefox profile, so I get instant feedback
-(after an F5) for changes. It's pretty chill.
+To give you command-line access to `coke`, the build tool used by html5chan.
+
+Once you've got the deps, run `coke build` to build the script. Then open the
+script (or drag the file from your file manager) into Firefox with Greasemonkey
+installed. You should be prompted with an installation dialog.
+
+[node.js]: http://nodejs.org/
+[coco]: https://github.com/satyr/coco
+[stylus]: http://learnboost.github.com/stylus/
+[nib]: http://visionmedia.github.com/nib/
+
+## Development
+
+Run `coke watch` to rebuild the script when something changes. Then, make
+a symbolic link from the compiled script in the repo to the copy in
+Greasmonkey's folder inside my Firefox profile:
+
+    ln -sf $PWD/html5chan.user.js \
+           ~/.mozilla/firefox/<profile dir>/gm_scripts/html5chan/html5chan.user.js
+
+Then, you should get instant feedback (after refresh) when making changes,
+which isn't the perfect developer feedback loop, but it's pretty close.
+
