@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        html5chan
 // @namespace   https://github.com/qqueue/html5chan
-// @description The Tesla Roadster of 4chan userscripts
+// @description The Roger Bacon of 4chan userscripts
 //
 // @match       *://boards.4chan.org/*
 // @exclude     *://boards.4chan.org/f/*
