@@ -1,17 +1,18 @@
 .post
-  margin-top 3px
+  margin 0.2em
+  margin-left 2em
+  padding 1em
+  padding-right 0
+  border-radius 0.3em
+  line-height 1.8em
 
 .reply
-  padding 2px
-  margin-left 2em
-  border-style solid
-  border-width 0 1px 1px 0
   // motherfucking yellow fade
   transition-property background-color
   transition-duration 3s
 
 .reply.new
-  background-color #feffbf !important
+  background #feffbf noise !important
 
 .sage > .post-header > .poster:after
   content " (sage)"
@@ -24,6 +25,7 @@
   margin-left -2.5em
   width 2em
   font-size 10pt
+  line-height 1.8em
 
 .inlined-idx
   cursor pointer
@@ -31,13 +33,11 @@
     text-decoration underline
 
 .post-header
-  margin 0 0 0 0.25em
+  margin 0
   padding 0
-  font-size 100%
+  font-size 90%
   font-weight normal
-
-.op > .post-header
-  font-size 130%
+  float right
 
 .post .title
   color #0f0c5d
@@ -57,7 +57,6 @@
   color #228854
 
 .fileinfo
-  margin-left 20px
   display table // prevent full width
 
   // hide extended attributes until hovered
@@ -72,10 +71,10 @@
 .file
   display block
   float left
-  margin 3px 20px
+  margin 0.3em 1em 0.3em 0
   position relative
 
-img.full
+.full
   // seems to fix weird left-margin in firefox
   display block
 
@@ -100,9 +99,9 @@ img.full
 
 .hide, .report
   float right
-  margin 0 0 0 2px
   padding 0 1px
-  line-height 1em
+  background transparent
+  border 0
 
 // functional css
 // bad idea? maybe
@@ -137,23 +136,17 @@ img.full
 .permalink
   text-decoration none
   color inherit
-  float right
-  display block
-  margin-left 1em
-  line-height 1.7
-  // line-height adjusts a to look in line with rest of text
-  // bit weird, since a becomes a block element
+  margin-left 0.5em
 
-.permalink .id
-  &:hover
-    text-decoration underline
+  .id:hover
+      text-decoration underline
 
 .recursivelink
   font-weight bold
   color: black !important
 
 .comment
-  margin 1em 1em 1em 40px
+  margin 0
   word-wrap break-word
   line-height 1.8em
   // pleasant reading width
@@ -164,7 +157,7 @@ img.full
 
 .quote
   font-weight normal
-  color #789922
+  color #75961F
 
 .prettyprint
   background-color white
@@ -200,15 +193,14 @@ a,strong
   margin 0
 
 .inline
-  margin-left 0
-  border-left 1px solid
-  padding-left 0
+  margin-right 0
+  padding-right 0
 
 .comment .inline
   display table // quasi-clears images properly
 
 .backlink + .inline
-  margin-left 40px
+  margin-left 2em
 
 .inline .backlinks > .recursivelink
   display none
