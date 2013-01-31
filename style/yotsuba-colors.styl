@@ -17,8 +17,10 @@ body.sfw
     color sfw-lightlinks
   .post:target
     background sfw-highlight noise !important
+  .reply
+      background linear-gradient(180deg, rgba(0, 0, 0, 0.01), transparent 2em, rgba(255, 255, 255, 0) calc(100% - 2em), rgba(255, 255, 255, 0.03))
   #postpreview
-    background sfw-dark noise
+    background sfw-noise
   .reply:before, .inlined-idx
     color sfw-border - 10%
   #postpreview.op
