@@ -1,4 +1,4 @@
-# hide posts
+# hide threads and replies (posts)
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
 #
@@ -13,7 +13,7 @@ hidden =
 
 console.log hidden
 
-# delete expired posts to keep object small
+# delete expired entries to keep object small
 let now = Date.now!
   for type, hash in hidden
     for key, expiry in hash
@@ -39,10 +39,10 @@ onready !->
   for btn of $$ '.reply button.hide'
     btn.addEventListener \click !->
       toggle \p @value
-      if @value in hidden.threads
-        delete hidden.posts[@value]
+      if @value in hidden.replies
+        delete hidden.replies[@value]
       else
-        hidden.posts[@value] = Date.now!
+        hidden.replies[@value] = Date.now!
       persist!
 
   for btn of $$ '.op button.hide'
@@ -58,7 +58,7 @@ onready !->
           Date.now!
       persist!
 
-  # hide all previously hidden posts and threads
+  # hide all previously hidden replies and threads
   # TODO do this at render time instead of post render for faster display
   for document.getElementsByClassName \reply
     id = &dataset.id
