@@ -37,7 +37,7 @@ installed. You should be prompted with an installation dialog.
 
 Run `coke watch` to rebuild the script when something changes. Then, make
 a symbolic link from the compiled script in the repo to the copy in
-Greasmonkey's folder inside my Firefox profile:
+Greasmonkey's folder inside your Firefox profile:
 
     ln -sf $PWD/html5chan.user.js \
            ~/.mozilla/firefox/<profile dir>/gm_scripts/html5chan/html5chan.user.js
