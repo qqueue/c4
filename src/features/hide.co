@@ -1,29 +1,49 @@
 # hide posts
 # TODO refactor stub functionality out of CSS
 # can then add things like 'hide similar' 'hide replies' etc
+#
+# Uses 4chan's "native" localStorage hidden hash, so hidden threads are
+# persisted to the 4chan catalog.
 
+const threshold = 604800000ms # one week
+
+hidden =
+  threads: try JSON.parse localStorage"4chan-hide-t-#{board.name}" or {} catch {}
+  replies: try JSON.parse localStorage"4chan-hide-r-#{board.name}" or {} catch {}
+
+console.log hidden
+
+# delete expired posts to keep object small
+let now = Date.now!
+  for type, hash in hidden
+    for key, expiry in hash
+      # 4cat catalog sets thread hash values to "true", so change those to
+      # real timestamps
+      if expiry is true
+        hash[key] = Date.now!
+      else
+        delete hash[key] if (now - expiry) > threshold
+
+persist = !->
+  localStorage"4chan-hide-t-#{board.name}" = JSON.stringify hidden.threads
+  localStorage"4chan-hide-r-#{board.name}" = JSON.stringify hidden.replies
+
+# perform actual DOM manipulation
 toggle = (prefix, id) ->
+  # all referencing quotelinks
   classify $$ ".quotelink[href$=\"##id\"]" .toggle \hiddenlink
   $ "#prefix#id" ?.classList.toggle \hidden
 
-hidden = get \hidden or {threads: {}, posts: {}}
-
-# delete expired posts to keep object small
-for type, hash in hidden
-  for key, expiry in hash
-    delete hash[key] if expiry < Date.now!
-
-# persist
-listen window .on \beforeunload !-> set \hidden hidden
-
 onready !->
+  # XXX same coco bug as below, or would totally use quickmap
   for btn of $$ '.reply button.hide'
     btn.addEventListener \click !->
       toggle \p @value
-      if @value in hidden.posts
+      if @value in hidden.threads
         delete hidden.posts[@value]
       else
-        hidden.posts[@value] = Date.now! + 604800000ms # 1 week
+        hidden.posts[@value] = Date.now!
+      persist!
 
   for btn of $$ '.op button.hide'
     btn.addEventListener \click !->
@@ -35,20 +55,26 @@ onready !->
         hidden.threads[@value] = if Thread[@value]?sticky
           Number.MAX_VALUE
         else
-          Date.now! + 604800000ms # otherwise, a week should be enough
+          Date.now!
+      persist!
 
   # hide all previously hidden posts and threads
   # TODO do this at render time instead of post render for faster display
-  for post of document.getElementsByClassName \post
-    id = post.dataset.id
-    toggle \p id if hidden.posts[id]
+  for document.getElementsByClassName \reply
+    id = &dataset.id
+    toggle \p id if hidden.replies[id]
 
   if board.is-board # don't bother on the actual thread page
-    for thread of document.getElementsByClassName \thread
-      id = thread.dataset.id
+    for document.getElementsByClassName \thread
+      id = &dataset.id
       toggle \t id if hidden.threads[id]
 
 onupdate !->
+  # XXX coco bug "unexpected IN" when inside quickmap
+  #for $$ ".new .quotelink"
+    #if &hash.substring(1) in hidden.replies
+      #&classList.toggle \hiddenlink
   for a of $$ ".new .quotelink"
-    a.toggle \hiddenlink if a.hash.substring(1) in hidden.posts
+    if a.hash.substring(1) in hidden.replies
+      a.classList.toggle \hiddenlink
 
