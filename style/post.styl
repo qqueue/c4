@@ -1,12 +1,11 @@
 .post
   margin 0.2em
-  margin-left 2em
   padding 1em
   padding-right 0
   border-radius 0.3em
-  line-height 1.8em
 
 .reply
+  margin-left 2em
   // motherfucking yellow fade
   transition-property background-color
   transition-duration 3s
@@ -22,10 +21,10 @@
   position absolute
   text-align right
   display inline-block
-  margin-left -2.5em
+  margin-left -3em
   width 2em
-  font-size 10pt
-  line-height 1.8em
+  font-size 8pt
+  font-family sans-serif
 
 .inlined-idx
   cursor pointer
@@ -35,7 +34,9 @@
 .post-header
   margin 0
   padding 0
-  font-size 90%
+  font-size 8pt
+  font-family sans-serif
+  color sfw-border - 10%
   font-weight normal
   float right
 
@@ -47,17 +48,18 @@
     text-decoration underline
 
 .poster
-  color #117743
-  font-weight 800
+  color sfw-border - 10%
   &:link
-    color #34345c
     text-decoration underline
 
 .tripcode
-  color #228854
 
 .fileinfo
   display table // prevent full width
+
+  color sfw-border - 20%
+  font-size 8pt
+  font-family sans-serif
 
   // hide extended attributes until hovered
   &:not(:hover)
@@ -136,7 +138,6 @@
 .permalink
   text-decoration none
   color inherit
-  margin-left 0.5em
 
   .id:hover
       text-decoration underline
@@ -157,7 +158,7 @@
 
 .quote
   font-weight normal
-  color #75961F
+  color #789922
 
 .prettyprint
   background-color white

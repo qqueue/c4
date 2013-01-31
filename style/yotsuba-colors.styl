@@ -2,6 +2,7 @@ noise = url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixA
 
 sfw-light      = #eef2ff
 sfw-dark       = #d6daf0
+sfw-noise      = noise #dce0f4 // balances out to dark color + noise
 sfw-highlight  = #d6bad0
 sfw-border     = #b7c5d9
 sfw-links      = #34345c
@@ -9,7 +10,7 @@ sfw-lightlinks = #89a
 sfw-quotelinks = #d00
 
 body.sfw
-  background sfw-dark noise
+  background sfw-noise
   & > header a, & > footer a, .boardlinks a
     color sfw-links
   .boardlinks
@@ -19,7 +20,7 @@ body.sfw
   #postpreview
     background sfw-dark noise
   .reply:before, .inlined-idx
-    color sfw-border - 5%
+    color sfw-border - 10%
   #postpreview.op
     background-color sfw-light
   .quotelink
