@@ -20,8 +20,9 @@ compile = (it, options) ->
 wrap = -> "let\n  #{read it .replace /\n/g '\n  '}"
 
 compile-css = (cb) ->
-  # XXX kind of relying on lexicographic ordering here
-  source = (for ls \style => read &)join \\n
+  # ordering of files matters
+  files = <[base page post postform thread yotsuba-colors youtube]>
+  source = (for files => read "style/#&.styl")join \\n
   nib source .render cb
 
 # stuff each file into a `let` IEFE, and then compile, which
