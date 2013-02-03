@@ -16,9 +16,9 @@ parse-thread = (el) -> new Thread
   if omitted = el.querySelector \.summary
     &omitted =
       replies:
-        parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
+        parseInt omitted.textContent.match(/\d+(?= posts?)/), 10 or 0
       imageReplies:
-        parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+        parseInt omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10 or 0
 
   &sticky = el.querySelector(\.stickyIcon)? # XXX implicit call doens't work with ?
   &closed = el.querySelector(\.closedIcon)?
@@ -48,7 +48,7 @@ parse-post = (el, idx) ->
         "#{thread.url}\#p#{&no}"
 
     &time = new Date do
-      parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
+      parseInt(el.querySelector(\.dateTime).dataset.utc, 10) * 1000ms
 
     &subject  = el.querySelector '.postInfo.desktop .subject' .innerHTML
 

@@ -91,10 +91,7 @@ body
                #{if board.isThread then \threadpage else \boardpage}"
 
 console.time "parse innerHTML"
-body.innerHTML =
-  """
-  %board.co.html%
-  """
+body.innerHTML = templates.board board
 console.timeEnd "parse innerHTML"
 
 #highlight current page

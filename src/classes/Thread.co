@@ -1,7 +1,7 @@
 export class Thread
   postprocess: ->
     #convenience array including op
-    @posts = [@op].concat @replies
+    @posts = [@op]concat @replies
 
     @imageReplies = []
 
@@ -14,10 +14,10 @@ export class Thread
     if Thread[@no] # if this thread has been parsed before
       @new = []
       @deleted = []
-      for reply of Thread[@no].replies # old replies
-        @deleted.push reply if not @reply[reply.no]
+      for reply of Thread[@no]replies # old replies
+        @deleted.push reply unless @reply[reply.no]
       for reply of @replies
-        @new.push reply if not Thread[@no].reply[reply.no]
+        @new.push reply unless Thread[@no]reply[reply.no]
 
     Thread[@no] = this
 
