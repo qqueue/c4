@@ -29,17 +29,7 @@ export class Thread
     return c
 
   render: (container = \article, classes = '', id) ->
-    "<#container id='#{id or "t#{@no}"}' \
-                 data-no=#{@no} \
-                 class='#classes #{@className!}'>
-      #{@op.render \div \op}
-      <div class=thread-info>
-        #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
-        #{if @preview then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
-      </div>
-        <div class=replies>#{(for @replies => &render \article \reply)join ''}</div>
-    </#container>
-    "
+    templates.thread {container, classes, id, thread: @}
 
   element: (container, classes, id) ->
     d = L \div

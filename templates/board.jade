@@ -9,7 +9,7 @@ header#header
 if board.motd
   #motd
     button#hide-motd(type='button') Hide News
-    #message= board.motd
+    #message!= board.motd
 #threads
   each thread in threads
     = thread.render()
