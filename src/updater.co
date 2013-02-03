@@ -41,6 +41,57 @@ draw-favicon = debounce 200ms !->
     link.href = &toDataURL \image/png
   document.head.appendChild link
 
+delay = [10 15 20 30 60 90 120 180 240 300]
+current-delay = 0 # index into delay
+
+append-updates-to = !(thread) ->
+  $ "t#{thread.no}" .lastElementChild # .replies
+    .insertAdjacentHTML do
+      \beforeend
+      (for thread.new => &render \article, 'new reply')join ''
+
+  for post of thread.new
+    document.dispatchEvent new CustomEvent do
+      \html5chan-postinsert
+      detail: post: $ "p#{post.no}"
+
+  # refresh backlinks
+  # TODO refactor out all the various places backlinks are made
+  # into something less coupled
+  for backlinks of $$ '.thread .backlinks'
+    backlinks.insertAdjacentHTML do
+      \beforeend
+      Post[backlinks.parentNode.dataset.no]backlinks do
+        true
+        backlinks.parentNode # passed in for backlink event XXX
+
+  Post.new-backlinks = {} # cleared
+
+  document.dispatchEvent new CustomEvent do
+    \html5chan-update
+    detail: {thread}
+
+  unread += thread.new.length
+  draw-favicon!
+
+  fade-when-visible post for post of thread.new
+
+  # if on the bottom of the page, smooth scroll to new posts
+  if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
+    last = window.scrollY
+    repeat 50ms !->
+      #if user scrolls upwards manually, abort.
+      if last > window.scrollY
+        @stop!
+      else if (remaining = window.scrollMaxY - window.scrollY) > 1
+        window.scrollBy 0, remaining / 4
+        last := window.scrollY
+
+  # update post count
+  $ "t#{thread.no}" .querySelector ".thread-info" .textContent =
+    "#{thread.replies.length} replies \
+     and #{thread.imageReplies.length} image replies."
+
 export updater =
   update:  !->
     updater.status.textContent = "Updating thread..."
@@ -48,97 +99,40 @@ export updater =
 
     new XMLHttpRequest
       &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.no}.json"
-      # &responseType = \JSON
-
       &setRequestHeader \If-Modified-Since last-update.toUTCString!
-
-      listen(&)
-        .on \load !->
-          if @status is 404
-            document.title += '(dead)'
-            updater.status.textContent = "thread 404'd"
-            return
-          if @status is 304
-            updater.countdown.restart!
-            return
-
+      &onload = !->
+        if @status is 404
+          document.title += '(dead)'
+          updater.status.textContent = "thread 404'd"
+        else
           last-modified = new Date @getResponseHeader \Last-Modified
+          if last-modified > last-update
+            updater.status.textContent = "update detected, parsing"
+            last-update := last-modified
 
-          unless last-modified > last-update
-            updater.countdown.restart!
-            return
+            thread = parser.api JSON.parse @response
+            append-updates-to thread
 
-          updater.status.textContent = "update detected, parsing"
-          last-update := last-modified
+            current-delay := 0 # reset delay
+          else
+            # increase delay
+            current-delay := (current-delay + 1) <? (delay.length - 1) # XXX ugly
 
-          thread = parser.api JSON.parse @response
-          if thread.new.length > 0
-            $ "t#{thread.no}" .lastElementChild # .replies
-              .insertAdjacentHTML do
-                \beforeend
-                (for thread.new => &render \article, 'new reply')join ''
-
-            for post of thread.new
-              document.dispatchEvent new CustomEvent do
-                \html5chan-postinsert
-                detail: post: $ "p#{post.no}"
-
-            # refresh backlinks
-            # TODO refactor out all the various places backlinks are made
-            # into something less coupled
-            for backlinks of $$ '.thread .backlinks'
-              backlinks.insertAdjacentHTML do
-                \beforeend
-                Post[backlinks.parentNode.dataset.no]backlinks do
-                  true
-                  backlinks.parentNode # passed in for backlink event XXX
-
-            Post.new-backlinks = {} # cleared
-
-            document.dispatchEvent new CustomEvent do
-              \html5chan-update
-              detail: {thread}
-
-            unread += thread.new.length
-            draw-favicon!
-
-            fade-when-visible post for post of thread.new
-
-            # if on the bottom of the page, smooth scroll to new posts
-            if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
-              last = window.scrollY
-              repeat 50ms !->
-                #if user scrolls upwards manually, abort.
-                if last > window.scrollY
-                  @stop!
-                else if (remaining = window.scrollMaxY - window.scrollY) > 1
-                  window.scrollBy 0, remaining / 4
-                  last := window.scrollY
-
-            # update post count
-            $ "t#{thread.no}" .querySelector ".thread-info" .textContent =
-              "#{thread.replies.length} replies \
-               and #{thread.imageReplies.length} image replies."
-
+          updater.tminus = delay[current-delay]
           updater.countdown.restart!
-
-        .on \timeout !->
-          updater.status.textContent = "request timed out..."
-          updater.countdown!
-
-        .on \error !->
-          updater.status.textContent = "Couldn't fetch thread page!"
-
-        .on \loadend !-> updater.button.disabled = false
-
+      &ontimeout = !->
+        updater.status.textContent = "request timed out..."
+        updater.tminus = delay[current-delay]
+        updater.countdown.restart!
+      &onerror   = !-> updater.status.textContent = "Couldn't fetch thread page!"
+      &onloadend = !-> updater.button.disabled = false
       &send!
 
-  countdown: repeat 1000ms {-start} !(t) ->
-    @t = t or @t or 30sec
+  tminus: delay[current-delay]
+  countdown: repeat 1000ms {-start} !->
+    updater.status.textContent = "Updating in #{updater.tminus} seconds..."
 
-    updater.status.textContent = "Updating in #{@t} seconds..."
-
-    if --@t is 0
+    if --updater.tminus is 0
       @stop!
       updater.update!
 
@@ -163,10 +157,10 @@ fade-when-visible = !->
       fade post
   else
     # wait until scrolled to
-    listen window .scroll function reset
+    window.addEventListener \scroll function reset
       if ( window.innerHeight + window.scrollY ) > post.offsetTop
         fade post
-        listen window .off \scroll reset
+        window.removeEventListener \scroll reset
 
 onready !->
   updater.status = $ \update-status
@@ -176,10 +170,10 @@ onready !->
   if board.isThread
     updater.countdown.start!
     listen $ \update-now .click !->
-      updater.countdown
-        &stop!
-        &t = 30ms
-      updater.update!
+      updater
+        &countdown.stop!
+        &tminus = delay[current-delay]
+        &update!
   else
     $ \updater .hidden = true
 
