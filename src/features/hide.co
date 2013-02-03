@@ -29,10 +29,10 @@ persist = !->
   localStorage"4chan-hide-r-#{board.name}" = JSON.stringify hidden.replies
 
 # perform actual DOM manipulation
-toggle = (prefix, id) ->
+toggle = (prefix, no) ->
   # all referencing quotelinks
-  classify $$ ".quotelink[href$=\"##id\"]" .toggle \hiddenlink
-  $ "#prefix#id" ?.classList.toggle \hidden
+  classify $$ ".quotelink[href$=\"##no\"]" .toggle \hiddenlink
+  $ "#prefix#no" ?.classList.toggle \hidden
 
 onready !->
   # XXX same coco bug as below, or would totally use quickmap
@@ -61,13 +61,13 @@ onready !->
   # hide all previously hidden replies and threads
   # TODO do this at render time instead of post render for faster display
   for document.getElementsByClassName \reply
-    id = &dataset.id
-    toggle \p id if hidden.replies[id]
+    no = &dataset.no
+    toggle \p no if hidden.replies[no]
 
   if board.is-board # don't bother on the actual thread page
     for document.getElementsByClassName \thread
-      id = &dataset.id
-      toggle \t id if hidden.threads[id]
+      no = &dataset.no
+      toggle \t no if hidden.threads[no]
 
 onupdate !->
   # XXX coco bug "unexpected IN" when inside quickmap

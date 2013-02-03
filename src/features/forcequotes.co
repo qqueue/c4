@@ -5,8 +5,8 @@ munge = !(ctx) ->
     # these capcodeReplies get messy, so skip for now
     continue if quote.parentNode.className is \smaller
 
-    id = quote.hash.substring 2
-    if (post = Post[id])
+    no = quote.hash.substring 2
+    if (post = Post[no])
       if post.comment.length > 0
         L \div
           # <br>s don't show in textContent for some reason

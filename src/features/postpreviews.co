@@ -3,7 +3,7 @@
 # XXX also will break weirdly if there is a cross-board link to a board with
 # similar post numbers.  IDs will start to be overwritten since there are only
 # unique within a board.
-fetch-new-post = !(id) ->
+fetch-new-post = !(no) ->
   [, board, , thread] = @pathname.split \/ # /<board>/res/<thread>
 
   link = this
@@ -22,7 +22,7 @@ fetch-new-post = !(id) ->
 
           # Post[] hash should now be updated
           # XXX kind of bad global state, should change how this works
-          create-preview.call link, id, Post[id]
+          create-preview.call link, no, Post[no]
 
     &send!
 
@@ -37,14 +37,14 @@ handle-preview = !->
   return if @classList.contains \inlinedlink \
          or @classList.contains \recursivelink
 
-  id = @hash.substring 2 # "#p"
+  no = @hash.substring 2 # "#p"
 
-  if not post = Post[id]
-    fetch-new-post.call this, id
+  if not post = Post[no]
+    fetch-new-post.call this, no
   else
-    create-preview.call this, id, post
+    create-preview.call this, no, post
 
-create-preview = !(id, post) ->
+create-preview = !(no, post) ->
   $ \postpreview ?.remove!
 
   host = closest \.post this
@@ -89,16 +89,16 @@ create-preview = !(id, post) ->
 
 
   # highlight hovered replies
-  classify $$ ".post[data-id=\"#id\"]" .add \hovered
+  classify $$ ".post[data-no=\"#no\"]" .add \hovered
 
   listen this .once \mouseout !->
     preview.remove!
-    classify $$ ".post[data-id=\"#id\"]" .remove \hovered
+    classify $$ ".post[data-no=\"#no\"]" .remove \hovered
 
 on-posts \.quotelink : mouseover: handle-preview
 
 onbacklink !({detail}) ->
   <-! defer 100ms
-  detail.post.querySelector ".backlink[href$=p#{detail.id}]"
+  detail.post.querySelector ".backlink[href$=p#{detail.no}]"
     &addEventListener \mouseover handle-preview
 

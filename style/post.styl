@@ -13,7 +13,7 @@
 .reply.new
   background #feffbf noise !important
 
-.sage > .post-header > .poster:after
+.sage > .post-header > .name:after
   content " (sage)"
 
 .reply:before, .inlined-idx
@@ -40,14 +40,14 @@
   font-weight normal
   float right
 
-.post .title
+.post .subject
   color #0f0c5d
   font-weight 800
   text-decoration none
   &:hover
     text-decoration underline
 
-.poster
+.name
   color sfw-border - 10%
   &:link
     text-decoration underline
@@ -88,13 +88,13 @@
     cursor pointer
 
 .admin
-  .poster, .capcode, .tripcode
+  .name, .capcode, .tripcode
     color #f00
   .capcode:after
     content url(https://static.4chan.org/image/adminicon.gif)
 
 .mod
-  .poster, .capcode
+  .name, .capcode
     color #800080
   .capcode:after
     content url(https://static.4chan.org/image/modicon.gif)
@@ -139,7 +139,7 @@
   text-decoration none
   color inherit
 
-  .id:hover
+  .no:hover
       text-decoration underline
 
 .recursivelink

@@ -9,9 +9,9 @@ sage-regex      = /^sage$/i
 # lots of querySelector calls? Did switching to standards mode make
 # dom querying faster or something? TODO test this, somehow
 parse-thread = (el) -> new Thread
-  &id        = el.id.substring 1 # t12345
-  &url       = board.threadurl + &id
-  &preview   = true
+  &no        = el.id.substring 1 # t12345
+  &url       = board.threadurl + &no
+  &preview   = true # XXX always true?
 
   if omitted = el.querySelector \.summary
     &omitted =
@@ -39,20 +39,20 @@ parse-post = (el, idx) ->
   new Post
     &idx    = 1 + idx + (thread.omitted?replies || 0)
     &thread = thread
-    &id     = el.id.substring 1
+    &no     = el.id.substring 1
 
     &url =
       if &op = el.classList.contains \op
         thread.url
       else
-        "#{thread.url}\#p#{&id}"
+        "#{thread.url}\#p#{&no}"
 
     &time = new Date do
       parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
 
-    &title    = el.querySelector '.postInfo.desktop .subject' .innerHTML
+    &subject  = el.querySelector '.postInfo.desktop .subject' .innerHTML
 
-    &poster   = el.querySelector \.name                       .innerHTML
+    &name     = el.querySelector \.name                       .innerHTML
     &tripcode = el.querySelector \.postertrip                ?.innerHTML
     &capcode  = el.querySelector \.capcode                   ?.innerHTML
 
@@ -110,7 +110,7 @@ export parser =
 
   # transform API thread format to the data used here. Returns Thread.
   api: ({posts: [op]}: data) -> new Thread
-    &id  = op.no
+    &no  = op.no
     &url = board.threadurl + op.no
 
     &preview = !!op.omitted_posts
@@ -137,12 +137,12 @@ humanized = (bytes) ->
 parse-api-post = (data, i) -> new Post
   &idx      = i
   &thread   = this
-  &id       = data.no
-  &url      = @url
+  &url      = @url # XXX not really url
   &time     = new Date data.time * 1000
   & <<< data{
-    title: sub
-    poster: name
+    no
+    subject: sub
+    name
     tripcode: trip
     uid: id
     capcode

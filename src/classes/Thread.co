@@ -9,17 +9,17 @@ export class Thread
     @reply = {}
     for reply of @replies
       @imageReplies.push reply if reply.image
-      @reply[reply.id] = reply
+      @reply[reply.no] = reply
 
-    if Thread[@id] # if this thread has been parsed before
+    if Thread[@no] # if this thread has been parsed before
       @new = []
       @deleted = []
-      for reply of Thread[@id].replies # old replies
-        @deleted.push reply if not @reply[reply.id]
+      for reply of Thread[@no].replies # old replies
+        @deleted.push reply if not @reply[reply.no]
       for reply of @replies
-        @new.push reply if not Thread[@id].reply[reply.id]
+        @new.push reply if not Thread[@no].reply[reply.no]
 
-    Thread[@id] = this
+    Thread[@no] = this
 
   className: ->
     c = 'thread '
@@ -29,8 +29,8 @@ export class Thread
     return c
 
   render: (container = \article, classes = '', id) ->
-    "<#container id='#{id or "t#{@id}"}' \
-                 data-id=#{@id} \
+    "<#container id='#{id or "t#{@no}"}' \
+                 data-no=#{@no} \
                  class='#classes #{@className!}'>
       #{@op.render \div \op}
       <div class=thread-info>

@@ -47,7 +47,7 @@ export updater =
     updater.button.disabled = true
 
     new XMLHttpRequest
-      &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.id}.json"
+      &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.no}.json"
       # &responseType = \JSON
 
       &setRequestHeader \If-Modified-Since last-update.toUTCString!
@@ -73,7 +73,7 @@ export updater =
 
           thread = parser.api JSON.parse @response
           if thread.new.length > 0
-            $ "t#{thread.id}" .lastElementChild # .replies
+            $ "t#{thread.no}" .lastElementChild # .replies
               .insertAdjacentHTML do
                 \beforeend
                 (for thread.new => &render \article, 'new reply')join ''
@@ -81,7 +81,7 @@ export updater =
             for post of thread.new
               document.dispatchEvent new CustomEvent do
                 \html5chan-postinsert
-                detail: post: $ "p#{post.id}"
+                detail: post: $ "p#{post.no}"
 
             # refresh backlinks
             # TODO refactor out all the various places backlinks are made
@@ -89,7 +89,7 @@ export updater =
             for backlinks of $$ '.thread .backlinks'
               backlinks.insertAdjacentHTML do
                 \beforeend
-                Post[backlinks.parentNode.dataset.id]backlinks do
+                Post[backlinks.parentNode.dataset.no]backlinks do
                   true
                   backlinks.parentNode # passed in for backlink event XXX
 
@@ -116,7 +116,7 @@ export updater =
                   last := window.scrollY
 
             # update post count
-            $ "t#{thread.id}" .querySelector ".thread-info" .textContent =
+            $ "t#{thread.no}" .querySelector ".thread-info" .textContent =
               "#{thread.replies.length} replies \
                and #{thread.imageReplies.length} image replies."
 
@@ -150,7 +150,7 @@ fade = !(post) ->
     draw-favicon!
 
 fade-when-visible = !->
-  post = $ "p#{it.id}"
+  post = $ "p#{it.no}"
 
   y = post.offsetTop
 

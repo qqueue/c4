@@ -6,17 +6,17 @@ export class Post
       for link of that
         quoted = link.substring 8
         backlinks = Post.backlinks@[quoted]
-        if not backlinks[@id] #it's new
-          Post.new-backlinks@[quoted][@id] = true
-          backlinks[@id] = true
+        if not backlinks[@no] #it's new
+          Post.new-backlinks@[quoted][@no] = true
+          backlinks[@no] = true
 
-    ..[@id] = this # register this post as having been parsed
+    ..[@no] = this # register this post as having been parsed
 
   backlinks: (only-new, post-el) -> # renders backlinks
     html = ""
     backlinks = if only-new then Post.new-backlinks else Post.backlinks
-    if backlinks[@id]
-      for post in backlinks[@id]
+    if backlinks[@no]
+      for post in backlinks[@no]
         if board.isThread
           {idx} = Post[post]
         else
@@ -27,7 +27,7 @@ export class Post
           document.dispatchEvent new CustomEvent do
             \html5chan-backlink
             detail:
-              id: post
+              no: post
               post: post-el
 
     return html
@@ -47,20 +47,20 @@ export class Post
   # is getting more complicated (would like to switch foolz to other archivers)
 
   render: (container, classes = '', id) ->
-    "<#container data-id=#{@id} \
+    "<#container data-no=#{@no} \
                  class='#classes #{@className!}' \
                  data-idx=#{@idx} \
-                 id='#{id or "p#{@id}"}'>
+                 id='#{id or "p#{@no}"}'>
       <h1 class=post-header>
-        <button type=button class=hide value=#{@id}>&times;</button>
+        <button type=button class=hide value=#{@no}>&times;</button>
         <button type=submit \
                 form=reportform \
                 class=report \
                 name=no \
-                value=#{@id}>!</button>
-        <a href='#{@url}' class=title>#{@title or ''}</a> \
-        <a class=poster \
-           #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@poster}</a> \
+                value=#{@no}>!</button>
+        <a href='#{@url}' class=subject>#{@subject or ''}</a> \
+        <a class=name \
+           #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@name}</a> \
 
         <span class=tripcode>#{@tripcode or ''}</span> \
         <span class=capcode>#{@capcode or ''}</span> \
@@ -74,7 +74,7 @@ export class Post
         #{if @op and @thread.closed
             '<img alt=closed src=//static.4chan.org/image/closed.gif> '
           else ''}
-        <a href='#{@url}' class=permalink>No.<span class=id>#{@id}</span></a>
+        <a href='#{@url}' class=permalink>No.<span class=no>#{@no}</span></a>
       </h1>
       #{if @image
         "

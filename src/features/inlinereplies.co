@@ -11,7 +11,7 @@
     window.scrollBy 0, el.getBoundingClientRect!top - last
 
 toggle-off = !(link, inlined) ->
-  id = link.hash.substring 2
+  no = link.hash.substring 2
 
   link.hidden = false
 
@@ -22,13 +22,13 @@ toggle-off = !(link, inlined) ->
 
   # remove original post's inlined status if this is the last inlining
   # link
-  if $$ ".inline[data-id=\"#id\"]" .length is 1
-    $ "p#id" ?.classList.remove \inlined
+  if $$ ".inline[data-no=\"#no\"]" .length is 1
+    $ "p#no" ?.classList.remove \inlined
 
   # and for nested posts
   for inlined.querySelectorAll '.post.inline'
-    pid = (&id / \-)pop!
-    if $$ ".inline[data-id=\"#pid\"]" .length is 1
+    pid = (&no / \-)pop!
+    if $$ ".inline[data-no=\"#pid\"]" .length is 1
       $ "p#pid" ?.classList.remove \inlined
 
   inlined.remove!
@@ -47,13 +47,13 @@ toggle-off = !(link, inlined) ->
 
 onclick = !(e) ->
   return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-  return unless post = Post[id = @hash.substring 2]
+  return unless post = Post[no = @hash.substring 2]
   e.preventDefault!
 
   host = closest \.post, this .id
   hostid = (host / \-)pop! # grab last (if nested inline post)
-  inlined-id = "#{host}-p#id" # id is unique to hosting post and inlined post
-  stub-id = "#{id}-inlined-stub"
+  inlined-id = "#{host}-p#no" # id is unique to hosting post and inlined post
+  stub-id = "#{no}-inlined-stub"
 
   if inlined = $ inlined-id
     toggle-off this, inlined
@@ -107,7 +107,7 @@ onclick = !(e) ->
 
     $ \postpreview ?.remove!
 
-    $ "p#id" ?.classList.add \inlined
+    $ "p#no" ?.classList.add \inlined
 
     # hide unnecessary forcedquote for quotelinks
     # XXX messy
@@ -130,7 +130,7 @@ on-posts '.quotelink:not(.hiddenlink)':
 
 onbacklink !({detail}) ->
   <-! defer 100ms
-  detail.post.querySelector ".backlink[href$=p#{detail.id}]"
+  detail.post.querySelector ".backlink[href$=p#{detail.no}]"
     &addEventListener \click onclick
     &addEventListener \dblclick follow
 
