@@ -1,95 +1,87 @@
-# adds features at the comment html level
-# taking the regex approach with innerHTML because I believe that cloning the
-# element and working with the DOM before taking the HTML would be slower
+# Modify post comments through their HTML source.
+# Called by the parser, which means enhancing happens during parse-time, which
+# is faster than munging the DOM after it is rendered.
 #
-# also, insert better markup when possible
-parser.enhance = ->
-  return it if it.length is 0
-  it
+# `add-replacement` is called by other features to add a replacer.
+#
+# XXX since the linkification replacements must run *after* the youtube
+# replacement, I'm unable to pull out the linkification stuff completely. Need
+# a different factorization strategy.
 
+export enhancer =
+  replacements:
     # 4chan started putting <wbr>s in every ~50ish characters for unbroken
     # words in its markup, which kinda nice but doing it in pure CSS
     # (whitespace:break word) would be better, since the <wbr>s are just placed
     # at a character limit anyway, not at semantically significant points (e.g.
     # hyphens) which is for which <wbr> was meant. Also, breaks the linkifier,
     # so just remove all of them.
-    .replace /<wbr>/g ''
+    * [/<wbr>/g '']
 
-    #youtube thumbnails
-    .replace do
-      //
-        (?:https?:\/\/)? # optional protocol
-        (?:www\.)?       # optional subdomain (some people add it
-        (
-          youtu\.be\/ # short links
-            ([\w\-_]+) # video id
-            (\?[&=\w\-_;\#]*)? # options
-          |
-          youtube\.com\/watch\?
-            ([&=\w\-_;\.\?\#\%]*) # pre video id options (annoying, since this
-                                # will have to give up matches)
-            v=([\w\-_]+) # video id
-            ([&=\w\-\._;\?\#\%]*) # post vieo id options
-        )
-      //g
-
-      '<a href="https://$1" \
-          class="youtube" \
-          data-id="$2$5" \
-          data-params="$3$4$6" \
-          target="_blank"><img src="//img.youtube.com/vi/$2$5/2.jpg"></a>'
+    # youtube thumbnails
+    * * //
+          (?:https?:\/\/)? # optional protocol
+          (?:www\.)?       # optional subdomain (some people add it
+          (
+            youtu\.be\/ # short links
+              ([\w\-_]+) # video id
+              (\?[&=\w\-_;\#]*)? # options
+            |
+            youtube\.com\/watch\?
+              ([&=\w\-_;\.\?\#\%]*) # pre video id options (annoying, since this
+                                  # will have to give up matches)
+              v=([\w\-_]+) # video id
+              ([&=\w\-\._;\?\#\%]*) # post vieo id options
+          )
+        //g
+      * '<a href="https://$1" \
+            class="youtube" \
+            data-id="$2$5" \
+            data-params="$3$4$6" \
+            target="_blank"><img src="//img.youtube.com/vi/$2$5/2.jpg"></a>'
 
     # specialcase linkify urls without internal parenthesis surrounded by
     # parenthesis like (http://google.com)
-    .replace do
-      /\((https?:\/\/)([^<\s\)]+)\)/g
-      '(<a class="external" \
-           rel="noreferrer" \
-           href="$1$2" \
-           title="$1$2" \
-           target="_blank">$2</a>)'
+    * * /\((https?:\/\/)([^<\s\)]+)\)/g
+      * '(<a class="external" \
+             rel="noreferrer" \
+             href="$1$2" \
+             title="$1$2" \
+             target="_blank">$2</a>)'
 
     # linkify links not preceded by a quote or double-quote (should avoid
     # relinkifying href= urls)
-    .replace do
-      /([^"']|^)(https?:\/\/)([^<\s]+)/g
-      '$1<a class="external" \
-            rel="noreferrer" \
-            href="$2$3" \
-            title="$2$3" \
-            target="_blank">$3</a>'
+    * * /([^"']|^)(https?:\/\/)([^<\s]+)/g
+      * '$1<a class="external" \
+              rel="noreferrer" \
+              href="$2$3" \
+              title="$2$3" \
+              target="_blank">$3</a>'
 
     # specialcase linkify urls without a protocol but with a common tld
-    .replace do
-      //
-      (^|>|;|\s) # to avoid linking parts of urls inside hrefs, must start
-                     # with one of these
-      (
-        [\w\.\-]+\. # domain
-        (?:com|net|org|eu|jp|us|co\.uk) # non-exhaustive
-        (/[^<\s]*)?(?=[\s<]|$) # rest of the url until space or <br> or end
-      )
-      //g
-      '$1<a class="external" \
-            rel="noreferrer" \
-            href="http://$2" \
-            title="$2" \
-            target="_blank">$2</a>'
+    * * //
+          (^|>|;|\s) # to avoid linking parts of urls inside hrefs, must start
+                         # with one of these
+          (
+            [\w\.\-]+\. # domain
+            (?:com|net|org|eu|jp|us|co\.uk) # non-exhaustive
+            (/[^<\s]*)?(?=[\s<]|$) # rest of the url until space or <br> or end
+          )
+        //g
+      * '$1<a class="external" \
+              rel="noreferrer" \
+              href="http://$2" \
+              title="$2" \
+              target="_blank">$2</a>'
+  add-replacement: !(pattern, replacement) ->
+    @replacements.push [pattern, replacement]
 
-    # attempt to redirect broken post links to the archive
-    .replace do
-      //
-      <span\x20class="deadlink">
-      &gt;&gt;
-      # TODO (?: &gt;/(\w+)/(\d+) # crosboard >>>/q/12325 link
-      #|
-        (\d+)                     # crossthread >>/13252 link
-      #)
-      </span>
-      //g
-      board.archivelink
-
-board.archivelink = if board.archive
-  """<a href="#{board.archive}/$1" class="deadlink">&gt;&gt;$1</a>"""
-else \$& # don't replace
+  # I thought that using an explicit for-loop would make `enhance` unbearably
+  # slow, so at one point I had an elaborate scheme to compile a Function body
+  # as a string for the list of replacements, but it turns out that the simple
+  # for loop is plenty fast. Premature optimization ;_;
+  enhance: ->
+    for [pattern, replacement] of enhancer.replacements
+      it = it.replace pattern, replacement
+    it
 

@@ -70,6 +70,7 @@ task \build 'build userscript' ->
           classes
           parser
           enhancer
+          archives
           updater
           poster
           onready

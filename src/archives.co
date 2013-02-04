@@ -1,0 +1,37 @@
+# redirect 404 threads to an archive
+# rewrite dead quotelinks to an archive
+# TODO redirect deleted images to an archive
+# TODO load dead post previews from an archive API
+
+archive-of = (name) -> switch name
+  case <[a co jp m q sp tg tv v vg wsg]>
+    "http://archive.foolz.us/#that/thread"
+  case \lit
+    "http://fuuka.warosu.org/#that/thread"
+  case <[diy g sci]>
+    "http://archive.installgentoo.net/#that/thread"
+
+board.archive = archive-of board.name
+
+# 404 redirection
+if /404/.test document.title and board.archive
+  if /\d+/.exec window.location.pathname
+    window.location = "#{board.archive}/#{that.0}"
+
+# quotelink rewriting
+
+if board.archive
+  # crossthread >>13252 links
+  enhancer.add-replacement do
+    /<span class="deadlink">(&gt;&gt;(\d+))<\/span>/g
+    """<a href="#{board.archive}/$2" class="deadlink">$1</a>"""
+
+# crosboard >>>/q/12325 links
+enhancer.add-replacement do
+  /<span class="deadlink">(&gt;&gt;&gt;\/([a-z]+)\/(\d+))<\/span>/g
+  (original, text, name, no) ->
+    if archive-of name
+      """<a href="#that/#no" class="deadlink">#text</a>"""
+    else
+      original
+

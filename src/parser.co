@@ -59,7 +59,7 @@ parse-post = (el, idx) ->
     &email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
     &sage     = sage-regex.test that if &email
 
-    &comment = parser.enhance do
+    &comment = enhancer.enhance do
       el.querySelector \.postMessage .innerHTML
 
     &uid = el.querySelector \.hand ?.textContent # hand?
@@ -149,7 +149,7 @@ parse-api-post = (data, i) -> new Post
     email
   }
   &sage     = &email is \sage
-  &comment  = if data.com then parser.enhance that else ''
+  &comment  = if data.com then enhancer.enhance that else ''
   &image    = if data.fsize
     thumb:
      url    : thumbs-base + data.tim + \s.jpg
