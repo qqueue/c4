@@ -21,7 +21,7 @@ wrap = -> "let\n  #{read it .replace /\n/g '\n  '}"
 
 compile-css = (cb) ->
   # ordering of files matters
-  files = <[base page post postform thread yotsuba-colors youtube]>
+  files = <[base yotsuba-colors page post postform thread youtube]>
   source = (for files => read "style/#&.styl")join \\n
   nib source .render cb
 
