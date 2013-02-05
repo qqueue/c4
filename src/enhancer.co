@@ -82,6 +82,6 @@ export enhancer =
   # for loop is plenty fast. Premature optimization ;_;
   enhance: ->
     for [pattern, replacement] of enhancer.replacements
-      it = it.replace pattern, replacement
+      it .= replace pattern, replacement
     it
 
