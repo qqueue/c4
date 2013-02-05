@@ -1,6 +1,7 @@
 fs     = require \fs
 coco   = require \coco
 stylus = require \stylus
+jade   = require \jade
 
 ls = -> "#it/#file" for file of fs.readdirSync it
 
@@ -44,10 +45,21 @@ compile-all = (css, paths) ->
       source
         .join \\n
         .replace /%hakase\.css%/ css
-        .replace /%board\.co\.html%/ read \templates/board.co.html
       {+bare} # IEFE is added later
   catch
     throw new Error "Compiling all:\n\t#{e.message}"
+
+compile-templates = ->
+  source = ["var templates = {};"]
+  try
+    for filename of ls \templates
+      #templates/do-it.jade => doIt
+      name = filename.slice(10 -5)replace /-(.)/g -> it.1.toUpperCase!
+      source.push "templates.#name = #{jade.compile read(filename), {+client, -compileDebug, filename}}"
+  catch
+    throw new Error "Jade error on #filename : #{e.message}"
+
+  source * \\n
 
 nib = -> stylus it .use require(\nib)!
 
@@ -62,8 +74,11 @@ task \build 'build userscript' ->
       outfile
       join do
         metadata
-        "(function(){"
-        '"use strict";'
+        "(function(){
+        var" #avoid jade creating global
+        read \node_modules/jade/runtime.min.js
+        "jade.escape = function (it) { return it; };"
+        compile-templates!
         compile-all css, <[
           intro
           utils

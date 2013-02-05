@@ -1,7 +1,7 @@
 export class Thread
   postprocess: ->
     #convenience array including op
-    @posts = [@op].concat @replies
+    @posts = [@op]concat @replies
 
     @imageReplies = []
 
@@ -14,10 +14,10 @@ export class Thread
     if Thread[@no] # if this thread has been parsed before
       @new = []
       @deleted = []
-      for reply of Thread[@no].replies # old replies
-        @deleted.push reply if not @reply[reply.no]
+      for reply of Thread[@no]replies # old replies
+        @deleted.push reply unless @reply[reply.no]
       for reply of @replies
-        @new.push reply if not Thread[@no].reply[reply.no]
+        @new.push reply unless Thread[@no]reply[reply.no]
 
     Thread[@no] = this
 
@@ -29,17 +29,7 @@ export class Thread
     return c
 
   render: (container = \article, classes = '', id) ->
-    "<#container id='#{id or "t#{@no}"}' \
-                 data-no=#{@no} \
-                 class='#classes #{@className!}'>
-      #{@op.render \div \op}
-      <div class=thread-info>
-        #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
-        #{if @preview then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
-      </div>
-        <div class=replies>#{(for @replies => &render \article \reply)join ''}</div>
-    </#container>
-    "
+    templates.thread {container, classes, id, thread: @}
 
   element: (container, classes, id) ->
     d = L \div
