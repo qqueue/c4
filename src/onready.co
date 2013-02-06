@@ -90,12 +90,16 @@ body
   &className = "#{board.type} \
                #{if board.isThread then \threadpage else \boardpage}"
 
-console.time "generate and render new body"
-body.innerHTML =
+console.time "generate new HTML body"
+body-html =
   """
   %board.co.html%
   """
-console.timeEnd "generate and render new body"
+console.timeEnd "generate new HTML body"
+
+console.time "parse and render new body"
+body.innerHTML = body-html
+console.timeEnd "parse and render new body"
 
 if board.isBoard
   console.time "highlight current page"
