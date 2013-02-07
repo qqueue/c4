@@ -35,7 +35,7 @@ export repeat = class
     @fn = fn
     @timeoutee = !~>
       @fn ...
-      @timeout = @repeat! if @auto
+      @repeat! if @auto
 
     @auto = if options.auto? then options.auto else true
     @start! unless options.start is false
