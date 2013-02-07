@@ -46,6 +46,6 @@ onpostinsert !->
   flush!
 
 # flush when user switches back to the tab
-window.addEventListener \visibilitystatechange ->
-  flush unless document.hidden
+window.addEventListener \visibilitystatechange !->
+  flush! unless document.hidden
 
