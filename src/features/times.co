@@ -10,15 +10,18 @@ const DAY = 8_640_000ms, HOUR = 3_600_000ms, MINUTE = 60_000ms, SECOND = 1000ms
 
 debounce-leading = (delay, fn) ->
   var timeout
+  reset = !-> timeout := null
   -> unless timeout
     fn ...
-    timeout := defer delay, !-> timeout := null
+    timeout := defer delay, reset 
 
 flush = debounce-leading SECOND, !->
   for stale
     time = new Date(&getAttribute \datetime)
     &textContent = time.relative-time!
     set-update &
+
+  stale.length = 0
 
 set-update = !(el) ->
   time = new Date(el.getAttribute \datetime)
@@ -31,7 +34,7 @@ set-update = !(el) ->
   else if diff > MINUTE
     diff % MINUTE
   else
-    diff % SECOND
+    SECOND
 
   # add self to stale list then
   defer delay, !-> stale.push el
