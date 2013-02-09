@@ -2,6 +2,10 @@
 // @name        html5chan
 // @namespace   https://github.com/qqueue/html5chan
 // @description The Roger Bacon of 4chan userscripts
+// @author      queue <queue@lavabit.com>
+//
+// @license     none (public domain)
+// @copyright   none
 //
 // @match       *://boards.4chan.org/*
 // @exclude     *://boards.4chan.org/f/*

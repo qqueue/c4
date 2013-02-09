@@ -10,6 +10,8 @@ html5chan], if you're curious.
 
 [philosophy of html5chan]: https://github.com/qqueue/html5chan/wiki/Philosophy
 
+html5chan is public domain software. Read UNLICENSE for more information.
+
 ## Compilation and installing from source
 
 html5chan depends on [node.js], [coco], [stylus], and [nib] for
