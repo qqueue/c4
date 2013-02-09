@@ -5,12 +5,14 @@ on 4chan. Currently, it is implemented as a Greasemonkey userscript for Firefox
 18+.
 
 While html5chan is currently a userscript, technology is only an
-implementation detail. The html5chan github wiki has more on the [philosophy of
-html5chan], if you're curious.
+implementation detail. The html5chan github wiki has [more on the philosophy of
+html5chan][0], if you're curious.
 
-[philosophy of html5chan]: https://github.com/qqueue/html5chan/wiki/Philosophy
+[0]: https://github.com/qqueue/html5chan/wiki/Philosophy
 
-html5chan is public domain software. Read UNLICENSE for more information.
+html5chan is public domain software. Read [UNLICENSE] for more information.
+
+[UNLICENSE]: https://github.com/qqueue/html5chan/blob/master/UNLICENSE.md
 
 ## Compilation and installing from source
 
