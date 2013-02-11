@@ -1,9 +1,9 @@
-# update relative post times periodically
+# update relative post dates periodically
 
-# each time element adds itself to the stale list once it becomes inaccurate.
-# the stale list is flushed and stale times are updated whenever the DOM
-# changes otherwise, which keeps the times as up to date as possible without
-# incurring separate DOM reflows.
+# each time element adds a function to update itself to the stale list once it
+# becomes inaccurate.  the stale list is flushed and stale times are updated
+# whenever the DOM changes otherwise, which keeps the times as up to date as
+# possible without incurring separate DOM reflows.
 stale = []
 
 debounce-leading = (delay, fn) ->
@@ -22,7 +22,7 @@ keep-up-to-date = !(el) ->
   time = new Date(el.getAttribute \datetime)
 
   update = !(now) ->
-    el.textContent = time.relative-time now
+    el.textContent = time.relative-date now
     make-timeout now - time.getTime!
 
   add-to-stale = !-> stale.push update
