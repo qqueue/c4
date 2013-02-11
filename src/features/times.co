@@ -6,41 +6,43 @@
 # incurring separate DOM reflows.
 stale = []
 
-const DAY = 8_640_000ms, HOUR = 3_600_000ms, MINUTE = 60_000ms, SECOND = 1000ms
-
 debounce-leading = (delay, fn) ->
   var timeout
   reset = !-> timeout := null
   -> unless timeout
     fn ...
-    timeout := defer delay, reset 
+    timeout := defer delay, reset
 
 flush = debounce-leading SECOND, !->
-  for stale
-    time = new Date(&getAttribute \datetime)
-    &textContent = time.relative-time!
-    set-update &
-
+  now = Date.now!
+  for stale => & now
   stale.length = 0
 
-set-update = !(el) ->
+keep-up-to-date = !(el) ->
   time = new Date(el.getAttribute \datetime)
-  # calculate when relative date will be stale again
-  diff = Date.now! - time.getTime!
-  delay = if diff > DAY
-    diff % DAY
-  else if diff > HOUR
-    diff % HOUR
-  else if diff > MINUTE
-    diff % MINUTE
-  else
-    SECOND
 
-  # add self to stale list then
-  defer delay, !-> stale.push el
+  update = !(now) ->
+    el.textContent = time.relative-time now
+    make-timeout now - time.getTime!
+
+  add-to-stale = !-> stale.push update
+
+  make-timeout = !(diff) ->
+    # calculate when relative date will be stale again
+    delay = if diff > DAY
+      diff % DAY
+    else if diff > HOUR
+      diff % HOUR
+    else if diff > MINUTE
+      diff % MINUTE
+    else
+      SECOND
+    defer delay, add-to-stale
+
+  make-timeout Date.now! - time.getTime!
 
 onpostinsert !->
-  set-update it.detail.post.querySelector \time
+  keep-up-to-date it.detail.post.querySelector \time
 
   # take advantage of DOM reflow
   flush!

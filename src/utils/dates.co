@@ -3,15 +3,43 @@
 pluralize = (number, unit) ->
   "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
 
-Date::relative-time = ->
-  if ( days = ( ( diff = Date.now! - @getTime! ) / 86400000 ) ) > 1
-    pluralize days, \day
-  else if ( hours = days * 24 ) > 1
-    pluralize hours, \hour
-  else if ( minutes = hours * 60 ) > 1
-    pluralize minutes, \minute
-  else if ( seconds = minutes * 60 ) >= 1
-    pluralize seconds, \second
+# XXX explicit export for times.co
+export const YEAR   = 3.156e10_ms
+             MONTH  = 2.62974e9_ms
+             DAY    = 8_640_000ms
+             HOUR   = 3_600_000ms
+             MINUTE = 60_000ms
+             SECOND = 1000ms
+
+Date::relative-time = (now = Date.now!)->
+  diff = now - @getTime!
+  absdiff = Math.abs diff
+  # TODO use new if block
+  if absdiff > YEAR
+    number = absdiff / YEAR
+    unit = \year
+  else if absdiff > MONTH
+    number = absdiff / MONTH
+    unit = \month
+  else if absdiff > DAY
+    number = absdiff / DAY
+    unit = \day
+  else if absdiff > HOUR
+    number = absdiff / HOUR
+    unit = \hour
+  else if absdiff > MINUTE
+    number = absdiff / MINUTE
+    unit = \minute
   else
-    'from the future!'
+    number = absdiff / SECOND
+    unit = \second
+
+  number = Math.round number
+  unit += \s unless number is 1
+
+  if diff > 0
+    "#number #unit ago"
+  else
+    "in #number #unit"
+
 
