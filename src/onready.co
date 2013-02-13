@@ -112,7 +112,7 @@ document.title =
   if board.isThread
     board.thread.op |>
       "#{truncate do
-           &title or &text or &image?filename or &time.relative-date!}
+           &subject or &text or &image?filename or &time.relative-date!}
        \ - /#{board.name}/"
   else
     board.title
