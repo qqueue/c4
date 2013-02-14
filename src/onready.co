@@ -66,6 +66,7 @@ board
     d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
 
   &type = if &sfw then \sfw else \nsfw
+  &favicon = board.favicons[&type]
 
   # for post deletion
   &password = get \password or Math.random!toString!substr -8
@@ -117,6 +118,14 @@ document.title =
   else
     board.title
 console.timeEnd "set new page title"
+
+console.time "set correct favicon"
+document.head.append with L \link
+  &id   = \favicon
+  &rel  = \icon
+  &type = \image/x-icon # required for chrome, I guess
+  &href = board.favicon.src
+console.timeEnd "set correct favicon"
 
 console.timeEnd "initial render"
 

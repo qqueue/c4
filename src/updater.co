@@ -1,50 +1,26 @@
-last-update = new Date
+# Keep threads up to date
+#
+# - append new posts as they are made
+# - update backlinks for past posts that are replied to
+# - detect when new posts are read
+#   - keep an unread counter in the favicon
+# - allow the user to manually request an update
+#
+# TODO this code _deperately_ needs FRP or promises or some shit. 190 LOC is
+# way too much.
 
-unread = 0
+export updater = {}
 
-# icons need to be here in b64 because they are served from static.4chan.org
-# without CORS headers, so drawing those to the canvas would taint it and
-# prevent reexporting to the favicon
-favicons =
-  sfw: with L \img
-    &src = 'data:image/vnd.microsoft.icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAABMLAAATCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv8AAAD/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/AAAA/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAOvXAADBgwAAwYMAAMGDAADhhwAA888AAP//AAD//wAAw8MAAIGBAADBgwAAg8EAAMfj/////////////w=='
-  nsfw: with L \img
-    &src = 'data:image/vnd.microsoft.icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/zPMZv8AAAD/M8xm/wAAAP8AAAAAAAAAAAAAAP8zzGb/AAAA/zPMZv8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8zzGb/M8xm/zPMZv8AAAD/AAAAAAAAAAAAAAD/M8xm/zPMZv8zzGb/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAD/M8xm/zPMZv8zzGb/AAAA/wAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAP8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAP8zzGb/M8xm/zPMZv8zzGb/AAAA/wAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/zPMZv8AAAD/AAAAAAAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAP8zzGb/M8xm/zPMZv8AAAD/AAAAAAAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/zPMZv8zzGb/M8xm/wAAAP8AAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAOvXAADBgwAAwYMAAMGDAADhhwAA888AAP//AAD//wAAw8MAAIGBAADBgwAAg8EAAMfjAAD//////////w=='
+# increase polling time when there are no new posts
+const delays    = [10 15 20 30 60 90 120 180 240 300]
+      max-delay = delays.length - 1
 
-# draw unread count on favicon
-# adapted from https://github.com/tommoor/tinycon
-# debounce slightly to prevent stuttering while scrolling
-draw-favicon = debounce 200ms !->
-  # the entire link needs to be replaced lest the icon won't update
-  $ \favicon ?.remove!
-  link = L \link
-    &id   = \favicon
-    &rel  = \icon
-    &type = \image/x-icon # required for chrome, I guess
-
-  L \canvas
-    &width = 16
-    &height = 16
-
-    &getContext \2d
-      &drawImage favicons[board.type], 0 0
-      if unread > 0
-        &font         = '8px monospace'
-        &fillStyle    = \#000
-        &strokeStyle  = \#fff
-        &lineWidth    = 4
-        &textBaseline = \bottom
-        &textAlign    = \right
-
-        &strokeText unread, 16 16
-        &fillText   unread, 16 16
-    link.href = &toDataURL \image/png
-  document.head.appendChild link
-
-delay = [10 15 20 30 60 90 120 180 240 300]
+# state
 current-delay = 0 # index into delay
+last-update   = new Date
+unread        = 0
 
-append-updates-to = !(thread) ->
+!function append-new-posts thread
   $ "t#{thread.no}" .lastElementChild # .replies
     .insertAdjacentHTML do
       \beforeend
@@ -55,84 +31,121 @@ append-updates-to = !(thread) ->
       \html5chan-postinsert
       detail: post: $ "p#{post.no}"
 
-  # refresh backlinks
-  # TODO refactor out all the various places backlinks are made
-  # into something less coupled
-  for backlinks of $$ '.thread .backlinks'
-    backlinks.insertAdjacentHTML do
+# TODO refactor out all the various places backlinks are made
+# into something less coupled
+!function append-new-backlinks thread
+  for $$ '.thread .backlinks'
+    &insertAdjacentHTML do
       \beforeend
-      Post[backlinks.parentNode.dataset.no]backlinks do
-        true
-        backlinks.parentNode # passed in for backlink event XXX
+      # parentNode passed in for backlink event XXX
+      Post[&parentNode.dataset.no]backlinks true, &parentNode
 
-  Post.new-backlinks = {} # cleared
+  # clear state
+  Post.new-backlinks = {}
 
-  document.dispatchEvent new CustomEvent do
-    \html5chan-update
-    detail: {thread}
-
+!function update-favicon thread
   unread += thread.new.length
-  draw-favicon!
+  draw-favicon board.favicon, if unread > 0 then "#unread" else ''
 
-  fade-when-visible post for post of thread.new
+!function read-posts-when-scrolled-to thread
+  for thread.new => fade-when-visible &
 
-  # if on the bottom of the page, smooth scroll to new posts
-  if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
-    last = window.scrollY
-    repeat 50ms !->
-      #if user scrolls upwards manually, abort.
-      if last > window.scrollY
-        @stop!
-      else if (remaining = window.scrollMaxY - window.scrollY) > 1
-        window.scrollBy 0, remaining / 4
-        last := window.scrollY
-
-  # update post count
+!function update-thread-stats thread
   $ "t#{thread.no}" .querySelector ".thread-info" .textContent =
     "#{thread.replies.length} replies \
      and #{thread.imageReplies.length} image replies."
 
-export updater =
-  update:  !->
-    updater.status.textContent = "Updating thread..."
-    updater.button.disabled = true
+# TODO update event should govern above features too
+!function dispatch-update-event thread
+  document.dispatchEvent new CustomEvent do
+    \html5chan-update
+    detail: {thread}
 
-    new XMLHttpRequest
-      &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.no}.json"
-      &setRequestHeader \If-Modified-Since last-update.toUTCString!
-      &onload = !->
-        if @status is 404
-          document.title += '(dead)'
-          updater.status.textContent = "thread 404'd"
-        else
-          last-modified = new Date @getResponseHeader \Last-Modified
-          if last-modified > last-update
-            updater.status.textContent = "update detected, parsing"
-            last-update := last-modified
+!function smooth-scroll-to-bottom
+  last = window.scrollY
+  repeat 50ms !->
+    #if user scrolls upwards manually, abort.
+    if last > window.scrollY
+      @stop!
+    else if (remaining = window.scrollMaxY - window.scrollY) > 1
+      window.scrollBy 0, remaining / 4
+      last := window.scrollY
 
-            thread = parser.api JSON.parse @response
-            append-updates-to thread
+!function handle-new-posts thread
+  updater.status.textContent = "update detected, parsing"
 
-            current-delay := 0 # reset delay
-          else
-            # increase delay
-            current-delay := (current-delay + 1) <? (delay.length - 1) # XXX ugly
+  append-new-posts            thread
+  append-new-backlinks        thread
+  update-thread-stats         thread
+  update-favicon              thread
 
-          updater.tminus = delay[current-delay]
-          updater.countdown.restart!
-      &ontimeout = !->
-        updater.status.textContent = "request timed out..."
-        updater.tminus = delay[current-delay]
-        updater.countdown.restart!
-      &onerror   = !-> updater.status.textContent = "Couldn't fetch thread page!"
-      &onloadend = !-> updater.button.disabled = false
-      &send!
+  dispatch-update-event       thread
 
-  tminus: delay[current-delay]
+  read-posts-when-scrolled-to thread
+
+  # if on the bottom of the page
+  if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
+    smooth-scroll-to-bottom!
+
+!function disable-updater
+  updater.countdown.stop!
+
+!function reset-delay
+  current-delay := 0
+
+!function increase-delay
+  current-delay := (current-delay + 1) <? max-delay
+
+!function restart-countdown
+  updater.tminus = delays[current-delay]
+  updater.countdown.restart!
+
+updater.update = !->
+  # TODO factor out status text side effect
+  updater.status.textContent = "Updating thread..."
+  updater.button.disabled = true
+
+  new XMLHttpRequest
+    &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.no}.json"
+    &setRequestHeader \If-Modified-Since last-update.toUTCString!
+    &onload = !->
+      if @status is 404
+        document.title += '(dead)'
+        updater.status.textContent = "thread 404'd"
+        disable-updater!
+      else
+        last-modified = new Date @getResponseHeader \Last-Modified
+        if last-modified > last-update
+          last-update := last-modified
+
+          thread = parser.api JSON.parse @response
+          handle-new-posts thread
+
+          reset-delay!
+        else # no new posts
+          increase-delay!
+
+        restart-countdown!
+
+    &ontimeout = !->
+      updater.status.textContent = "request timed out..."
+      restart-countdown!
+
+    &onerror = !->
+      updater.status.textContent = "Couldn't fetch thread page!"
+      disable-updater!
+
+    &onloadend = !->
+      updater.button.disabled = false
+
+    &send!
+
+updater <<<
+  tminus: delays[current-delay]
   countdown: repeat 1000ms {-start} !->
     updater.status.textContent = "Updating in #{updater.tminus} seconds..."
 
-    if --updater.tminus is 0
+    if --updater.tminus < 0
       @stop!
       updater.update!
 
@@ -141,7 +154,7 @@ fade = !(post) ->
    defer 100ms !->
     post.classList.remove \new
     --unread
-    draw-favicon!
+    draw-favicon board.favicon, if unread > 0 then "#unread" else ''
 
 fade-when-visible = !->
   post = $ "p#{it.no}"
@@ -167,12 +180,12 @@ onready !->
   updater.button = $ \update-now
 
   # autoupdate threads
-  if board.isThread
+  if board.isThread and not board.thread.locked
     updater.countdown.start!
     listen $ \update-now .click !->
       updater
         &countdown.stop!
-        &tminus = delay[current-delay]
+        &tminus = delays[current-delay]
         &update!
   else
     $ \updater .hidden = true

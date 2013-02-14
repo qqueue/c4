@@ -1,0 +1,33 @@
+# adapted from https://github.com/tommoor/tinycon
+# TODO replace with component/(icon?) when I get browserify running so I don't
+# have to look at this code
+
+# draw text on favicon
+# debounced because it doesn't need to be updated right away
+export draw-favicon = debounce 1000ms !(image, text) ->
+  # the entire link needs to be replaced lest the icon won't update
+  $ \favicon ?.remove!
+  link = L \link
+    &id   = \favicon
+    &rel  = \icon
+    &type = \image/x-icon # required for chrome, I guess
+
+  L \canvas
+    &width = 16
+    &height = 16
+
+    &getContext \2d
+      &drawImage image, 0 0
+      if text.length > 0
+        &font         = '8px monospace'
+        &fillStyle    = \#000
+        &strokeStyle  = \#fff
+        &lineWidth    = 4
+        &textBaseline = \bottom
+        &textAlign    = \right
+
+        &strokeText text, 16 16
+        &fillText   text, 16 16
+    link.href = &toDataURL \image/png
+  document.head.appendChild link
+
