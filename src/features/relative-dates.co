@@ -18,6 +18,11 @@ flush = debounce-leading SECOND, !->
   for stale => & now
   stale.length = 0
 
+  periodic.restart!
+
+# flush even in absence of other reflows
+periodic = repeat MINUTE, {-auto} flush
+
 keep-up-to-date = !(el) ->
   time = new Date(el.getAttribute \datetime)
 
@@ -50,4 +55,6 @@ onpostinsert !->
 # flush when user switches back to the tab
 window.addEventListener \visibilitystatechange !->
   flush! unless document.hidden
+
+onready -> periodic.start!
 
