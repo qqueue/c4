@@ -60,7 +60,7 @@ export class Post
                 value=#{@no}>!</button>
         <a href='#{@url}' class=subject>#{@subject or ''}</a> \
         <a class=name \
-           #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@name}</a> \
+           #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@name or ''}</a> \
 
         <span class=tripcode>#{@tripcode or ''}</span> \
         <span class=capcode>#{@capcode or ''}</span> \
