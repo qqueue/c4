@@ -43,14 +43,19 @@
   font-family sans-serif
   color sfw-border - 10%
   font-weight normal
+
+.post:not(.op) > .post-header
   float right
 
-.post .subject
+.subject
   color #0f0c5d
-  font-weight 800
+  font-weight 700
   text-decoration none
   &:hover
     text-decoration underline
+
+.op > .post-header > .subject
+  font-size 140%
 
 .name
   color sfw-border - 10%
