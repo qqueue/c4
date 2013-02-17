@@ -2,10 +2,6 @@
 html = L \html
   &appendChild with head = L \head
     &appendChild L \title
-    &appendChild with L \link
-      # TODO avoid google botnet somehow
-      &href = "http://fonts.googleapis.com/css?family=Droid+Serif"
-      &rel = \stylesheet
     &appendChild with L \style
       &id = \html5chan-style
       &textContent =
