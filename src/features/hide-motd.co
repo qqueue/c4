@@ -1,23 +1,91 @@
-# Hide MOTD until it changes
+# MOTD functionality ot free up vertical space after it's been read
+# TODO s/MOTD/globalMessage/ for less 4chan naming friction
+#
+# Concerns:
+#
+# - Toggle message display with a button
+#   - Toggle button text should reflect display state
+# - Persist message display state between sessions
+# - Show _new_ messages regardless of previous message display state
+
+# bacon.js-alike implementation, for kicks, until browserification
+class Observable
+  ->
+    @callbacks = []
+
+  emit: (event) ->
+    for @callbacks
+      & event
+
+  # onValue in bacon, but each makes more sense with `map` and others, and is
+  # more like clojure's `doseq`
+  each: -> @callbacks.push it
+
+  map: (fn) ->
+    with new EventStream
+      @each ->
+        &emit fn it
+
+  scan: (seed, reduce) ->
+    with new Property seed
+      @each -> &emit reduce &value, it
+
+class EventStream extends Observable
+  -> super ...
+
+  ..from-events = (el, event) ->
+    with new EventStream
+      el.addEventListener event, &~emit
+
+class Property extends Observable
+  (@value) ->
+    super ...
+
+  emit: (val) ->
+    @value = val
+    super ...
+
+  assign: (obj, property) ->
+    asn = -> obj[property] = it
+    @each asn
+
+    # initialize if necessary
+    asn that if @value?
 
 <-! onready
 
-# unlikely to be 2 consecutive messages with the same length
-hash = -> it.innerHTML.length
-
 if $ \motd
-  msg = $ \message
-  btn = $ \hide-motd
+  button  = $ \hide-motd
+  message = $ \message
 
-  # hide previously hidden message if same
-  if get(\motd-hash) is hash msg
-    msg.hidden = get \motd-hidden
-    btn.textContent = "#{if msg.hidden then "Show" else "Hide"} News"
-  else
-    set \motd-hash hash msg
+  # toggle concern
+  message-hidden = EventStream.from-events button, \click
+    .scan false, -> not it
 
-  listen btn .click !->
-    ! = msg.hidden
-    set \motd-hidden msg.hidden
-    btn.textContent = "#{if msg.hidden then "Show" else "Hide"} News"
+  message-hidden.assign message, \hidden
+
+  # button text concern
+  message-hidden
+    .map -> "#{if it then "Show" else "Hide"} News"
+    .scan button.textContent, (_, it) -> it # XXX shouldn't be necessary
+    .assign button, \textContent
+
+  # persistence concern
+
+  # FIXME dunno how to properly do this reactively
+  message.hidden = get \motd-hidden
+
+  message-hidden.assign get, \motd-hidden
+
+  # show _new_ messages concern
+
+  # unlikely to be 2 consecutive messages with the same length, so cheat
+  hash = -> it.innerHTML.length
+
+  previous = get \motd-hash
+
+  # XXX not that reactive
+  if hash message is not previous
+    message.hidden = false
+    set \motd-hash hash message
 
