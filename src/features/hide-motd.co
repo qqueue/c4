@@ -8,7 +8,49 @@
 # - Persist message display state between sessions
 # - Show _new_ messages regardless of previous message display state
 
-# TODO write bacon.js-alike implementation, for kicks, until browserification
+# bacon.js-alike implementation, for kicks, until browserification
+class Observable
+  ->
+    @callbacks = []
+
+  emit: (event) ->
+    for @callbacks
+      & event
+
+  # onValue in bacon, but each makes more sense with `map` and others, and is
+  # more like clojure's `doseq`
+  each: -> @callbacks.push it
+
+  map: (fn) ->
+    with new EventStream
+      @each -> &emit it
+
+  scan: (seed, reduce) ->
+    with new Property seed
+      @each -> &change reduce &value, it
+
+class EventStream extends Observable
+  -> super ...
+
+  ..from-events = (el, event) ->
+    with new EventStream
+      el.addEventListener event, &~emit
+
+class Property extends Observable
+  (@value) ->
+    super ...
+
+  # TODO could use setter, I suppose
+  change: (val) ->
+    @value = val
+    @emit val
+
+  assign: (obj, property) ->
+    asn = -> obj[property] = it
+    @each asn
+
+    # initialize if necessary
+    asn that if @value?
 
 <-! onready
 
@@ -17,7 +59,7 @@ if $ \motd
   message = $ \message
 
   # toggle concern
-  message-hidden = event-stream button, \click
+  message-hidden = EventStream.from-events button, \click
     .scan false, -> not it
 
   message-hidden.assign message, \hidden
