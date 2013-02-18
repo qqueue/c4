@@ -23,11 +23,12 @@ class Observable
 
   map: (fn) ->
     with new EventStream
-      @each -> &emit it
+      @each ->
+        &emit fn it
 
   scan: (seed, reduce) ->
     with new Property seed
-      @each -> &change reduce &value, it
+      @each -> &emit reduce &value, it
 
 class EventStream extends Observable
   -> super ...
@@ -40,10 +41,9 @@ class Property extends Observable
   (@value) ->
     super ...
 
-  # TODO could use setter, I suppose
-  change: (val) ->
+  emit: (val) ->
     @value = val
-    @emit val
+    super ...
 
   assign: (obj, property) ->
     asn = -> obj[property] = it
@@ -67,7 +67,8 @@ if $ \motd
   # button text concern
   message-hidden
     .map -> "#{if it then "Show" else "Hide"} News"
-    .assign button \textContent
+    .scan button.textContent, (_, it) -> it # XXX shouldn't be necessary
+    .assign button, \textContent
 
   # persistence concern
 
