@@ -15,24 +15,24 @@ Date::relative-date = (now = Date.now!) ->
   diff = now - @getTime!
   absdiff = Math.abs diff
   # TODO use new if block
-  if absdiff > YEAR
-    number = absdiff / YEAR
-    unit = \year
-  else if absdiff > MONTH
-    number = absdiff / MONTH
-    unit = \month
-  else if absdiff > DAY
-    number = absdiff / DAY
-    unit = \day
-  else if absdiff > HOUR
-    number = absdiff / HOUR
-    unit = \hour
-  else if absdiff > MINUTE
-    number = absdiff / MINUTE
-    unit = \minute
-  else
+  if absdiff < MINUTE
     number = absdiff / SECOND
     unit = \second
+  else if absdiff < HOUR
+    number = absdiff / MINUTE
+    unit = \minute
+  else if absdiff < DAY
+    number = absdiff / HOUR
+    unit = \hour
+  else if absdiff < MONTH
+    number = absdiff / DAY
+    unit = \day
+  else if absdiff < YEAR
+    number = absdiff / MONTH
+    unit = \month
+  else
+    number = absdiff / YEAR
+    unit = \year
 
   number = Math.round number
   unit += \s unless number is 1

@@ -34,14 +34,18 @@ keep-up-to-date = !(el) ->
 
   make-timeout = !(diff) ->
     # calculate when relative date will be stale again
-    delay = if diff > DAY
-      diff % DAY
-    else if diff > HOUR
-      diff % HOUR
-    else if diff > MINUTE
+    delay = if diff < MINUTE
+      diff % SECOND
+    else if diff < HOUR
       diff % MINUTE
+    else if diff < DAY
+      diff % HOUR
+    else if diff < MONTH
+      diff % DAY
+    else if diff < YEAR
+      diff % MONTH
     else
-      SECOND
+      diff % YEAR
     defer delay, add-to-stale
 
   make-timeout Date.now! - time.getTime!
