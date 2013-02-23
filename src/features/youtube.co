@@ -33,9 +33,6 @@ set-title = !(vid, data) ->
 # post insert adds any found videos to this, which is flushed by load-info
 pending-videos = []
 
-# TODO detect videos whose data isn't returned
-# and set some sort of error title
-#
 # debounced so postinsert can call it without the initial postinsert rush at
 # onready sending out one request per video
 load-info = debounce 2000ms !->
@@ -59,8 +56,8 @@ load-info = debounce 2000ms !->
       batch = []
   batches.push batch
 
-  if batch.length > 0
-    for b of batches
+  if batches.length > 0
+    for batch of batches
       let req = new XMLHttpRequest
         req.open \GET "https://www.googleapis.com/youtube/v3/videos
                     ?id=#{encodeURIComponent b}
@@ -75,6 +72,13 @@ load-info = debounce 2000ms !->
 
               for vid of $$ ".youtube[data-id=\"#{v.id}\"]"
                 set-title vid, v
+
+            # set title for videos without returned info
+            for v of batch
+              if not cache[v.id]
+                for $$ ".youtube[data-id=\"#{v.id}\"]"
+                  &dataset.title = "[Error Fetching Title]"
+                  &title = "Sorry, this video might have been removed or blocked."
           else
             console.error "error fetching youtube info!" this
 
