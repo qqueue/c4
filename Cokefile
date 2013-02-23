@@ -25,6 +25,8 @@ compile-css = (cb) ->
   files = <[base yotsuba-colors page post postform thread youtube]>
   source = (for files => read "style/#&.styl")join \\n
   # TODO use sync API
+  # TODO also use @import statements instead of ordering, if stylus will
+  # compile them out.
   nib source .render cb
 
 # stuff each file into a `let` IEFE, and then compile, which
@@ -92,6 +94,8 @@ task \build 'build userscript' ->
   catch
     console.error e.message
 
+# TODO re-include underscore/lo-dash/component/whatever is hip now for defining
+# standard functions like this
 debounce = (delay, fn) ->
   var timeout
   !->
