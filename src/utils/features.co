@@ -1,6 +1,13 @@
 # features helpers, specific to html5chan
 # extracting out boilerplate for fewer absolute SLOC
 
+# shortcuts for custom events
+export
+  onready      = !-> document.addEventListener \html5chan-ready      it
+  onupdate     = !-> document.addEventListener \html5chan-update     it
+  onpostinsert = !-> document.addEventListener \html5chan-postinsert it
+  onbacklink   = !-> document.addEventListener \html5chan-backlink   it
+
 # define listeners that are attached to every post. e.g.
 #
 # on-posts do

@@ -21,13 +21,6 @@ board # XXX coco deficiency
 
   &ready = false # flag similar to document.readyState
 
-# shortcuts for custom events
-export
-  onready      = !-> document.addEventListener \html5chan-ready      it
-  onupdate     = !-> document.addEventListener \html5chan-update     it
-  onpostinsert = !-> document.addEventListener \html5chan-postinsert it
-  onbacklink   = !-> document.addEventListener \html5chan-backlink   it
-
 # icons need to be here in b64 because they are served from static.4chan.org
 # without CORS headers, so drawing those to the canvas would taint it and
 # prevent reexporting to the favicon
