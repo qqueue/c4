@@ -3,6 +3,8 @@
 # TODO highlight by UID too
 # TODO figure out developer replies
 
+{onready, onupdate, on-posts} = require \../utils/features
+
 highlighting = sget \highlighting or { -admin, -mod }
 
 highlight = !-> post.classList.add \highlighted for post of $$ it

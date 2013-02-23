@@ -1,5 +1,11 @@
 # add quote text to >> replies to be able to identify them without hover
 
+{onpostinsert} = require \../utils/features
+{L} = require \../utils/dom
+
+# XXX cheating
+{handle-preview} = require \./image-previews
+
 munge = !(ctx) ->
   for quote of ctx.querySelectorAll '.quotelink:not(.backlink):not(.forcequoted)'
     # these capcodeReplies get messy, so skip for now

@@ -1,5 +1,7 @@
 # update relative post dates periodically
 
+{onpostinsert, onready} = require \../utils/features
+
 # each time element adds a function to update itself to the stale list once it
 # becomes inaccurate.  the stale list is flushed and stale times are updated
 # whenever the DOM changes otherwise, which keeps the times as up to date as

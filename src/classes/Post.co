@@ -1,3 +1,5 @@
+{L} = require \./dom
+
 export class Post
   # constructor is inlined into parser
   postprocess: ->

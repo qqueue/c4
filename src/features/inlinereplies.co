@@ -1,4 +1,7 @@
 # inline replies
+{on-posts, onbacklink} = require \../utils/features
+{$$, $} = require \../utils/dom
+Post = require \../classes/Post
 
 # scroll! returns to the scroll position when
 # markScroll! was last called

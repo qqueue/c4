@@ -2,6 +2,8 @@
 # TODO replace with component/(icon?) when I get browserify running so I don't
 # have to look at this code
 
+{L} = require \./dom
+
 # draw text on favicon
 # debounced because it doesn't need to be updated right away
 export draw-favicon = debounce 1000ms !(image, text) ->

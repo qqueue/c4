@@ -1,5 +1,9 @@
 # show a centered image preview when hovering over an image after a short delay
 
+{on-posts} = require \../utils/features
+{L} = require \../utils/dom
+{tooltip} = require \../utils/tooltip
+
 # scaled width and height from original width and height. manual version of CSS
 # object-fit (only in opera)
 object-fit = (container, width, height) ->

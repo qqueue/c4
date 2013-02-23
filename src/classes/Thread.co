@@ -1,3 +1,5 @@
+{L} = require \./dom
+
 export class Thread
   postprocess: ->
     #convenience array including op

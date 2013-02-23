@@ -1,5 +1,8 @@
 # embed full image on click
 
+{on-posts} = require \../utils/features
+{L} = require \../utils/dom
+
 on-posts \.file : click: !(e)->
   unless e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
     e.preventDefault!
