@@ -19,7 +19,7 @@ board # XXX coco deficiency
   &threadurl   = &url + \res/
   &thread-path = "/#{&name}/res/#{&thread-no}"
 
-  &ready = false # flag similar to document.readyState
+  &ready       = false # flag similar to document.readyState
 
 # icons need to be here in b64 because they are served from static.4chan.org
 # without CORS headers, so drawing those to the canvas would taint it and
