@@ -1,6 +1,7 @@
 fs     = require \fs
 coco   = require \coco
 stylus = require \stylus
+browserify = require \browserify
 
 ls = -> "#it/#file" for file of fs.readdirSync it
 
@@ -23,6 +24,7 @@ compile-css = (cb) ->
   # ordering of files matters
   files = <[base yotsuba-colors page post postform thread youtube]>
   source = (for files => read "style/#&.styl")join \\n
+  # TODO use sync API
   nib source .render cb
 
 # stuff each file into a `let` IEFE, and then compile, which
