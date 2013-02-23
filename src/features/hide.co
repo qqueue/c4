@@ -7,6 +7,7 @@
 
 {$$} = require \../utils/dom
 {onready, onupdate} = require \../utils/features
+Thread = require \../classes/Thread
 
 const threshold = 604800000ms # one week
 
@@ -34,7 +35,7 @@ persist = !->
 # perform actual DOM manipulation
 toggle = (prefix, no) ->
   # all referencing quotelinks
-  classify $$ ".quotelink[href$=\"##no\"]" .toggle \hiddenlink
+  for $$ ".quotelink[href$=\"##no\"]" => &classList.toggle \hiddenlink
   $ "#prefix#no" ?.classList.toggle \hidden
 
 onready !->

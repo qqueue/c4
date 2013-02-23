@@ -1,3 +1,8 @@
+{L} = require \./utils/dom
+parser = require \./parser
+onready = require \./utils/features
+{truncate} = require \./utils/string
+
 # pre-create new DOM
 html = L \html
   &appendChild with head = L \head

@@ -2,6 +2,7 @@
 
 {onpostinsert} = require \../utils/features
 {L} = require \../utils/dom
+{defer} = require \../utils/timing
 
 const api-key = "AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA"
 const batch-size = 30

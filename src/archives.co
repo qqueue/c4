@@ -20,6 +20,8 @@ if /404/.test document.title and board.archive
 
 # quotelink rewriting
 
+enhancer = require \./enhancer
+
 if board.archive
   # crossthread >>13252 links
   enhancer.add-replacement do

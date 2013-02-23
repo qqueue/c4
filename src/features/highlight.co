@@ -4,6 +4,7 @@
 # TODO figure out developer replies
 
 {onready, onupdate, on-posts} = require \../utils/features
+{sset, sget} = require \../utils/storage
 
 highlighting = sget \highlighting or { -admin, -mod }
 

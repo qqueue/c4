@@ -2,6 +2,7 @@
 {on-posts, onbacklink} = require \../utils/features
 {$$, $} = require \../utils/dom
 Post = require \../classes/Post
+{defer} = require \../utils/timing
 
 # scroll! returns to the scroll position when
 # markScroll! was last called

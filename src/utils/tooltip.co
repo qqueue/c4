@@ -5,6 +5,8 @@
 const delay     = 200ms
 const dead-zone = 10px
 
+listen = require \./listen
+
 # a function suitable for attachment to a 'mouseover' event that
 # handles tooltip-like behavior according to mouse movement over an element.
 #

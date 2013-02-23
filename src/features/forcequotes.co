@@ -2,6 +2,8 @@
 
 {onpostinsert} = require \../utils/features
 {L} = require \../utils/dom
+Post = require \../classes/Post
+{truncate} = require \../utils/string
 
 # XXX cheating
 {handle-preview} = require \./image-previews

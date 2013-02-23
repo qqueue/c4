@@ -3,6 +3,7 @@
 {on-posts} = require \../utils/features
 {L} = require \../utils/dom
 {tooltip} = require \../utils/tooltip
+{defer} = require \../utils/timing
 
 # scaled width and height from original width and height. manual version of CSS
 # object-fit (only in opera)
