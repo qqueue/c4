@@ -1,7 +1,8 @@
-fs     = require \fs
-coco   = require \coco
-stylus = require \stylus
-browserify = require \browserify
+fs       = require \fs
+coco     = require \coco
+stylus   = require \stylus
+{cjsify} = require \commonjs-everywhere
+esprima  = require \esprima
 
 ls = -> "#it/#file" for file of fs.readdirSync it
 
@@ -59,36 +60,33 @@ outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
+  board-template = read \templates/board.co.html
   err, css <- compile-css
   try
     throw err if err
+
+    ast = cjsify \src/html5chan.co __dirname,
+      export: \html5chan
+      handlers: \.co : ->
+        esprima.parse coco.compile do
+          # XXX there should be a better way to build in CSS into userscripts,
+          # but I don't have much excuse for the .co.html thing. Someday, jade...
+          it.toString!
+            .replace /%hakase\.css%/ css
+            .replace /%board\.co\.html%/ board-template
+
+          {+bare} # because modules
+
+    # TODO something with sourcemap, when fire(fox|bug) gets support
+    gen = require \escodegen .generate ast
+
     fs.writeFileSync do
       outfile
       join do
         metadata
         "(function(){"
         '"use strict";'
-        compile-all css, <[
-          intro
-          utils/dom
-          utils/timing
-          utils/features
-          utils/listen
-          utils/relative-dates
-          utils/storage
-          utils/string
-          utils/timing
-          utils/tooltip
-          utils/favicon
-          classes
-          parser
-          enhancer
-          archives
-          updater
-          poster
-          onready
-          features
-          outro]>
+        gen
         "}).call(this)"
     console.log "compiled script to #{outfile}"
   catch

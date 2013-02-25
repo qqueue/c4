@@ -5,6 +5,8 @@
                    , "stylus"              : "0.32.x"
                    , "nib"                 : "0.9.x"
                    , "commonjs-everywhere" : "0.2.0"
+                   , "esprima"             : "1.0.2"
+                   , "escodegen"           : "0.0.17"
                    }
 }
 
