@@ -67,7 +67,7 @@ load-info = debounce 2000ms !->
     for batch of batches
       let req = new XMLHttpRequest
         req.open \GET "https://www.googleapis.com/youtube/v3/videos
-                    ?id=#{encodeURIComponent b}
+                    ?id=#{encodeURIComponent batch}
                     &part=snippet%2C+statistics
                     &fields=items(id%2Csnippet%2Cstatistics)
                     &key=#{api-key}"
