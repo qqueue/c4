@@ -9,6 +9,8 @@
 # - Show _new_ messages regardless of previous message display state
 
 {onready} = require \../utils/features
+{set, get} = require \../utils/storage
+{$} = require \../utils/dom
 
 # bacon.js-alike implementation, for kicks, until browserification
 class Observable
@@ -55,6 +57,8 @@ class Property extends Observable
     asn that if @value?
 
 <-! onready
+
+console.log "hidemotd"
 
 if $ \motd
   button  = $ \hide-motd

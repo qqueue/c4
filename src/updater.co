@@ -12,6 +12,10 @@
 listen = require \./utils/listen
 {onready} = require \./utils/features
 {defer, repeat} = require \./utils/timing
+{$, $$, L} = require \./utils/dom
+Post = require \./classes/Post
+parser = require \./parser
+draw-favicon = require \./utils/favicon
 
 export updater = {}
 

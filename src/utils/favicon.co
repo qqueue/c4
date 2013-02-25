@@ -2,11 +2,12 @@
 # TODO replace with component/(icon?) when I get browserify running so I don't
 # have to look at this code
 
-{L} = require \./dom
+{$, L} = require \./dom
+{debounce} = require \./timing
 
 # draw text on favicon
 # debounced because it doesn't need to be updated right away
-export draw-favicon = debounce 1000ms !(image, text) ->
+module.exports = draw-favicon = debounce 1000ms !(image, text) ->
   # the entire link needs to be replaced lest the icon won't update
   $ \favicon ?.remove!
   link = L \link
