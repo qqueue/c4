@@ -2,7 +2,7 @@
 
 {on-posts, onbacklink} = require \../utils/features
 {defer} = require \../utils/timing
-{$$, $} = require \../utils/dom
+{$$, $, closest, classify} = require \../utils/dom
 parser = require \../parser
 Post = require \../classes/Post
 listen = require \../utils/listen

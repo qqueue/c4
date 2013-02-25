@@ -10,7 +10,8 @@
 # way too much.
 
 listen = require \./utils/listen
-{defer} = require \./utils/timing
+{onready} = require \./utils/features
+{defer, repeat} = require \./utils/timing
 
 export updater = {}
 

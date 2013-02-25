@@ -1,7 +1,7 @@
 # show a centered image preview when hovering over an image after a short delay
 
 {on-posts} = require \../utils/features
-{L} = require \../utils/dom
+{L, $, $$} = require \../utils/dom
 {tooltip} = require \../utils/tooltip
 {defer} = require \../utils/timing
 

@@ -6,6 +6,7 @@ sage-regex      = /^sage$/i
 
 Thread = require \./classes/Thread
 Post = require \./classes/Post
+enhancer = require \./enhancer
 
 # slow(?!) DOM querying parser
 # shit, why is this so much faster, even with nested functions and

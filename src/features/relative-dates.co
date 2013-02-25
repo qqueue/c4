@@ -1,7 +1,7 @@
 # update relative post dates periodically
 
 {onpostinsert, onready} = require \../utils/features
-{repeat} = require \../utils/timing
+{repeat, defer} = require \../utils/timing
 {YEAR, MONTH, DAY, HOUR, MINUTE, SECOND} = require \../utils/relative-dates
 
 # each time element adds a function to update itself to the stale list once it
