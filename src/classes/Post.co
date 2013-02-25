@@ -1,4 +1,6 @@
-export class Post
+{L} = require \../utils/dom
+
+module.exports = class Post
   # constructor is inlined into parser
   postprocess: ->
     # backlinker, with some fancy logic to detect new ones

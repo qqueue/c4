@@ -4,6 +4,10 @@ filename-regex  = /title="([^"]+)"/
 spoiler-regex   = /^Spoiler Image/
 sage-regex      = /^sage$/i
 
+Thread = require \./classes/Thread
+Post = require \./classes/Post
+enhancer = require \./enhancer
+
 # slow(?!) DOM querying parser
 # shit, why is this so much faster, even with nested functions and
 # lots of querySelector calls? Did switching to standards mode make
@@ -90,7 +94,8 @@ parse-post = (el, idx) ->
 
     &postprocess!
 
-export parser =
+# TODO clean up this code
+module.exports =
   # returns Array of threads
   board: (document) ->
     console.time "parse board"

@@ -1,5 +1,12 @@
 # post hover previews
 
+{on-posts, onbacklink} = require \../utils/features
+{defer} = require \../utils/timing
+{$$, $, closest, classify} = require \../utils/dom
+parser = require \../parser
+Post = require \../classes/Post
+listen = require \../utils/listen
+
 # XXX also will break weirdly if there is a cross-board link to a board with
 # similar post numbers.  IDs will start to be overwritten since there are only
 # unique within a board.
@@ -86,7 +93,6 @@ create-preview = !(no, post) ->
         &bottom = "#{window.innerHeight - top + 5}px"
 
     document.body.appendChild (&)
-
 
   # highlight hovered replies
   classify $$ ".post[data-no=\"#no\"]" .add \hovered

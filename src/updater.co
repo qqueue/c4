@@ -9,6 +9,10 @@
 # TODO this code _deperately_ needs FRP or promises or some shit. 190 LOC is
 # way too much.
 
+listen = require \./utils/listen
+{onready} = require \./utils/features
+{defer, repeat} = require \./utils/timing
+
 export updater = {}
 
 # increase polling time when there are no new posts

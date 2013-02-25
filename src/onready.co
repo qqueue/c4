@@ -1,3 +1,10 @@
+{L, $$, $} = require \./utils/dom
+parser = require \./parser
+{onready} = require \./utils/features
+{truncate} = require \./utils/string
+{get, set, sset, sget} = require \./utils/storage
+Post = require \./classes/Post
+
 # pre-create new DOM
 html = L \html
   &appendChild with head = L \head

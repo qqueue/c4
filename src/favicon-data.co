@@ -1,37 +1,7 @@
-console.group "html5chan"
-
-console.timeStamp "html5chan-init"
-console.time "init"
-console.time "interactive"
-
-# `board` holds global state about the current page, like `document` for the
-# 4chan domain.
-export board = {}
-board # XXX coco deficiency
-  # boards.4chan.org/<name>/'res' or <page>/<threadid>
-  [ , &name, page, &thread-no] = window.location.pathname / \/
-
-  &is-thread   = !!&thread-no
-  &is-board    = not &is-thread
-  &page        = parseInt page, 10 or 0
-
-  &url         = "//boards.4chan.org/#{&name}/"
-  &threadurl   = &url + \res/
-  &thread-path = "/#{&name}/res/#{&thread-no}"
-
-  &ready = false # flag similar to document.readyState
-
-# shortcuts for custom events
-export
-  onready      = !-> document.addEventListener \html5chan-ready      it
-  onupdate     = !-> document.addEventListener \html5chan-update     it
-  onpostinsert = !-> document.addEventListener \html5chan-postinsert it
-  onbacklink   = !-> document.addEventListener \html5chan-backlink   it
-
 # icons need to be here in b64 because they are served from static.4chan.org
 # without CORS headers, so drawing those to the canvas would taint it and
 # prevent reexporting to the favicon
-board.favicons =
+module.exports =
   sfw: with document.createElement \img
     &src = 'data:image/vnd.microsoft.icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAABMLAAATCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv8AAAD/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/AAAA/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAOvXAADBgwAAwYMAAMGDAADhhwAA888AAP//AAD//wAAw8MAAIGBAADBgwAAg8EAAMfj/////////////w=='
   nsfw: with document.createElement \img

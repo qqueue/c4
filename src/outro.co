@@ -1,8 +1,0 @@
-console.timeEnd "init"
-
-onready !->
-  console.timeEnd "onready handlers"
-  console.timeEnd "interactive"
-  console.timeStamp "html5chan-loaded"
-  console.groupEnd!
-

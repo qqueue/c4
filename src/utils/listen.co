@@ -1,5 +1,5 @@
 # chainable wrapper for addEventListener
-export listen = class
+module.exports = class listen
   (@element) ~>
 
   on: (event, handler) ->

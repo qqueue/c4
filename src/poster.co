@@ -1,4 +1,10 @@
-# fake ajax posting
+# ajax posting
+# FIXME something is broken with with POST attributes, since posts erroneously
+# result in new threads. Good thing I rarely post ( ._.)
+
+listen = require \./utils/listen
+{onready} = require \./utils/features
+{L, $, $$} = require \./utils/dom
 
 postStatus = -> $ \post-status .textContent = it
 

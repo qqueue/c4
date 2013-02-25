@@ -8,6 +8,8 @@
 # - Persist message display state between sessions
 # - Show _new_ messages regardless of previous message display state
 
+{onready} = require \../utils/features
+
 # bacon.js-alike implementation, for kicks, until browserification
 class Observable
   ->

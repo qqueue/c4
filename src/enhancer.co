@@ -8,7 +8,7 @@
 # replacement, I'm unable to pull out the linkification stuff completely. Need
 # a different factorization strategy.
 
-export enhancer =
+module.exports = enhancer =
   replacements:
     # 4chan started putting <wbr>s in every ~50ish characters for unbroken
     # words in its markup, which kinda nice but doing it in pure CSS
