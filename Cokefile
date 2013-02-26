@@ -67,7 +67,7 @@ task \build 'build userscript' ->
 
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
-      handlers: \.co : ->
+      handlers: \.co : (it, filename) ->
         esprima.parse coco.compile do
           # XXX there should be a better way to build in CSS into userscripts,
           # but I don't have much excuse for the .co.html thing. Someday, jade...
@@ -75,7 +75,7 @@ task \build 'build userscript' ->
             .replace /%hakase\.css%/ css
             .replace /%board\.co\.html%/ board-template
 
-          {+bare} # because modules
+          {+bare, filename} # because modules
 
     # TODO something with sourcemap, when fire(fox|bug) gets support
     gen = require \escodegen .generate ast
