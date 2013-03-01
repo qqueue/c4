@@ -75,6 +75,14 @@ task \build 'build userscript' ->
   catch
     console.error e.message
 
+const times = 50 # XXX figure out Cokefile's batty options parsing
+
+task \profile 'build project over and over for profile tick collection' !->
+  console.log "Running build #times times..."
+  for i til times
+    console.log "run #i"
+    invoke \build
+
 # lodash, but with superior arguments order
 debounce = (wait, fn) -> lodash.debounce fn, wait
 
