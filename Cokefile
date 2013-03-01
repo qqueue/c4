@@ -12,24 +12,21 @@ read = -> fs.readFileSync it, \utf8
 
 nib = -> stylus it .use require(\nib)!
 
-compile-css = (cb) ->
+compile-css = ->
   # ordering of files matters
   files = <[base yotsuba-colors page post postform thread youtube]>
   source = (for files => read "style/#&.styl")join \\n
-  # TODO use sync API
-  # TODO also use @import statements instead of ordering, if stylus will
+  # TODO use @import statements instead of ordering, if stylus will
   # compile them out.
-  nib source .render cb
+  nib source .render!
 
 outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
   board-template = read \templates/board.co.html
-  err, css <- compile-css
   try
-    throw err if err
-
+    css = compile-css!
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
       handlers: \.co : (it, filename) ->
