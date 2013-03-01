@@ -24,23 +24,43 @@ outfile = \html5chan.user.js
 metadata = read \metadata.txt
 
 task \build 'build userscript' ->
-  board-template = read \templates/board.co.html
   try
+    console.time "Total build time"
+    board-template = read \templates/board.co.html
     css = compile-css!
+
+    console.time "Commonjsification"
+
+    coco-time = 0
+    esprima-time = 0
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
       handlers: \.co : (it, filename) ->
-        esprima.parse coco.compile do
+
+        c = Date.now! # TODO find better node timing libraries
+        js = coco.compile do
           # XXX there should be a better way to build in CSS into userscripts,
           # but I don't have much excuse for the .co.html thing. Someday, jade...
           it.toString!
             .replace /%hakase\.css%/ css
             .replace /%board\.co\.html%/ board-template
-
           {+bare, filename} # because modules
+        coco-time += Date.now! - c
 
+        c = Date.now!
+        ast = esprima.parse js
+        esprima-time += Date.now! - c
+
+        ast
+
+    console.timeEnd "Commonjsification"
+    console.log "Coco compilation: #{coco-time}ms"
+    console.log "JS reparsing: #{esprima-time}ms"
+
+    console.time "AST->JS source generation"
     # TODO something with sourcemap, when fire(fox|bug) gets support
     gen = require \escodegen .generate ast
+    console.timeEnd "AST->JS source generation"
 
     fs.writeFileSync do
       outfile
@@ -50,6 +70,7 @@ task \build 'build userscript' ->
         '"use strict";'
         gen
         "}).call(this)"
+    console.timeEnd "Total build time"
     console.log "compiled script to #{outfile}"
   catch
     console.error e.message
