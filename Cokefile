@@ -4,22 +4,12 @@ stylus   = require \stylus
 {cjsify} = require \commonjs-everywhere
 esprima  = require \esprima
 
-ls = -> "#it/#file" for file of fs.readdirSync it
-
 flatten = -> Array::concat.apply [], it # shallow flatten
 
 join = -> flatten @@ .join \\n
 read = -> fs.readFileSync it, \utf8
 
-compile = (it, options) ->
-  try
-    coco.compile do
-      read it
-      options
-  catch
-    throw new Error "Compiling #it:\n\t#{e.message}"
-
-wrap = -> "let\n  #{read it .replace /\n/g '\n  '}"
+nib = -> stylus it .use require(\nib)!
 
 compile-css = (cb) ->
   # ordering of files matters
@@ -29,32 +19,6 @@ compile-css = (cb) ->
   # TODO also use @import statements instead of ordering, if stylus will
   # compile them out.
   nib source .render cb
-
-# stuff each file into a `let` IEFE, and then compile, which
-# avoids coco's redefinition of boilerplate
-compile-all = (css, paths) ->
-  source = []
-  for path of paths
-    if fs.existsSync "src/#path/"
-      # directory
-      for ls "src/#path"
-        compile & # detect compile errors
-        source.push wrap &
-    else
-      # single file
-      compile "src/#path.co"
-      source.push wrap "src/#path.co"
-  try
-    coco.compile do
-      source
-        .join \\n
-        .replace /%hakase\.css%/ css
-        .replace /%board\.co\.html%/ read \templates/board.co.html
-      {+bare} # IEFE is added later
-  catch
-    throw new Error "Compiling all:\n\t#{e.message}"
-
-nib = -> stylus it .use require(\nib)!
 
 outfile = \html5chan.user.js
 metadata = read \metadata.txt
