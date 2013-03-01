@@ -3,6 +3,7 @@ coco     = require \coco
 stylus   = require \stylus
 {cjsify} = require \commonjs-everywhere
 esprima  = require \esprima
+lodash   = require \lodash
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 
@@ -56,22 +57,13 @@ task \build 'build userscript' ->
   catch
     console.error e.message
 
-# TODO re-include underscore/lo-dash/component/whatever is hip now for defining
-# standard functions like this
-debounce = (delay, fn) ->
-  var timeout
-  !->
-    ctx = this
-    args = arguments
-    clearTimeout timeout
-    timeout := setTimeout do
-      !-> fn.apply ctx, args
-      delay
+# lodash, but with superior arguments order
+debounce = (wait, fn) -> lodash.debounce fn, wait
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
   for it of <[style src templates src/features src/classes src/utils]>
-    fs.watch it, interval: 1000, debounce 1000 (event, filename) ->
+    fs.watch it, interval: 1000, debounce 1000 !(event, filename) ->
       console.log "#event event detected on #filename. rebuilding..."
       invoke \build
 

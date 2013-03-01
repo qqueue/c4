@@ -7,6 +7,7 @@
                    , "commonjs-everywhere" : "0.2.0"
                    , "esprima"             : "1.0.2"
                    , "escodegen"           : "0.0.17"
+                   , "lodash"              : "1.0.1"
                    }
 }
 
