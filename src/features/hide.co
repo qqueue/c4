@@ -39,9 +39,8 @@ toggle = (prefix, no) ->
   $ "#prefix#no" ?.classList.toggle \hidden
 
 onready !->
-  # XXX same coco bug as below, or would totally use quickmap
-  for btn of $$ '.reply button.hide'
-    btn.addEventListener \click !->
+  for $$ '.reply button.hide'
+    &addEventListener \click !->
       toggle \p @value
       if @value in hidden.replies
         delete hidden.replies[@value]
@@ -74,11 +73,7 @@ onready !->
       toggle \t no if hidden.threads[no]
 
 onupdate !->
-  # XXX coco bug "unexpected IN" when inside quickmap
-  #for $$ ".new .quotelink"
-    #if &hash.substring(1) in hidden.replies
-      #&classList.toggle \hiddenlink
-  for a of $$ ".new .quotelink"
-    if a.hash.substring(1) in hidden.replies
-      a.classList.toggle \hiddenlink
+  for $$ ".new .quotelink"
+    if &hash.substring(1) in hidden.replies
+      &classList.toggle \hiddenlink
 
