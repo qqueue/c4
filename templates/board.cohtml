@@ -1,3 +1,4 @@
+module.exports = (board, threads) -> """
 <nav class="boardlinks" id="toplinks">#{board.nav}</nav>
 <header id=header>
   <a href="//boards.4chan.org/#{board.name}/" id="banner">
@@ -70,4 +71,4 @@ else ''}
   <span id="update-status"></span>
   <button id="update-now">Update now</button>
 </span>
-
+"""

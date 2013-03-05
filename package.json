@@ -4,7 +4,7 @@
 , "dependencies" : { "coco"                : "0.9.1"
                    , "stylus"              : "0.32.x"
                    , "nib"                 : "0.9.x"
-                   , "commonjs-everywhere" : "0.3.4"
+                   , "commonjs-everywhere" : "0.3.3"
                    , "esprima"             : "1.0.2"
                    , "escodegen"           : "0.0.17"
                    , "lodash"              : "1.0.1"
