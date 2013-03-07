@@ -38,6 +38,10 @@ set-title = !(vid, data) ->
 # post insert adds any found videos to this, which is flushed by load-info
 pending-videos = []
 
+# these videos are in the request queue to be loaded, to prevent a video from
+# being requested twice
+queued-videos = {}
+
 # debounced so postinsert can call it without the initial postinsert rush at
 # onready sending out one request per video
 #
@@ -49,7 +53,7 @@ load-info = debounce 2000ms !->
     vid.addEventListener \click onclick
     if cache[vid.dataset.id]
       set-title vid, that
-    else
+    else if not queued-videos[vid.dataset.id]
       to-fetch[vid.dataset.id] = true
 
   pending-videos := []
@@ -57,6 +61,7 @@ load-info = debounce 2000ms !->
   batches = []
   batch = []
   for id in to-fetch
+    queued-videos[id] = true
     batch.push id
     if batch.length is batch-size
       batches.push batch
@@ -91,6 +96,11 @@ load-info = debounce 2000ms !->
 
         req.addEventListener \error !->
           console.error "what happen" this
+
+        req.addEventListener \loadend !->
+          # remove queued flag from videos whether they were successful or not
+          for v of batch
+            delete queued-videos[v]
 
         queue req
 
