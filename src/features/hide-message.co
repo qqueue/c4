@@ -1,5 +1,4 @@
-# MOTD functionality ot free up vertical space after it's been read
-# TODO s/MOTD/globalMessage/ for less 4chan naming friction
+# global message functionality ot free up vertical space after it's been read
 #
 # Concerns:
 #
@@ -58,10 +57,8 @@ class Property extends Observable
 
 <-! onready
 
-console.log "hidemotd"
-
-if $ \motd
-  button  = $ \hide-motd
+if $ \message-container
+  button  = $ \hide-message
   message = $ \message
 
   # toggle concern
@@ -79,19 +76,19 @@ if $ \motd
   # persistence concern
 
   # FIXME dunno how to properly do this reactively
-  message.hidden = get \motd-hidden
+  message.hidden = get \message-hidden
 
-  message-hidden.assign get, \motd-hidden
+  message-hidden.assign get, \message-hidden
 
   # show _new_ messages concern
 
   # unlikely to be 2 consecutive messages with the same length, so cheat
   hash = -> it.innerHTML.length
 
-  previous = get \motd-hash
+  previous = get \message-hash
 
   # XXX not that reactive
   if hash message is not previous
     message.hidden = false
-    set \motd-hash hash message
+    set \message-hash hash message
 

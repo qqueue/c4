@@ -62,7 +62,7 @@ board
   &subtitle = d.querySelector \.boardSubtitle ?.innerHTML or ''
   &nav      = d.querySelector \#boardNavDesktop .innerHTML
   &banner   = d.querySelector \.title .src
-  &motd     = d.querySelector \.globalMessage ?.innerHTML
+  &message  = d.querySelector \.globalMessage ?.innerHTML
 
   # detect based on favicon href
   &sfw =

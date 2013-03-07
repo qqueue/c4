@@ -9,10 +9,10 @@ module.exports = (board, threads) -> """
     <h2 id=board-subtitle>#{board.subtitle}</h2>
   </hgroup>
 </header>
-#{if board.motd
+#{if board.message
   """
-  <div id="motd">
-    <button type="button" id="hide-motd">Hide News</button>
+  <div id="message-container">
+    <button type="button" id="hide-message">Hide News</button>
     <div id="message">#that</div>
   </div>
   """
