@@ -44,9 +44,8 @@ queued-videos = {}
 
 # debounced so postinsert can call it without the initial postinsert rush at
 # onready sending out one request per video
-#
-# FIXME video titles have problems loading
-load-info = debounce 2000ms !->
+# TODO debounce leading, but guard on board.ready for initial rush
+load-info = debounce 1000ms !->
   to-fetch = {}
 
   for vid of pending-videos
@@ -68,8 +67,8 @@ load-info = debounce 2000ms !->
       batch = []
   batches.push batch
 
-  if batches.length > 0
-    for batch of batches
+  for batch of batches
+    if batch.length > 0
       let req = new XMLHttpRequest
         req.open \GET "https://www.googleapis.com/youtube/v3/videos
                     ?id=#{encodeURIComponent batch}
