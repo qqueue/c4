@@ -1,8 +1,5 @@
 {L} = require \../utils/dom
-<<<<<<< HEAD
-=======
 post-template = require \templates/post
->>>>>>> f011ce4... replace jade with hamlc
 
 module.exports = class Post
   # constructor is inlined into parser
