@@ -1,25 +1,26 @@
 {L} = require \../utils/dom
+thread-template = require \templates/thread
 
 module.exports = class Thread
   postprocess: ->
     #convenience array including op
-    @posts = [@op].concat @replies
+    @posts = [@op, ...@replies]
 
     @imageReplies = []
 
     # build reply hash and image replies array
     @reply = {}
-    for reply of @replies
+    for {no}:reply of @replies
       @imageReplies.push reply if reply.image
-      @reply[reply.no] = reply
+      @reply[no] = reply
 
     if Thread[@no] # if this thread has been parsed before
       @new = []
       @deleted = []
-      for reply of Thread[@no].replies # old replies
-        @deleted.push reply if not @reply[reply.no]
-      for reply of @replies
-        @new.push reply if not Thread[@no].reply[reply.no]
+      for {no}:reply of Thread[@no]replies # old replies
+        @deleted.push reply unless @reply[no]
+      for {no}:reply of @replies
+        @new.push reply unless Thread[@no]reply[no]
 
     Thread[@no] = this
 
@@ -31,17 +32,7 @@ module.exports = class Thread
     return c
 
   render: (container = \article, classes = '', id) ->
-    "<#container id='#{id or "t#{@no}"}' \
-                 data-no=#{@no} \
-                 class='#classes #{@className!}'>
-      #{@op.render \div \op}
-      <div class=thread-info>
-        #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
-        #{if @preview then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
-      </div>
-        <div class=replies>#{(for @replies => &render \article \reply)join ''}</div>
-    </#container>
-    "
+    thread-template {container, classes, id, thread: @}
 
   element: (container, classes, id) ->
     d = L \div

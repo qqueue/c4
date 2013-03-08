@@ -5,6 +5,8 @@ stylus   = require \stylus
 esprima  = require \esprima
 lodash   = require \lodash
 
+haml-coffee = require \haml-coffee
+
 flatten = -> Array::concat.apply [], it # shallow flatten
 
 join = -> flatten @@ .join \\n
@@ -19,12 +21,37 @@ task \build 'build userscript' ->
   try
     metadata = read \metadata.txt
 
-    console.time "Total build time"
+    console.time "Total build time "
 
     console.time "Commonjsification"
 
     coco-time = 0
     esprima-time = 0
+
+    hamlc-time = 0
+
+    parse-js = ->
+      c = Date.now!
+      ast = esprima.parse it
+      esprima-time += Date.now! - c
+
+      ast
+
+    parse-hamlc = (it, filename) ->
+      opts =
+        format: \xhtml
+        escape-html: false
+        escape-attributes: false
+        uglify: true
+#            customCleanValue: 'c$'
+        placement: \standalone
+
+      c = Date.now!
+      code = haml-coffee.template it, filename, "this.templates", opts
+      hamlc-time += Date.now! - c
+
+      code
+
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
       handlers:
@@ -47,11 +74,30 @@ task \build 'build userscript' ->
           js = coco.compile it.toString!, {+bare, filename}
           coco-time += Date.now! - c
 
-          c = Date.now!
-          ast = esprima.parse js
-          esprima-time += Date.now! - c
+          parse-js js
 
-          ast
+        \.hamlc : (it, filename) ->
+          try
+            code = parse-hamlc it.toString!, filename
+          catch
+            throw new Error "Error compiling #filename : #e"
+
+          # remove wrapper
+          code = (code.trim! / '\n')slice(1 -2) * '\n'
+
+          code # crappy hotfixes :(
+            .=replace do # return left from coffee's {-bare} wrapper
+              'return function(context) {'
+              'function(context) {'
+            .replace /\n  /g '\n' # cut an indent level
+            .replace do # we don't need this!
+              '$o.join("\\n")'
+              '$o.join("")'
+            .trim!
+
+          src = "module.exports = #code"
+
+          parse-js src
 
         \.styl : (it, filename) ->
           console.time "Stylus"
@@ -62,20 +108,17 @@ task \build 'build userscript' ->
 
           # TODO emit AST node for this rather than esprima a string, since
           # it's so simple
-          c = Date.now!
-          ast = esprima.parse src
-          esprima-time += Date.now! - c
 
-          ast
+          parse-js src
 
     console.timeEnd "Commonjsification"
-    console.log "Coco compilation: #{coco-time}ms"
-    console.log "JS reparsing: #{esprima-time}ms"
+    console.log "Coco compilation : #{coco-time}ms"
+    console.log "Haml-Coffee      : #{hamlc-time}ms"
+    console.log "JS reparsing     : #{esprima-time}ms"
 
-    console.time "AST->JS source generation"
+    console.time "AST->JS source   "
     # TODO something with sourcemap, when fire(fox|bug) gets support
     gen = require \escodegen .generate ast
-    console.timeEnd "AST->JS source generation"
 
     fs.writeFileSync do
       outfile
@@ -84,8 +127,8 @@ task \build 'build userscript' ->
         "(function(){"
         '"use strict";'
         gen
-        "}).call(this)"
-    console.timeEnd "Total build time"
+
+    console.timeEnd "Total build time "
     console.log "compiled script to #{outfile}"
   catch
     console.error e

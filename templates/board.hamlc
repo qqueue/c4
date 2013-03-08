@@ -1,0 +1,78 @@
+%nav#toplinks.boardlinks= @nav
+%header#header
+  %a#banner(href='//boards.4chan.org/#{@name}/')
+    %img(src=@banner alt='4chan::')
+  %hgroup
+    %h1#board-name
+      %a(href='//boards.4chan.org/#{@name}/')= @title
+    %h2#board-subtitle= @subtitle
+- if @motd
+  #motd
+    %button#hide-motd(type='button') Hide News
+    #message= @motd
+#threads
+  - for thread in @threads
+    = thread.render()
+- if @isBoard
+  %ul#pages
+    - if @page > 0
+      %li
+        %a(href=@page - 1) previous
+    %li
+      %a(href=@url) 0
+    %li
+      %a(href=1) 1
+    %li
+      %a(href=2) 2
+    %li
+      %a(href=3) 3
+    %li
+      %a(href=4) 4
+    %li
+      %a(href=5) 5
+    %li
+      %a(href=6) 6
+    %li
+      %a(href=7) 7
+    %li
+      %a(href=8) 8
+    %li
+      %a(href=9) 9
+    %li
+      %a(href=10) 10
+    - if @page < 10
+      %li
+        %a(href=@page + 1) next
+    %li
+      %a(href='catalog') Catalog
+- unless @locked
+  #postform-wrapper
+    %form#postform(enctype='multipart/form-data' method='POST' action='https://sys.4chan.org/#{@name}/post')
+      %input(type='hidden' value='3145728' name='MAX_FILE_SIZE')
+      - if @threadId
+        %input(type='\\' value='\\' name='\\')
+      %input(type='hidden' value='regist' name='mode')
+      %input#password(type='hidden' name='pwd' value=@password)
+      #fields
+        %input#name(type='text' name='name' tabindex='10' placeholder='name\#tripcode')
+        %input#email(type='text' name='email' tabindex='10' placeholder='email')
+        %input#subject(type='text' name='sub' tabindex='10' placeholder='subject')
+        #comment-field
+          %textarea#comment(name='com' rows='4' tabindex='10' placeholder='comment')
+        #captcha(style='display: none;')
+          %a#recaptcha_image(href='javascript:Recaptcha.reload()' title='Click for new captcha')
+          %input#recaptcha_response_field(type='text' name='recaptcha_response_field' tabindex='10' placeholder='captcha')
+        #file-field
+          %input#file(type='file' name='upfile' tabindex='10')
+          %label#spoiler-field
+            %input(type='checkbox' value='on' name='spoiler' tabindex='10')
+            Spoiler?
+        #buttons
+          %button#post(type='submit' tabindex='10' value='Submit') Post !{@isThread ? 'Reply' : 'New Thread'}
+          - if @isThread
+            %button#sage(type='submit' name='email' value='sage' tabindex='10') Sage Reply
+          %span#post-status
+          %progress#progress(max='100' value='0' hidden='')
+%span#updater
+  %span#update-status
+  %button#update-now Update now

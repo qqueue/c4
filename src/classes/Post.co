@@ -1,4 +1,8 @@
 {L} = require \../utils/dom
+<<<<<<< HEAD
+=======
+post-template = require \templates/post
+>>>>>>> f011ce4... replace jade with hamlc
 
 module.exports = class Post
   # constructor is inlined into parser
@@ -49,76 +53,8 @@ module.exports = class Post
   # is getting more complicated (would like to switch foolz to other archivers)
 
   render: (container, classes = '', id) ->
-    "<#container data-no=#{@no} \
-                 class='#classes #{@className!}' \
-                 data-idx=#{@idx} \
-                 id='#{id or "p#{@no}"}'>
-      <h1 class=post-header>
-        <button type=button class=hide value=#{@no}>&times;</button>
-        <button type=submit \
-                form=reportform \
-                class=report \
-                name=no \
-                value=#{@no}>!</button>
-        <a href='#{@url}' class=subject>#{@subject or ''}</a> \
-        <a class=name \
-           #{if @email then "href=\"mailto:#{@email}\"" else ''}>#{@name or ''}</a> \
+    post-template {container, classes, id, post: @, board}
 
-        <span class=tripcode>#{@tripcode or ''}</span> \
-        <span class=capcode>#{@capcode or ''}</span> \
-        <span class=posteruid>#{if @uid then "(ID: #that)" else ''}</span> \
-        <time pubdate \
-              datetime='#{@time.toISOString!}' \
-              title='#{@time}'>#{@time.relative-date!}</time> \
-        #{if @op and @thread.sticky
-            '<img alt=sticky src=//static.4chan.org/image/sticky.gif> '
-          else ''}
-        #{if @op and @thread.closed
-            '<img alt=closed src=//static.4chan.org/image/closed.gif> '
-          else ''}
-        <a href='#{@url}' class=permalink>No.<span class=no>#{@no}</span></a>
-      </h1>
-      #{if @image
-        "
-        <div class=fileinfo>
-          <span class=filename>#{@image.filename or ''}</span> \
-          <span class=dimensions>#{@image.width}x#{@image.height}</span> \
-          <span class=size>#{@image.size}</span> \
-          <a class=saucelink \
-             href='http://iqdb.org/?url=#{@image.url}' \
-             target=_blank>iqdb</a> \
-          <a class=saucelink \
-             href='http://google.com/searchbyimage?image_url=#{@image.url}' \
-             target=_blank>google</a> \
-          <a class=saucelink \
-             href='http://regex.info/exif.cgi/exif.cgi?imgurl=#{@image.url}' \
-             target=_blank>exif</a> \
-          <a class=saucelink \
-             href='http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}' \
-             target=_blank>foolz</a>
-        </div>
-        <a class=file \
-           target=_blank \
-           href='#{@image.url}' \
-           data-width=#{@image.width} \
-           data-height=#{@image.height}>
-          <img class=thumb \
-               src='#{@image.thumb.url}' \
-               width=#{@image.thumb.width} \
-               height=#{@image.thumb.height}>
-        </a>
-        "
-      else ''
-      }
-      #{if @deletedImage
-          '<img class=deleted-image
-                alt="File deleted."
-                src=//static.4chan.org/image/filedeleted.gif>'
-        else ''}
-      <div class=comment>#{@comment}</div>
-      <footer class=backlinks>#{@backlinks!}</footer>
-    </#container>
-    "
   element: (container, classes = '', id) ->
     wrapper = L \div
       &innerHTML = @render container, classes, id

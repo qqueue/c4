@@ -19,9 +19,9 @@ parse-thread = (el) -> new Thread
   if omitted = el.querySelector \.summary
     &omitted =
       replies:
-        parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
+        parseInt omitted.textContent.match(/\d+(?= posts?)/), 10 or 0
       imageReplies:
-        parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+        parseInt omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10 or 0
 
   &preview = !!&omitted
 
@@ -53,7 +53,7 @@ parse-post = (el, idx) ->
         "#{thread.url}\#p#{&no}"
 
     &time = new Date do
-      parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
+      parseInt(el.querySelector(\.dateTime).dataset.utc, 10) * 1000ms
 
     &subject  = el.querySelector '.postInfo.desktop .subject' .innerHTML
 
@@ -61,7 +61,7 @@ parse-post = (el, idx) ->
     &tripcode = el.querySelector \.postertrip                ?.innerHTML
     &capcode  = el.querySelector \.capcode                   ?.innerHTML
 
-    &email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
+    &email    = el.querySelector \.useremail ?.href.substring 7 # strip mailto:
     &sage     = sage-regex.test that if &email
 
     &comment = enhancer.enhance do
