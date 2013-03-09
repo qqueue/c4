@@ -1,4 +1,3 @@
-fs       = require \fs
 coco     = require \coco
 stylus   = require \stylus
 {cjsify} = require \commonjs-everywhere
@@ -6,9 +5,7 @@ esprima  = require \esprima
 lodash   = require \lodash
 
 flatten = -> Array::concat.apply [], it # shallow flatten
-
 join = -> flatten @@ .join \\n
-read = -> fs.readFileSync it, \utf8
 
 nib = (it, filename) ->
   stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)!
@@ -17,7 +14,7 @@ outfile = \html5chan.user.js
 
 task \build 'build userscript' ->
   try
-    metadata = read \metadata.txt
+    metadata = slurp \metadata.txt
 
     console.time "Total build time"
 
@@ -69,15 +66,15 @@ task \build 'build userscript' ->
           ast
 
     console.timeEnd "Commonjsification"
-    console.log "Coco compilation: #{coco-time}ms"
-    console.log "JS reparsing: #{esprima-time}ms"
+    say "Coco compilation: #{coco-time}ms"
+    say "JS reparsing: #{esprima-time}ms"
 
     console.time "AST->JS source generation"
     # TODO something with sourcemap, when fire(fox|bug) gets support
     gen = require \escodegen .generate ast
     console.timeEnd "AST->JS source generation"
 
-    fs.writeFileSync do
+    spit do
       outfile
       join do
         metadata
@@ -86,7 +83,8 @@ task \build 'build userscript' ->
         gen
         "}).call(this)"
     console.timeEnd "Total build time"
-    console.log "#{new Date}: compiled script to #{outfile}"
+
+    say "#{new Date}: compiled script to #{outfile}"
   catch
     console.error e
     console.error e.stack
@@ -94,9 +92,9 @@ task \build 'build userscript' ->
 const times = 50 # XXX figure out Cokefile's batty options parsing
 
 task \profile 'build project over and over for profile tick collection' !->
-  console.log "Running build #times times..."
+  say "Running build #times times..."
   for i til times
-    console.log "run #i"
+    say "run #i"
     invoke \build
 
 # lodash, but with superior arguments order
@@ -104,8 +102,8 @@ debounce = (wait, fn) -> lodash.debounce fn, wait
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
-  for it of <[style src templates src/features src/classes src/utils]>
-    fs.watch it, interval: 1000, debounce 1000 !(event, filename) ->
-      console.log "#event event detected on #filename. rebuilding..."
+  for <[style src templates src/features src/classes src/utils]>
+    fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
+      say "#event event detected on #filename. rebuilding..."
       invoke \build
 
