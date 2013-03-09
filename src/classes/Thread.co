@@ -37,7 +37,7 @@ module.exports = class Thread
       #{@op.render \div \op}
       <div class=thread-info>
         #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
-        #{if @preview then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
+        #{if board.is-board then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
       </div>
         <div class=replies>#{(for @replies => &render \article \reply)join ''}</div>
     </#container>
