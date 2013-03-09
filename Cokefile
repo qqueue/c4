@@ -86,7 +86,7 @@ task \build 'build userscript' ->
         gen
         "}).call(this)"
     console.timeEnd "Total build time"
-    console.log "compiled script to #{outfile}"
+    console.log "#{new Date}: compiled script to #{outfile}"
   catch
     console.error e
     console.error e.stack
