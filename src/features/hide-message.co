@@ -48,8 +48,13 @@ class Property extends Observable
     @value = val
     super ...
 
+  # properties map to new properties
+  map: (fn) ->
+    with new Property fn @value
+      @each -> &emit fn it
+
   assign: (obj, property) ->
-    asn = -> obj[property] = it
+    asn = !-> obj[property] = it
     @each asn
 
     # initialize if necessary
@@ -61,24 +66,19 @@ if $ \message-container
   button  = $ \hide-message
   message = $ \message
 
+  message.hidden = get \message-hidden
+
   # toggle concern
   message-hidden = EventStream.from-events button, \click
-    .scan false, -> not it
+    .scan message.hidden, -> not it
 
   message-hidden.assign message, \hidden
+  message-hidden.each !-> set \message-hidden it
 
   # button text concern
   message-hidden
     .map -> "#{if it then "Show" else "Hide"} News"
-    .scan button.textContent, (_, it) -> it # XXX shouldn't be necessary
     .assign button, \textContent
-
-  # persistence concern
-
-  # FIXME dunno how to properly do this reactively
-  message.hidden = get \message-hidden
-
-  message-hidden.assign get, \message-hidden
 
   # show _new_ messages concern
 
