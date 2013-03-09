@@ -1,14 +1,63 @@
 # relative dates
+{repeat, defer, debounce-leading} = require \../utils/timing
+
+const YEAR   = 3.156e10_ms , HALFYEAR   = YEAR   / 2
+      MONTH  = 2.62974e9_ms, HALFMONTH  = MONTH  / 2
+      DAY    = 86_400_000ms, HALFDAY    = DAY    / 2
+      HOUR   = 3_600_000ms , HALFHOUR   = HOUR   / 2
+      MINUTE = 60_000ms    , HALFMINUTE = MINUTE / 2
+      SECOND = 1000ms      , HALFSECOND = SECOND / 2
 
 pluralize = (number, unit) ->
   "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
 
-const YEAR   = 3.156e10_ms
-      MONTH  = 2.62974e9_ms
-      DAY    = 86_400_000ms
-      HOUR   = 3_600_000ms
-      MINUTE = 60_000ms
-      SECOND = 1000ms
+# each time element adds a function to update itself to the stale list once it
+# becomes inaccurate.  the stale list is flushed and stale times are updated
+# whenever the DOM changes otherwise, which keeps the times as up to date as
+# possible without incurring separate DOM reflows.
+stale = []
+
+export flush = debounce-leading SECOND, !->
+  now = Date.now!
+  for stale => & now
+  stale.length = 0
+
+  periodic.restart!
+
+# flush even in absence of other reflows
+export periodic = repeat MINUTE, {-auto} flush
+
+# keep an html <time> element up to date
+export keep-up-to-date = !(el) ->
+  time = new Date el.getAttribute \datetime
+
+  update = !(now) ->
+    if document.contains el # el still on page
+      el.textContent = time.relative-date now
+      make-timeout now - time.getTime!
+
+  add-to-stale = !-> stale.push update
+
+  make-timeout = !(diff) ->
+    # calculate when relative date will be stale again
+    # delay is time until the next half unit, since relative dates uses
+    # banker's rounding
+    delay = if
+      diff < MINUTE
+        SECOND - (diff + HALFSECOND) % SECOND
+      diff < HOUR
+        MINUTE - (diff + HALFMINUTE) % MINUTE
+      diff < DAY
+        HOUR - (diff - HALFHOUR) % HOUR
+      diff < MONTH
+        DAY - (diff - HALFDAY) % DAY
+      diff < YEAR
+        MONTH - (diff - HALFMONTH) % MONTH
+      else
+        YEAR - (diff - HALFYEAR) % YEAR
+    defer delay, add-to-stale
+
+  make-timeout Date.now! - time.getTime!
 
 Date::relative-date = (now = Date.now!) ->
   diff = now - @getTime!
@@ -40,5 +89,4 @@ Date::relative-date = (now = Date.now!) ->
     "#number #unit ago"
   else
     "in #number #unit"
-
 

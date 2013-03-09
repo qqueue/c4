@@ -1,3 +1,5 @@
+# setTimeout-based utilities
+
 export debounce = (delay, fn) ->
   var timeout
   !->
@@ -7,6 +9,13 @@ export debounce = (delay, fn) ->
     timeout := setTimeout do
       !-> fn.apply ctx, args
       delay
+
+export debounce-leading = (delay, fn) ->
+  var timeout
+  reset = !-> timeout := null
+  -> unless timeout
+    fn ...
+    timeout := defer delay, reset
 
 # setTimeout with nicer syntax and optional delay
 # the rest of the arguments to the fn are passed through, so the syntax with
