@@ -171,8 +171,8 @@ fade-when-visible = !->
 
   if (window.innerHeight + window.scrollY) > y
     if document.hidden
-      # fade them once the window/tab is visible again
-      listen window .once \focus !-> fade post
+      # fade them once the tab is visible again
+      listen document .once \visibilitychange !-> fade post
     else
       # now
       fade post
