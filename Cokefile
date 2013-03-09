@@ -7,72 +7,70 @@ lodash   = require \lodash
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
 
-nib = (it, filename) ->
-  stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)!
+# sexy (arguably) AOP/traditional-style time metrics
+time = let names = {}, last = {}
+  of: (it, pad = it.length) -> "#{it + ' ' * (pad - it.length)} : #{names[it]}ms"
+  end: !->
+    if @@length > 1
+      pad = Math.max.apply Math, (for @@ => &length)
+      for @@
+        time.stop &; say @of &, pad
+    else
+      time.stop it; say @of it
+  start: !->
+    names[it] ?= 0
+    last[it] = Date.now!
+  stop: !->
+    if last[it]
+      names[it] += Date.now! - last[it]
+      delete last[it]
+  as: (name, fn) -> ->
+    time.start name
+    ret = fn ...
+    time.stop name
+    ret
+  restart-all: !-> names := {}
+
+nib = time.as 'Stylus compilation' (it, filename) ->
+  stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)! .render!
+
+compile-coco = time.as 'Coco compilation' coco.~compile
+parse-js = time.as 'Reparse JS' esprima.~parse
+
+coco-to-js = (it, filename) ->
+  src = compile-coco it.toString!, {+bare, filename}
+  parse-js src
+
+ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
 
 outfile = \html5chan.user.js
 
 task \build 'build userscript' ->
   try
+    time.restart-all!
+
+    time.start "Total build time"
+
     metadata = slurp \metadata.txt
 
-    console.time "Total build time"
+    time.start "Commonjsification"
 
-    console.time "Commonjsification"
-
-    coco-time = 0
-    esprima-time = 0
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
       handlers:
-        \.co : (it, filename) ->
-          c = Date.now! # TODO find better node timing libraries
-          js = coco.compile it.toString!, {+bare, filename}
-          coco-time += Date.now! - c
-
-          c = Date.now!
-          ast = esprima.parse js
-          esprima-time += Date.now! - c
-
-          ast
-
+        \.co : coco-to-js
         # string interp template
-        # XXX fix duplication with .co somehow
         # XXX cjsify doesn't support multipart filenames e.g. .co.html
-        \.cohtml : (it, filename) ->
-          c = Date.now! # TODO find better node timing libraries
-          js = coco.compile it.toString!, {+bare, filename}
-          coco-time += Date.now! - c
-
-          c = Date.now!
-          ast = esprima.parse js
-          esprima-time += Date.now! - c
-
-          ast
-
+        \.cohtml : coco-to-js
         \.styl : (it, filename) ->
-          console.time "Stylus"
-          css = nib it.toString!, filename .render!
-          console.timeEnd "Stylus"
+          src = "module.exports = '#{nib it.toString!, filename
+            .replace /'/g "\/'" .replace /\n/g '\\n'}'"
+          parse-js src
 
-          src = "module.exports = '#{css.replace /'/g "\/'" .replace /\n/g '\\n'}'"
+    time.stop "Commonjsification"
 
-          # TODO emit AST node for this rather than esprima a string, since
-          # it's so simple
-          c = Date.now!
-          ast = esprima.parse src
-          esprima-time += Date.now! - c
-
-          ast
-
-    console.timeEnd "Commonjsification"
-    say "Coco compilation: #{coco-time}ms"
-    say "JS reparsing: #{esprima-time}ms"
-
-    console.time "AST->JS source generation"
     # TODO something with sourcemap, when fire(fox|bug) gets support
-    gen = require \escodegen .generate ast
-    console.timeEnd "AST->JS source generation"
+    gen = ast-to-js ast
 
     spit do
       outfile
@@ -82,7 +80,14 @@ task \build 'build userscript' ->
         '"use strict";'
         gen
         "}).call(this)"
-    console.timeEnd "Total build time"
+
+    time.end do
+      "Commonjsification"
+      "Reparse JS"
+      "Coco compilation"
+      "Stylus compilation"
+      "AST->JS"
+      "Total build time"
 
     say "#{new Date}: compiled script to #{outfile}"
   catch
