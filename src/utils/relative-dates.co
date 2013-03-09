@@ -3,13 +3,12 @@
 pluralize = (number, unit) ->
   "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
 
-# XXX explicit export of constants for features/relative-dates.co
-export const YEAR   = 3.156e10_ms
-             MONTH  = 2.62974e9_ms
-             DAY    = 86_400_000ms
-             HOUR   = 3_600_000ms
-             MINUTE = 60_000ms
-             SECOND = 1000ms
+const YEAR   = 3.156e10_ms
+      MONTH  = 2.62974e9_ms
+      DAY    = 86_400_000ms
+      HOUR   = 3_600_000ms
+      MINUTE = 60_000ms
+      SECOND = 1000ms
 
 Date::relative-date = (now = Date.now!) ->
   diff = now - @getTime!

@@ -2,7 +2,12 @@
 
 {onpostinsert, onready} = require \../utils/features
 {repeat, defer} = require \../utils/timing
-{YEAR, MONTH, DAY, HOUR, MINUTE, SECOND} = require \../utils/relative-dates
+const YEAR   = 3.156e10_ms , HALFYEAR   = YEAR   / 2
+      MONTH  = 2.62974e9_ms, HALFMONTH  = MONTH  / 2
+      DAY    = 86_400_000ms, HALFDAY    = DAY    / 2
+      HOUR   = 3_600_000ms , HALFHOUR   = HOUR   / 2
+      MINUTE = 60_000ms    , HALFMINUTE = MINUTE / 2
+      SECOND = 1000ms      , HALFSECOND = SECOND / 2
 
 # each time element adds a function to update itself to the stale list once it
 # becomes inaccurate.  the stale list is flushed and stale times are updated
@@ -38,18 +43,20 @@ keep-up-to-date = !(el) ->
 
   make-timeout = !(diff) ->
     # calculate when relative date will be stale again
+    # delay is time until the next half unit, since relative dates uses
+    # banker's rounding
     delay = if diff < MINUTE
-      diff % SECOND
+      SECOND - (diff + HALFSECOND) % SECOND
     else if diff < HOUR
-      diff % MINUTE
+      MINUTE - (diff + HALFMINUTE) % MINUTE
     else if diff < DAY
-      diff % HOUR
+      HOUR - (diff - HALFHOUR) % HOUR
     else if diff < MONTH
-      diff % DAY
+      DAY - (diff - HALFDAY) % DAY
     else if diff < YEAR
-      diff % MONTH
+      MONTH - (diff - HALFMONTH) % MONTH
     else
-      diff % YEAR
+      YEAR - (diff - HALFYEAR) % YEAR
     defer delay, add-to-stale
 
   make-timeout Date.now! - time.getTime!
