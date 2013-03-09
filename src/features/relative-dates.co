@@ -45,18 +45,19 @@ keep-up-to-date = !(el) ->
     # calculate when relative date will be stale again
     # delay is time until the next half unit, since relative dates uses
     # banker's rounding
-    delay = if diff < MINUTE
-      SECOND - (diff + HALFSECOND) % SECOND
-    else if diff < HOUR
-      MINUTE - (diff + HALFMINUTE) % MINUTE
-    else if diff < DAY
-      HOUR - (diff - HALFHOUR) % HOUR
-    else if diff < MONTH
-      DAY - (diff - HALFDAY) % DAY
-    else if diff < YEAR
-      MONTH - (diff - HALFMONTH) % MONTH
-    else
-      YEAR - (diff - HALFYEAR) % YEAR
+    delay = if
+      diff < MINUTE
+        SECOND - (diff + HALFSECOND) % SECOND
+      diff < HOUR
+        MINUTE - (diff + HALFMINUTE) % MINUTE
+      diff < DAY
+        HOUR - (diff - HALFHOUR) % HOUR
+      diff < MONTH
+        DAY - (diff - HALFDAY) % DAY
+      diff < YEAR
+        MONTH - (diff - HALFMONTH) % MONTH
+      else
+        YEAR - (diff - HALFYEAR) % YEAR
     defer delay, add-to-stale
 
   make-timeout Date.now! - time.getTime!
