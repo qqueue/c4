@@ -1,0 +1,41 @@
+# backlinks concern
+
+{onprerender, onready, onpostinsert} = require \./utils/features
+{L, $$} = require \./utils/dom
+
+onprerender !->
+  for it.detail.body.querySelectorAll '.post'
+    quoter = &dataset.no
+    idx    = &dataset.idx
+    for &querySelectorAll '.comment .quotelink'
+      if &href.match /#p(\d+)/
+        quoted = that.1
+        it.detail.body.querySelector "\#p#quoted > .backlinks"
+          &?appendChild with L \a
+            &href = "\#p#quoter"
+            &className = 'backlink quotelink'
+            &textContent = "«#idx"
+
+# after initial postinserts, add new backlinks
+# TODO think harder about event structure to avoid having to wrap onready and
+# onpostinsert.
+# TODO use type to detect whether postinsert is an updated post
+# or just a preview/inline
+onready !-> onpostinsert !-> it.detail.post
+  quoter = &dataset.no
+  idx    = &dataset.idx
+  # XXX refactor duplicate code
+  for &querySelectorAll '.comment .quotelink'
+    if &href.match /#p(\d+)/
+      quoted = that.1
+      for $$ "\#p#quoted > .backlinks"
+        # if it's not already linked
+        if not &querySelector ".backlink[href$=\"#quoter\"]"
+          &appendChild with backlink = L \a
+            &href = "\#p#quoter"
+            &className = 'backlink quotelink'
+            &textContent = "«#idx"
+          document.dispatchEvent new CustomEvent do
+            \html5chan-backlink
+            detail: {backlink}
+

@@ -103,8 +103,6 @@ create-preview = !(no, post) ->
 
 on-posts \.quotelink : mouseover: handle-preview
 
-onbacklink !({detail}) ->
-  <-! defer 100ms
-  detail.post.querySelector ".backlink[href$=p#{detail.no}]"
-    &addEventListener \mouseover handle-preview
+onbacklink !->
+  it.detail.backlink.addEventListener \mouseover handle-preview
 

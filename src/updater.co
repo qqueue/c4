@@ -1,7 +1,6 @@
 # Keep threads up to date
 #
 # - append new posts as they are made
-# - update backlinks for past posts that are replied to
 # - detect when new posts are read
 #   - keep an unread counter in the favicon
 # - allow the user to manually request an update
@@ -39,18 +38,6 @@ unread        = 0
       \html5chan-postinsert
       detail: post: $ "p#{post.no}"
 
-# TODO refactor out all the various places backlinks are made
-# into something less coupled
-!function append-new-backlinks thread
-  for $$ '.thread .backlinks'
-    &insertAdjacentHTML do
-      \beforeend
-      # parentNode passed in for backlink event XXX
-      Post[&parentNode.dataset.no]backlinks true, &parentNode
-
-  # clear state
-  Post.new-backlinks = {}
-
 !function update-favicon thread
   unread += thread.new.length
   draw-favicon board.favicon, if unread > 0 then "#unread" else ''
@@ -83,7 +70,6 @@ unread        = 0
   updater.status.textContent = "update detected, parsing"
 
   append-new-posts            thread
-  append-new-backlinks        thread
   update-thread-stats         thread
   update-favicon              thread
 

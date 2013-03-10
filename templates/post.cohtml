@@ -72,6 +72,6 @@ module.exports = (post, container, classes, id) -> post |> "
           src=//static.4chan.org/image/filedeleted.gif>'
   else ''}
   <div class=comment>#{&comment}</div>
-  <footer class=backlinks>#{&backlinks!}</footer>
+  <footer class=backlinks></footer>
 </#container>"
 

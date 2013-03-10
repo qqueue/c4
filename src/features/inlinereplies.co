@@ -132,9 +132,8 @@ on-posts '.quotelink:not(.hiddenlink)':
   click:    onclick
   dblclick: follow
 
-onbacklink !({detail}) ->
-  <-! defer 100ms
-  detail.post.querySelector ".backlink[href$=p#{detail.no}]"
+onbacklink !->
+  it.detail.backlink
     &addEventListener \click onclick
     &addEventListener \dblclick follow
 

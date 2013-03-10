@@ -28,6 +28,7 @@ window.board = {}
   &favicons = require \./favicon-data
 
 require \./archives
+require \./backlinks
 require \./poster
 require \./updater
 require \./onready
