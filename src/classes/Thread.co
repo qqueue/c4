@@ -1,4 +1,5 @@
 {L} = require \../utils/dom
+template = require \templates/thread
 
 module.exports = class Thread
   postprocess: ->
@@ -23,25 +24,8 @@ module.exports = class Thread
 
     Thread[@no] = this
 
-  className: ->
-    c = 'thread '
-    c += 'sticky ' if @sticky
-    c += ' locked' if @locked
-    c += ' preview' if @preview
-    return c
-
   render: (container = \article, classes = '', id) ->
-    "<#container id='#{id or "t#{@no}"}' \
-                 data-no=#{@no} \
-                 class='#classes #{@className!}'>
-      #{@op.render \div \op}
-      <div class=thread-info>
-        #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
-        #{if board.is-board then "<a class=expand-link href='#{@url}'>Expand</a>" else ''}
-      </div>
-        <div class=replies>#{(for @replies => &render \article \reply)join ''}</div>
-    </#container>
-    "
+    template this, container, classes, id
 
   element: (container, classes, id) ->
     d = L \div
