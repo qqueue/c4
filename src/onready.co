@@ -57,12 +57,11 @@ console.time "initial render"
 console.time "parse page"
 # get other useful information
 board
-  &title    = d.querySelector \.boardTitle .textContent
-
-  &subtitle = d.querySelector \.boardSubtitle ?.innerHTML or ''
-  &nav      = d.querySelector \#boardNavDesktop .innerHTML
-  &banner   = d.querySelector \.title .src
-  &message  = d.querySelector \.globalMessage ?.innerHTML
+  &title    = d.querySelector \.boardTitle      ?.textContent or ''
+  &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
+  &nav      = d.querySelector \#boardNavDesktop  .innerHTML
+  &banner   = d.querySelector \.title            .src
+  &message  = d.querySelector \.globalMessage   ?.innerHTML
 
   # detect based on favicon href
   &sfw =
@@ -133,7 +132,6 @@ console.timeEnd "initial render"
 # this retains the browser's natural scroll position memory
 # while still scrolling to the new hash target's position
 # the first time the page loads (or if window hasn't been scrolled)
-# TODO I don't know if this is necessary any more
 if window.location.hash and not sget document.URL
   window.location.hash = window.location.hash
   window.addEventListener \scroll function registerPage
@@ -153,5 +151,5 @@ board.ready = true
 
 document.dispatchEvent new CustomEvent do
   \html5chan-ready
-  detail: {post}
+  detail: {threads}
 
