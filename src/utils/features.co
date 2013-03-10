@@ -3,6 +3,7 @@
 
 # shortcuts for custom events
 export
+  onprerender  = !-> document.addEventListener \html5chan-prerender  it
   onready      = !-> document.addEventListener \html5chan-ready      it
   onupdate     = !-> document.addEventListener \html5chan-update     it
   onpostinsert = !-> document.addEventListener \html5chan-postinsert it

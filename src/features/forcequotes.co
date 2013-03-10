@@ -1,6 +1,6 @@
 # add quote text to >> replies to be able to identify them without hover
 
-{onpostinsert} = require \../utils/features
+{onpostinsert, onready, onprerender} = require \../utils/features
 {L} = require \../utils/dom
 Post = require \../classes/Post
 {truncate} = require \../utils/string
@@ -54,5 +54,10 @@ munge = !(ctx) ->
       quote.classList.add \forcequoted
 
 if board.isThread
-  onpostinsert !-> munge it.detail.post
+  onprerender !->
+    for it.detail.body.querySelectorAll \.post
+      munge &
+  # after real render, munge any new posts
+  onready !->
+    onpostinsert !-> munge it.detail.post
 

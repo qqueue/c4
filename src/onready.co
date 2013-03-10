@@ -39,7 +39,7 @@ html = L \html
               else
                 onready !-> head.appendChild &
 
-  &appendChild body = L \body
+body = L \body
 
 # replace the original html with the new, but keep a reference to query and
 # parse. This speeds up re-rendering consideraby, since the browser doesn't
@@ -97,9 +97,19 @@ console.time "generate new HTML body"
 body-html = require(\templates/board) board, threads
 console.timeEnd "generate new HTML body"
 
-console.time "parse and render new body"
+console.time "parse new body HTML"
 body.innerHTML = body-html
-console.timeEnd "parse and render new body"
+console.timeEnd "parse new body HTML"
+
+console.time "prerender handlers"
+document.dispatchEvent new CustomEvent do
+  \html5chan-prerender
+  detail: {body}
+console.timeEnd "prerender handlers"
+
+console.time "render new body"
+html.appendChild body
+console.timeEnd "render new body"
 
 if board.isBoard
   console.time "highlight current page"
