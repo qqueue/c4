@@ -61,7 +61,7 @@ module.exports = (post, container, classes, id) -> post |> "
        data-width=#{&image.width} \
        data-height=#{&image.height}>
       <img class=thumb \
-           src='#{&image.thumb.url}' \
+           src='#{if &image.spoiler then board.spoiler-url else &image.thumb.url}' \
            width=#{&image.thumb.width} \
            height=#{&image.thumb.height}>
     </a>
