@@ -4,6 +4,7 @@
 {L, $, $$} = require \../utils/dom
 {truncate} = require \../utils/string
 {defer, debounce} = require \../utils/timing
+{sget, sset} = require \../utils/storage
 
 const api-key = "AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA"
 const batch-size = 30
@@ -26,8 +27,12 @@ queue = !(req) ->
     ready := false
     req.send!
 
-# video information cache
-cache = {}
+# video information cache, persisted to session storage, since batching of
+# requests to the youtube API breaks the browser's internal caching with
+# changing querystrings
+cache = sget \youtube or {}
+
+window.addEventListener \unload !-> sset \youtube cache
 
 set-title = !(vid, data) ->
   vid.title = "#{data.statistics.viewCount} views.
