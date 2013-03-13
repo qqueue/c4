@@ -4,7 +4,7 @@ module.exports = (thread, container, classes, id) -> thread |> "
              class='#classes \
                     thread \
                     #{if &sticky then 'sticky ' else ''} \
-                    #{if &locked then 'locked ' else ''}'>
+                    #{if &closed then 'closed ' else ''}'>
   #{&op.render \div \op}
   <div class=thread-info>
     #{(&omitted?replies or 0) + &replies.length} replies and #{(&omitted?imageReplies or 0) + &imageReplies.length} images.

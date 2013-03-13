@@ -38,7 +38,7 @@ else ''}
     <li><a href="catalog">Catalog</a></li>
   </ul>""" else ''}
 
-#{if not board.locked then """
+#{unless board.thread?closed then """
   <div id="postform-wrapper">
     <form id="postform" enctype="multipart/form-data" method="POST" action="https://sys.4chan.org/#{board.name}/post">
       <input type="hidden" value="3145728" name="MAX_FILE_SIZE">

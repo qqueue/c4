@@ -174,7 +174,7 @@ onready !->
   updater.button = $ \update-now
 
   # autoupdate threads
-  if board.isThread and not board.thread.locked
+  if board.isThread and not board.thread.closed
     updater.countdown.start!
     listen $ \update-now .click !->
       updater
