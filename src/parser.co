@@ -8,20 +8,15 @@ Thread = require \./classes/Thread
 Post = require \./classes/Post
 enhancer = require \./enhancer
 
-# slow(?!) DOM querying parser
-# shit, why is this so much faster, even with nested functions and
-# lots of querySelector calls? Did switching to standards mode make
-# dom querying faster or something? TODO test this, somehow
 parse-thread = (el) -> new Thread
   &no        = el.id.substring 1 # t12345
   &url       = board.threadurl + &no
 
-  if omitted = el.querySelector \.summary
-    &omitted =
-      replies:
-        parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
-      imageReplies:
-        parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
+  &omitted = if omitted = el.querySelector \.summary
+    replies:
+      parseInt(omitted.textContent.match(/\d+(?= posts?)/), 10) or 0
+    imageReplies:
+      parseInt(omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10) or 0
 
   &preview = !!omitted
 
@@ -69,29 +64,27 @@ parse-post = (el, idx) ->
 
     &uid = el.querySelector \.hand ?.textContent # hand?
 
-    if img = el.querySelector \.fileThumb
-      if img.firstElementChild.alt is "File deleted."
-        &deletedImage = true
-      else
+    &image = if img = el.querySelector \.fileThumb
+      unless (&deletedImage = img.firstElementChild.alt is "File deleted.")
         thumb      = img.firstElementChild
         info       = el.querySelector \.fileInfo .innerHTML
         dimensions = dimension-regex.exec info
-        &image =
-          thumb:
-            url    : thumb.src
-            width  : parseInt thumb.style.width, 10
-            height : parseInt thumb.style.height, 10
 
-          url      : thumb.parentNode.href
+        thumb:
+          url    : thumb.src
+          width  : parseInt thumb.style.width, 10
+          height : parseInt thumb.style.height, 10
 
-          width    : parseInt dimensions.1, 10
-          height   : parseInt dimensions.2, 10
+        url      : thumb.parentNode.href
 
-          size     : size-regex.exec thumb.alt .0
-          filename : filename-regex.exec(info)?1
-          md5      : thumb.dataset.md5
+        width    : parseInt dimensions.1, 10
+        height   : parseInt dimensions.2, 10
 
-          spoiler  : spoiler-regex.test thumb.alt
+        size     : size-regex.exec thumb.alt .0
+        filename : filename-regex.exec(info)?1
+        md5      : thumb.dataset.md5
+
+        spoiler  : spoiler-regex.test thumb.alt
 
     &postprocess!
 
