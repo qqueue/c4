@@ -114,12 +114,17 @@ if board.isBoard
     .id = \current
   console.timeEnd "highlight current page"
 
+function text
+  L \div |>
+    &innerHTML = it
+    &textContent
+
 console.time "set new page title"
 document.title =
   if board.isThread
     board.thread.op |>
       "#{truncate do
-           &subject or &text or &image?filename or &time.relative-date!}
+           &subject or text &comment or &image?filename or &time.relative-date!}
        \ - /#{board.name}/"
   else
     board.title

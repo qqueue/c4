@@ -1,10 +1,15 @@
 {L} = require \../utils/dom
 template = require \templates/thread
+Post = require \./Post
 
 module.exports = class Thread
   postprocess: ->
     #convenience array including op
     @posts = [@op].concat @replies
+
+    # XXX legacy code uses Post as a lookup for posts by no, in quasi
+    # ActiveRecord fashion
+    for @posts => Post[&no] = &
 
     @imageReplies = []
 

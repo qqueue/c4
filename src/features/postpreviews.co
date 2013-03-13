@@ -59,7 +59,7 @@ create-preview = !(no, post) ->
 
   {width, height, left, top} = @getBoundingClientRect!
 
-  preview = post.element \article, , \postpreview
+  preview = Post::element.call post, \article, , \postpreview
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: post: preview

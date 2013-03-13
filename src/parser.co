@@ -35,70 +35,64 @@ parse-thread = (el) -> new Thread
 
 parse-post = (el, idx) ->
   thread = this
+  img = el.querySelector \.fileThumb
 
-  new Post
-    &idx    = 1 + idx + (thread.omitted?replies || 0)
-    &thread = thread
-    &no     = el.id.substring 1
+  idx : 1 + idx + (thread.omitted?replies || 0)
+  no  : no = el.id.substring 1
 
-    &url =
-      if &op = el.classList.contains \op
-        thread.url
-      else
-        "#{thread.url}\#p#{&no}"
+  op  : op = el.classList.contains \op
+  url : if op then thread.url else "#{thread.url}\#p#no"
 
-    &time = new Date do
-      parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
+  time : new Date do
+    parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
 
-    &subject  = el.querySelector '.postInfo.desktop .subject' .innerHTML
+  subject  : el.querySelector '.postInfo.desktop .subject' .innerHTML
 
-    &name     = el.querySelector \.name                       .innerHTML
-    &tripcode = el.querySelector \.postertrip                ?.innerHTML
-    &capcode  = el.querySelector \.capcode                   ?.innerHTML
+  name     : el.querySelector \.name                       .innerHTML
+  tripcode : el.querySelector \.postertrip                ?.innerHTML
+  capcode  : el.querySelector \.capcode                   ?.innerHTML
 
-    &email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
-    &sage     = sage-regex.test that if &email
+  email    : email = el.querySelector \.useremail ?.href.substring(7) # strip mailto:
+  sage     : sage-regex.test that if email
 
-    &comment = enhancer.enhance do
-      el.querySelector \.postMessage .innerHTML
+  comment  : enhancer.enhance do
+   el.querySelector \.postMessage .innerHTML
 
-    &uid = el.querySelector \.hand ?.textContent # hand?
+  uid : el.querySelector \.hand ?.textContent # hand?
 
-    &image = if img = el.querySelector \.fileThumb
-      unless (&deletedImage = img.firstElementChild.alt is "File deleted.")
-        thumb      = img.firstElementChild
+  deleted-image : deleted-image = img?firstElementChild.alt is "File deleted."
+  image : if img and not deleted-image
+    thumb      = img.firstElementChild
 
-        # use getAttribute because `href` property adds the protocol, while
-        # getAttribute returns the protocolless //version (the text of the
-        # actual html attribute)
-        url        = img.getAttribute \href
-        timestamp  = url.match /\/(\d+)/ .1
+    # use getAttribute because `href` property adds the protocol, while
+    # getAttribute returns the protocolless //version (the text of the
+    # actual html attribute)
+    url        = img.getAttribute \href
+    timestamp  = url.match /\/(\d+)/ .1
 
-        info       = el.querySelector \.fileInfo .innerHTML
-        dimensions = dimension-regex.exec info
+    info       = el.querySelector \.fileInfo .innerHTML
+    dimensions = dimension-regex.exec info
 
-        thumb:
-          # since thumb's href is spoiler sometimes, recalc
-          # FIXME doesn't work for crossboard fetches
-          url    : "//thumbs.4chan.org/#{board.name}/thumb/#{timestamp}s.jpg"
-          # FIXME when image is spoiled, these are the spoiler image size.
-          # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
-          # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
-          width  : parseInt thumb.style.width, 10
-          height : parseInt thumb.style.height, 10
+    thumb :
+     # since thumb's href is spoiler sometimes, recalc
+     # FIXME doesn't work for crossboard fetches
+     url    : "//thumbs.4chan.org/#{board.name}/thumb/#{timestamp}s.jpg"
+     # FIXME when image is spoiled, these are the spoiler image size.
+     # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+     # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
+     width  : parseInt thumb.style.width, 10
+     height : parseInt thumb.style.height, 10
 
-        url      : url
+    url      : url
 
-        width    : parseInt dimensions.1, 10
-        height   : parseInt dimensions.2, 10
+    width    : parseInt dimensions.1, 10
+    height   : parseInt dimensions.2, 10
 
-        size     : size-regex.exec thumb.alt .0
-        filename : filename-regex.exec(info)?1
-        md5      : thumb.dataset.md5
+    size     : size-regex.exec thumb.alt .0
+    filename : filename-regex.exec(info)?1
+    md5      : thumb.dataset.md5
 
-        spoiler  : spoiler-regex.test thumb.alt
-
-    &postprocess!
+    spoiler  : spoiler-regex.test thumb.alt
 
 # TODO clean up this code
 module.exports =
@@ -145,27 +139,29 @@ humanized = (bytes) ->
     "#{(kbytes / 1024)toString!substring 0 3} MB"
 
 # "this" is thread
-parse-api-post = (data, i) -> new Post
-  &idx      = i
-  &thread   = this
-  &url      = "#{@url}#p#{data.no}"
-  &time     = new Date data.time * 1000
-  & <<< data{
-    no
-    subject: sub
-    name
-    tripcode: trip
-    uid: id
-    capcode
-    email
-  }
-  &sage     = &email is \sage
-  &comment  = if data.com then enhancer.enhance that else ''
-  &image    = if data.fsize
+parse-api-post = (data, i) ->
+  idx           : i
+  thread        : this
+  url           : "#{@url}#p#{data.no}"
+  time          : new Date data.time * 1000
+
+  no            : data.no
+  subject       : data.sub
+  name          : data.name
+  tripcode      : data.trip
+  uid           : data.id
+  capcode       : data.capcode
+  email         : data.email
+
+  sage          : data.email is \sage
+  comment       : if data.com then enhancer.enhance that else ''
+
+  deleted-image : !!data.filedeleted
+  image         : if data.fsize
     thumb:
-     url    : thumbs-base + data.tim + \s.jpg
-     width  : data.tn_w
-     height : data.tn_h
+      url    : thumbs-base + data.tim + \s.jpg
+      width  : data.tn_w
+      height : data.tn_h
 
     url      : "#{images-base}#{data.tim}#{data.ext}"
 
@@ -178,7 +174,4 @@ parse-api-post = (data, i) -> new Post
 
     spoiler  : !!data.spoiler
 
-  &deleted-image = !!data.filedeleted
-
-  &postprocess!
 

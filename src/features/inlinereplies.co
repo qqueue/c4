@@ -63,7 +63,7 @@ onclick = !(e) ->
     toggle-off this, inlined
   else # create
     is-backlink = @classList.contains \backlink
-    inlined = post.element \article "inline hovered" inlined-id
+    inlined = Post::element.call post, \article "inline hovered" inlined-id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
     while wrapper.parentElement.matchesSelector 'a,span'
