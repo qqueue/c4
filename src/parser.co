@@ -148,7 +148,7 @@ humanized = (bytes) ->
 parse-api-post = (data, i) -> new Post
   &idx      = i
   &thread   = this
-  &url      = "#{@url}##{data.no}"
+  &url      = "#{@url}#p#{data.no}"
   &time     = new Date data.time * 1000
   & <<< data{
     no
