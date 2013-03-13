@@ -142,7 +142,7 @@ humanized = (bytes) ->
 parse-api-post = (data, i) ->
   idx           : i
   thread        : this
-  url           : "#{@url}#p#{data.no}"
+  url           : "#{@url}\#p#{data.no}"
   time          : new Date data.time * 1000
 
   no            : data.no
