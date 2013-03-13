@@ -81,6 +81,9 @@ parse-post = (el, idx) ->
           # since thumb's href is spoiler sometimes, recalc
           # FIXME doesn't work for crossboard fetches
           url    : "//thumbs.4chan.org/#{board.name}/thumb/#{timestamp}s.jpg"
+          # FIXME when image is spoiled, these are the spoiler image size.
+          # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+          # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
           width  : parseInt thumb.style.width, 10
           height : parseInt thumb.style.height, 10
 

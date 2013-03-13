@@ -62,8 +62,9 @@ module.exports = (post, container, classes, id) -> post |> "
        data-height=#{&image.height}>
       <img class=thumb \
            src='#{if &image.spoiler then board.spoiler-url else &image.thumb.url}' \
-           width=#{&image.thumb.width} \
-           height=#{&image.thumb.height}>
+           #{unless &image.spoiler
+             "width=#{&image.thumb.width} \
+              height=#{&image.thumb.height}"}>
     </a>
     "
   else if &deletedImage
