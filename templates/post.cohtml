@@ -28,12 +28,6 @@ module.exports = (post, container, classes, id) -> post |> "
     <time pubdate \
           datetime='#{&time.toISOString!}' \
           title='#{&time}'>#{&time.relative-date!}</time> \
-    #{if &op and &thread.sticky
-        '<img alt=sticky src=//static.4chan.org/image/sticky.gif> '
-      else ''}
-    #{if &op and &thread.closed
-        '<img alt=closed src=//static.4chan.org/image/closed.gif> '
-      else ''}
     <a href='#{&url}' class=permalink>No.<span class=no>#{&no}</span></a>
   </h1>
   #{if &image

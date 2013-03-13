@@ -2,8 +2,8 @@ module.exports = (thread, container, classes, id) -> thread |> "
 <#container id='#{id or "t#{&no}"}' \
              data-no=#{&no} \
              class='#classes \
-                    thread
-                    #{if &sticky then 'sticky ' else ''}
+                    thread \
+                    #{if &sticky then 'sticky ' else ''} \
                     #{if &locked then 'locked ' else ''}'>
   #{&op.render \div \op}
   <div class=thread-info>
