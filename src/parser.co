@@ -67,15 +67,20 @@ parse-post = (el, idx) ->
     &image = if img = el.querySelector \.fileThumb
       unless (&deletedImage = img.firstElementChild.alt is "File deleted.")
         thumb      = img.firstElementChild
+        url        = thumb.parentNode.href
+        timestamp  = url.match /\/(\d+)/ .1
+
         info       = el.querySelector \.fileInfo .innerHTML
         dimensions = dimension-regex.exec info
 
         thumb:
-          url    : thumb.src
+          # since thumb's href is spoiler sometimes, recalc
+          # FIXME doesn't work for crossboard fetches
+          url    : "//images.4chan.org/#{board.name}/thumb/#timestamp.jpg"
           width  : parseInt thumb.style.width, 10
           height : parseInt thumb.style.height, 10
 
-        url      : thumb.parentNode.href
+        url      : url
 
         width    : parseInt dimensions.1, 10
         height   : parseInt dimensions.2, 10
