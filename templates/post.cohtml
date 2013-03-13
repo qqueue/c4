@@ -43,13 +43,13 @@ module.exports = (post, container, classes, id) -> post |> "
       <span class=dimensions>#{&image.width}x#{&image.height}</span> \
       <span class=size>#{&image.size}</span> \
       <a class=saucelink \
-         href='http://iqdb.org/?url=#{&image.url}' \
+         href='http://iqdb.org/?url=http:#{&image.url}' \
          target=_blank>iqdb</a> \
       <a class=saucelink \
-         href='http://google.com/searchbyimage?image_url=#{&image.url}' \
+         href='http://google.com/searchbyimage?image_url=http:#{&image.url}' \
          target=_blank>google</a> \
       <a class=saucelink \
-         href='http://regex.info/exif.cgi/exif.cgi?imgurl=#{&image.url}' \
+         href='http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{&image.url}' \
          target=_blank>exif</a> \
       <a class=saucelink \
          href='http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent &image.md5}' \

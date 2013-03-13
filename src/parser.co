@@ -67,7 +67,11 @@ parse-post = (el, idx) ->
     &image = if img = el.querySelector \.fileThumb
       unless (&deletedImage = img.firstElementChild.alt is "File deleted.")
         thumb      = img.firstElementChild
-        url        = thumb.parentNode.href
+
+        # use getAttribute because `href` property adds the protocol, while
+        # getAttribute returns the protocolless //version (the text of the
+        # actual html attribute)
+        url        = img.getAttribute \href
         timestamp  = url.match /\/(\d+)/ .1
 
         info       = el.querySelector \.fileInfo .innerHTML
@@ -76,7 +80,7 @@ parse-post = (el, idx) ->
         thumb:
           # since thumb's href is spoiler sometimes, recalc
           # FIXME doesn't work for crossboard fetches
-          url    : "//images.4chan.org/#{board.name}/thumb/#timestamp.jpg"
+          url    : "//thumbs.4chan.org/#{board.name}/thumb/#{timestamp}s.jpg"
           width  : parseInt thumb.style.width, 10
           height : parseInt thumb.style.height, 10
 
