@@ -4,11 +4,12 @@ module.exports = (post, container, classes, id) -> post |> "
                    post \
                    #{if &image then 'imagepost ' else ''}
                    #{if &sage then 'sage ' else ''}
-                   #{if &tripcode then "tripcoded #that " else ''}
+                   #{if &tripcode then 'tripcoded' else ''}
                    #{if &capcode
                        if that is "## Admin" then 'admin ' else 'mod '
                      else ''}
                    #{if &uid then "#that " else ''}' \
+            #{if &tripcoded then "data-tripcode=\"that\" " else ''}
             data-idx=#{&idx} \
             id='#{id or "p#{&no}"}'>
   <h1 class=post-header>
