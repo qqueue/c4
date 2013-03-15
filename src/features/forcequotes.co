@@ -36,7 +36,10 @@ munge = !(ctx) ->
           &textContent = ' '
           &setAttribute \data-width post.image.width
           &setAttribute \data-height post.image.height
-          &href = post.image.url
+          &href = if image.spoiler
+              board.spoiler-url
+            else
+              post.image.url
           &appendChild with L \img
             &className = \thumb
             &style <<<
