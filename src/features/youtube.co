@@ -1,6 +1,6 @@
 # youtube embedding and title fetching
 
-{onpostinsert} = require \../utils/features
+{onready, onpostinsert} = require \../utils/features
 {L, $, $$} = require \../utils/dom
 {truncate} = require \../utils/string
 {defer, debounce} = require \../utils/timing
@@ -47,11 +47,14 @@ pending-videos = []
 # being requested twice
 queued-videos = {}
 
-# debounced so postinsert can call it without the initial postinsert rush at
-# onready sending out one request per video
-# TODO debounce leading, but guard on board.ready for initial rush
-load-info = debounce 1000ms !->
-  to-fetch = {}
+# unique by ids
+var to-fetch
+
+# adds click handler, and sets cached data, or adds vid to fetch pending.
+# batch-requests is called debounced
+# XXX needs better rewrite, not hack
+load-info = !->
+  to-fetch := {}
 
   for vid of pending-videos
     vid.addEventListener \click onclick
@@ -62,6 +65,11 @@ load-info = debounce 1000ms !->
 
   pending-videos := []
 
+  batch-requests!
+
+# debounced so postinsert on updates can be called without sending out one
+# request per video
+batch-requests = debounce 1000ms !->
   batches = []
   batch = []
   for id in to-fetch
@@ -123,7 +131,13 @@ onclick = !(e) ->
       &frameborder = 0
       &allowfullscreen = ''
 
-onpostinsert !->
-  pending-videos.push ...it.detail.post.querySelectorAll \.youtube
+onready !->
+  # initial vids
+  pending-videos.push ...$$ \.youtube
   load-info!
+
+  # then on updates
+  onpostinsert !->
+    pending-videos.push ...it.detail.post.querySelectorAll \.youtube
+    load-info!
 
