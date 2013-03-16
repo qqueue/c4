@@ -2,23 +2,23 @@
 
 {on-posts, onbacklink} = require \../utils/features
 {defer} = require \../utils/timing
-{$$, $, closest, classify} = require \../utils/dom
+{DOM, $$, $, closest, classify} = require \../utils/dom
 parser = require \../parser
-Post = require \../classes/Post
+post-template = require \templates/post
 listen = require \../utils/listen
 
 # XXX also will break weirdly if there is a cross-board link to a board with
 # similar post numbers.  IDs will start to be overwritten since there are only
 # unique within a board.
 fetch-new-post = !(no) ->
-  [, board, , thread] = @pathname.split \/ # /<board>/res/<thread>
+  [, board-name, , thread] = @pathname.split \/ # /<board>/res/<thread>
 
   link = this
   @style.cursor = \progress
 
   # TODO guard against multiple requests in short time period
   xhr = new XMLHttpRequest
-    &open \GET "//api.4chan.org/#board/res/#thread.json"
+    &open \GET "//api.4chan.org/#board-name/res/#thread.json"
     &onload = !->
       # TODO handle 404 -> archive
       if @status is 200
@@ -27,9 +27,12 @@ fetch-new-post = !(no) ->
         if still-hovered
           link.style.removeProperty \cursor
 
-          # Post[] hash should now be updated
-          # XXX kind of bad global state, should change how this works
-          create-preview.call link, no, Post[no]
+          # update board.posts has
+          for thread.posts
+            board.posts[&no] = &
+
+          # then use that to look up our post
+          create-preview.call link, no, board.posts[no]
 
     &send!
 
@@ -46,7 +49,7 @@ handle-preview = !->
 
   no = @hash.substring 2 # "#p"
 
-  if not post = Post[no]
+  if not post = board.posts[no]
     fetch-new-post.call this, no
   else
     create-preview.call this, no, post
@@ -59,7 +62,7 @@ create-preview = !(no, post) ->
 
   {width, height, left, top} = @getBoundingClientRect!
 
-  preview = Post::element.call post, \article, , \postpreview
+  preview = DOM post-template post, \article, , \postpreview
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: post: preview

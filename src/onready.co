@@ -3,7 +3,6 @@ parser = require \./parser
 {onready} = require \./utils/features
 {truncate} = require \./utils/string
 {get, set, sset, sget} = require \./utils/storage
-Post = require \./classes/Post
 
 # pre-create new DOM
 html = L \html
@@ -77,13 +76,22 @@ console.timeEnd "parse page"
 
 console.log board
 
-if board.isThread then
-  board.thread = thread = parser.thread d
-  board.threads = threads = [thread] # for rendering conformity
-else
-  board.threads = threads = parser.board d
+board.threads = parser.board d
+board.thread = board.threads.0 if board.isThread
 
-console.log threads
+# global lookup post by hash
+# XXX cross-board still conflicts
+board.posts = {}
+for board.threads
+  for &posts
+    board.posts[&no] = &
+
+# XXX used in hide.co, really want IDB/minimongo/'real man's db'
+board.threads-by-id = {}
+for board.threads
+  board.threads-by-id[&no] = &
+
+console.log board.threads
 
 body
   &id = board.name
@@ -91,7 +99,7 @@ body
                #{if board.isThread then \threadpage else \boardpage}"
 
 console.time "generate new HTML body"
-body-html = require(\templates/board) board, threads
+body-html = require(\templates/board) board, board.threads
 console.timeEnd "generate new HTML body"
 
 console.time "parse new body HTML"
@@ -163,5 +171,5 @@ board.ready = true
 
 document.dispatchEvent new CustomEvent do
   \html5chan-ready
-  detail: {threads}
+  detail: {board.threads}
 

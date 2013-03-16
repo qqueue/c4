@@ -1,3 +1,4 @@
+thread = require \./thread
 module.exports = (board, threads) -> """
 <nav class="boardlinks" id="toplinks">#{board.nav}</nav>
 <header id=header>
@@ -18,7 +19,7 @@ module.exports = (board, threads) -> """
   """
 else ''}
 
-<div id="threads">#{(for threads => &render \article)join ''}</div>
+<div id="threads">#{(for threads => thread &, \article)join ''}</div>
 
 #{if board.isBoard then """
   <ul id="pages">

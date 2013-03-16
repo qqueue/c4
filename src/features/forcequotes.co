@@ -2,7 +2,6 @@
 
 {onpostinsert, onready, onprerender} = require \../utils/features
 {L} = require \../utils/dom
-Post = require \../classes/Post
 {truncate} = require \../utils/string
 
 # XXX cheating
@@ -14,7 +13,7 @@ munge = !(ctx) ->
     continue if quote.parentNode.className is \smaller
 
     no = quote.hash.substring 2
-    if (post = Post[no])
+    if (post = board.posts[no])
       if post.comment.length > 0
         L \div
           # <br>s don't show in textContent for some reason
@@ -36,10 +35,10 @@ munge = !(ctx) ->
           &textContent = ' '
           &setAttribute \data-width post.image.width
           &setAttribute \data-height post.image.height
-          &href = if image.spoiler
-              board.spoiler-url
-            else
-              post.image.url
+          &href = if post.image.spoiler
+            board.spoiler-url
+          else
+            post.image.url
           &appendChild with L \img
             &className = \thumb
             &style <<<

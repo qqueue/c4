@@ -2,7 +2,6 @@
 
 {onprerender, onready, onpostinsert} = require \./utils/features
 {L, $$} = require \./utils/dom
-Post = require \./classes/Post
 
 # faster hash-based lookup cache
 backlinks = {}
@@ -35,7 +34,7 @@ onready !-> onpostinsert !-> it.detail.post
   if backlinks[quoter]
     el = &querySelector '.backlinks'
     for q in that
-      pidx = Post[q]idx
+      pidx = board.posts[q]idx
       # unless it already exists (because of a rare forwardlink edge case in
       # which a poster successfully guesses a number later in the thread, in
       # which case the backlink will be added by the below block)

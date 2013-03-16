@@ -1,7 +1,7 @@
 # inline replies
 {on-posts, onbacklink} = require \../utils/features
-{$$, $, closest, classify, L} = require \../utils/dom
-Post = require \../classes/Post
+{DOM, $$, $, closest, classify, L} = require \../utils/dom
+post-template = require \templates/post
 {defer} = require \../utils/timing
 
 # scroll! returns to the scroll position when
@@ -51,7 +51,7 @@ toggle-off = !(link, inlined) ->
 
 onclick = !(e) ->
   return if e.altKey or e.ctrlKey or e.shiftKey or e.metaKey
-  return unless post = Post[no = @hash.substring 2]
+  return unless post = board.posts[no = @hash.substring 2]
   e.preventDefault!
 
   host = closest \.post, this .id
@@ -63,7 +63,7 @@ onclick = !(e) ->
     toggle-off this, inlined
   else # create
     is-backlink = @classList.contains \backlink
-    inlined = Post::element.call post, \article "inline hovered" inlined-id
+    inlined = DOM post-template post, \article "inline hovered" inlined-id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
     while wrapper.parentElement.matchesSelector 'a,span'

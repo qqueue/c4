@@ -12,7 +12,7 @@ listen = require \./utils/listen
 {onready} = require \./utils/features
 {defer, repeat} = require \./utils/timing
 {$, $$, L} = require \./utils/dom
-Post = require \./classes/Post
+post-template = require \templates/post
 parser = require \./parser
 draw-favicon = require \./utils/favicon
 
@@ -31,7 +31,7 @@ unread        = 0
   $ "t#{thread.no}" .lastElementChild # .replies
     .insertAdjacentHTML do
       \beforeend
-      (for thread.new => Post::render.call &, \article, 'new reply')join ''
+      (for thread.new => post-template &, \article, 'new reply')join ''
 
   for post of thread.new
     document.dispatchEvent new CustomEvent do
