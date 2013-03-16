@@ -34,8 +34,9 @@ function parse-board document
       e-idx
       b-idx
 
-    ++e-idx
-    b-idx += 2
+    t.posts.length
+      e-idx += &
+      b-idx += & * 2
 
     t
 
@@ -59,10 +60,12 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
     el.querySelector( \.op )
     0
     true
-    times.0
-    comments.0
-    names.0
-    subjects.0
+    times[b-idx]
+    comments[e-idx]
+    names[b-idx]
+    subjects[b-idx]
+  ++e-idx
+  b-idx += 2
 
   idx = 1 + @omitted?replies || 0
   @replies = for el.getElementsByClassName( \reply )
