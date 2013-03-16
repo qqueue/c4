@@ -76,7 +76,11 @@ console.timeEnd "parse page"
 
 console.log board
 
+console.profile!
+console.time "parse board"
 board.threads = parser.board d
+console.timeEnd "parse board"
+console.profileEnd!
 board.thread = board.threads.0 if board.isThread
 
 # global lookup post by hash

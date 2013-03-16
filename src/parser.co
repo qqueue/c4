@@ -10,7 +10,36 @@ images-base = "//images.4chan.org/#{board.name}/src/"
 
 enhancer = require \./enhancer
 
-class Thread then (el) ->
+# pre-querying board parser, to hopefully speed things up
+function parse-board document
+  # pre-query always-existant post elements, which should be faster than
+  # individual querySelector calls
+  times = document.querySelectorAll \.dateTime
+  comments = document.querySelectorAll \.postMessage
+  names = document.querySelectorAll \.name
+  subjects = document.querySelectorAll \.subject
+
+  # some elements exist on both .mobile info and .desktop info, because moot,
+  # so bicrement past .mobile versions
+  e-idx = 0
+  b-idx = 1
+
+  for document.querySelectorAll \.thread
+    t = new Thread do
+      &
+      times
+      comments
+      names
+      subjects
+      e-idx
+      b-idx
+
+    ++e-idx
+    b-idx += 2
+
+    t
+
+class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
   @no        = el.id.substring 1 # t12345
   @url       = board.threadurl + @no
 
@@ -25,11 +54,32 @@ class Thread then (el) ->
   @sticky = el.querySelector(\.stickyIcon)? # XXX implicit call doens't work with ?
   @closed = el.querySelector(\.closedIcon)?
 
-  @op     = new Post @, el.querySelector( \.op ), 0
+  @op     = new Post do
+    this
+    el.querySelector( \.op )
+    0
+    true
+    times.0
+    comments.0
+    names.0
+    subjects.0
 
   idx = 1 + @omitted?replies || 0
   @replies = for el.getElementsByClassName( \reply )
-    new Post this, &, idx++
+    p = new Post do
+      this
+      &
+      idx++
+      false
+      times[b-idx]
+      comments[e-idx]
+      names[b-idx]
+      subjects[b-idx]
+
+    ++e-idx
+    b-idx += 2
+
+    p
 
   @postprocess!
 
@@ -56,26 +106,23 @@ Thread::postprocess = ->
 
   Thread[@no] = this
 
-class Post then (thread, el, @idx) ->
-  @no  = no = el.id.substring 1
+class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el) ->
+  @no  = el.id.substring 1
 
-  @op  = el.classList.contains \op
-  @url = if @op then thread.url else "#{thread.url}\#p#no"
+  @url = if @op then thread.url else "#{thread.url}\#p#{@no}"
 
-  @time = new Date do
-    parseInt( el.querySelector( \.dateTime ).dataset.utc, 10 ) * 1000ms
+  @time = new Date parseInt(time-el.dataset.utc, 10) * 1000ms
 
-  @subject  = el.querySelector '.postInfo.desktop .subject' .innerHTML
+  @subject  = subject-el.innerHTML
 
-  @name     = el.querySelector \.name                       .innerHTML
+  @name     = name-el.innerHTML
   @tripcode = el.querySelector \.postertrip                ?.innerHTML
   @capcode  = el.querySelector \.capcode                   ?.innerHTML
 
   @email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto=
   @sage     = sage-regex.test that if @email
 
-  @comment  = enhancer.enhance do
-   el.querySelector \.postMessage .innerHTML
+  @comment  = enhancer.enhance comment-el.innerHTML
 
   @uid = el.querySelector \.hand ?.textContent # hand?
 
@@ -175,15 +222,7 @@ APIThumb:: = Thumb::
   @height = data.tn_h
 
 export
-  # returns Array of threads
-  board: (document) ->
-    console.time "parse board"
-    threads = for document.querySelectorAll \.thread
-      new Thread &
-    console.timeEnd "parse board"
-
-    return threads
-
+  board: parse-board
   api: -> new APIThread it
 
 function humanized bytes
