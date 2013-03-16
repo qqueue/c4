@@ -50,6 +50,7 @@ d = document.replaceChild html, document.documentElement
 
 # init
 <-! document.addEventListener \DOMContentLoaded
+console.profile!
 
 console.time "initial render"
 
@@ -76,11 +77,9 @@ console.timeEnd "parse page"
 
 console.log board
 
-console.profile!
 console.time "parse board"
 board.threads = parser.board d
 console.timeEnd "parse board"
-console.profileEnd!
 board.thread = board.threads.0 if board.isThread
 
 # global lookup post by hash
@@ -162,18 +161,12 @@ if window.location.hash and not sget document.URL
     sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
-console.time "initial post insertion handlers"
-
-for post of $$ \.post
-  document.dispatchEvent new CustomEvent do
-    \html5chan-postinsert
-    detail: {post}
-
-console.timeEnd "initial post insertion handlers"
-
 board.ready = true
 
+console.time "onready handlers"
 document.dispatchEvent new CustomEvent do
   \html5chan-ready
-  detail: {board.threads}
+  detail: {board.threads, el: $ \threads}
+console.timeEnd "onready handlers"
 
+console.profileEnd!

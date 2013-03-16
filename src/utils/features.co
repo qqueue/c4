@@ -1,6 +1,8 @@
 # features helpers, specific to html5chan
 # extracting out boilerplate for fewer absolute SLOC
 
+{$$} = require \./dom
+
 # shortcuts for custom events
 export
   onprerender  = !-> document.addEventListener \html5chan-prerender  it
@@ -18,9 +20,16 @@ export
 # attaches the click handler to all '.file' elements in each post, the
 # mouseover handler to all '.poster' els, and so on.
 export on-posts = !(listener-spec) ->
-  onpostinsert !->
-    for selector, listeners in listener-spec
-      for it.detail.post.querySelectorAll selector
-        for event, listener in listeners
-          &addEventListener event, listener
+  for selector, listeners in listener-spec
+    for event, listener in listeners
+      let
+        onready !->
+          # initially, run one query
+          for it.detail.el.querySelectorAll selector
+            &addEventListener event, listener
+
+          # for updates, use insert
+          onpostinsert !->
+            for it.detail.post.querySelectorAll selector
+              &addEventListener event, listener
 

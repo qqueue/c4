@@ -14,8 +14,6 @@ hidden =
   threads: try JSON.parse localStorage"4chan-hide-t-#{board.name}" or {} catch {}
   replies: try JSON.parse localStorage"4chan-hide-r-#{board.name}" or {} catch {}
 
-console.log hidden
-
 # delete expired entries to keep object small
 let now = Date.now!
   for type, hash in hidden
