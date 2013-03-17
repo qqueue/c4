@@ -1,9 +1,10 @@
 # youtube embedding and title fetching
 
-{onpostinsert} = require \../utils/features
+{onready, onpostinsert} = require \../utils/features
 {L, $, $$} = require \../utils/dom
 {truncate} = require \../utils/string
 {defer, debounce} = require \../utils/timing
+{sget, sset} = require \../utils/storage
 
 const api-key = "AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA"
 const batch-size = 30
@@ -26,8 +27,12 @@ queue = !(req) ->
     ready := false
     req.send!
 
-# video information cache
-cache = {}
+# video information cache, persisted to session storage, since batching of
+# requests to the youtube API breaks the browser's internal caching with
+# changing querystrings
+cache = sget \youtube or {}
+
+window.addEventListener \unload !-> sset \youtube cache
 
 set-title = !(vid, data) ->
   vid.title = "#{data.statistics.viewCount} views.
@@ -42,11 +47,14 @@ pending-videos = []
 # being requested twice
 queued-videos = {}
 
-# debounced so postinsert can call it without the initial postinsert rush at
-# onready sending out one request per video
-# TODO debounce leading, but guard on board.ready for initial rush
-load-info = debounce 1000ms !->
-  to-fetch = {}
+# unique by ids
+var to-fetch
+
+# adds click handler, and sets cached data, or adds vid to fetch pending.
+# batch-requests is called debounced
+# XXX needs better rewrite, not hack
+load-info = !->
+  to-fetch := {}
 
   for vid of pending-videos
     vid.addEventListener \click onclick
@@ -57,6 +65,11 @@ load-info = debounce 1000ms !->
 
   pending-videos := []
 
+  batch-requests!
+
+# debounced so postinsert on updates can be called without sending out one
+# request per video
+batch-requests = debounce 1000ms !->
   batches = []
   batch = []
   for id in to-fetch
@@ -118,7 +131,13 @@ onclick = !(e) ->
       &frameborder = 0
       &allowfullscreen = ''
 
-onpostinsert !->
-  pending-videos.push ...it.detail.post.querySelectorAll \.youtube
+onready !->
+  # initial vids
+  pending-videos.push ...$$ \.youtube
   load-info!
+
+  # then on updates
+  onpostinsert !->
+    pending-videos.push ...it.detail.post.querySelectorAll \.youtube
+    load-info!
 

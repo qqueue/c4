@@ -4,148 +4,187 @@ filename-regex  = /title="([^"]+)"/
 spoiler-regex   = /^Spoiler Image/
 sage-regex      = /^sage$/i
 
-Thread = require \./classes/Thread
-Post = require \./classes/Post
-enhancer = require \./enhancer
-
-# slow(?!) DOM querying parser
-# shit, why is this so much faster, even with nested functions and
-# lots of querySelector calls? Did switching to standards mode make
-# dom querying faster or something? TODO test this, somehow
-parse-thread = (el) -> new Thread
-  &no        = el.id.substring 1 # t12345
-  &url       = board.threadurl + &no
-
-  if omitted = el.querySelector \.summary
-    &omitted =
-      replies:
-        parseInt omitted.textContent.match(/\d+(?= posts?)/), 10 or 0
-      imageReplies:
-        parseInt omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10 or 0
-
-  &preview = !!&omitted
-
-  &sticky = el.querySelector(\.stickyIcon)? # XXX implicit call doens't work with ?
-  &closed = el.querySelector(\.closedIcon)?
-
-  &op     = parse-post.call (&), el.querySelector( \.op )
-  &op.idx = 0
-
-  &replies = Array::map.call do
-    el.getElementsByClassName( \reply )
-    parse-post
-    & # this for map calls
-
-  &postprocess!
-
-parse-post = (el, idx) ->
-  thread = this
-
-  new Post
-    &idx    = 1 + idx + (thread.omitted?replies || 0)
-    &thread = thread
-    &no     = el.id.substring 1
-
-    &url =
-      if &op = el.classList.contains \op
-        thread.url
-      else
-        "#{thread.url}\#p#{&no}"
-
-    &time = new Date do
-      parseInt(el.querySelector(\.dateTime).dataset.utc, 10) * 1000ms
-
-    &subject  = el.querySelector '.postInfo.desktop .subject' .innerHTML
-
-    &name     = el.querySelector \.name                       .innerHTML
-    &tripcode = el.querySelector \.postertrip                ?.innerHTML
-    &capcode  = el.querySelector \.capcode                   ?.innerHTML
-
-    &email    = el.querySelector \.useremail ?.href.substring 7 # strip mailto:
-    &sage     = sage-regex.test that if &email
-
-    &comment = enhancer.enhance do
-      el.querySelector \.postMessage .innerHTML
-
-    &uid = el.querySelector \.hand ?.textContent # hand?
-
-    if img = el.querySelector \.fileThumb
-      if img.firstElementChild.alt is "File deleted."
-        &deletedImage = true
-      else
-        thumb      = img.firstElementChild
-        info       = el.querySelector \.fileInfo .innerHTML
-        dimensions = dimension-regex.exec info
-        &image =
-          thumb:
-            url    : thumb.src
-            width  : parseInt thumb.style.width, 10
-            height : parseInt thumb.style.height, 10
-
-          url      : thumb.parentNode.href
-
-          width    : parseInt dimensions.1, 10
-          height   : parseInt dimensions.2, 10
-
-          size     : size-regex.exec thumb.alt .0
-          filename : filename-regex.exec(info)?1
-          md5      : thumb.dataset.md5
-
-          spoiler  : spoiler-regex.test thumb.alt
-
-    &postprocess!
-
-# TODO clean up this code
-module.exports =
-  # returns Array of threads
-  board: (document) ->
-    console.time "parse board"
-    threads = Array::map.call do
-      document.querySelectorAll \.thread
-      parse-thread
-    console.timeEnd "parse board"
-
-    return threads
-
-  thread: (document) ->
-    console.time "parse thread"
-    thread = parse-thread document.querySelector \.thread
-    console.timeEnd "parse thread"
-
-    return thread
-
-  # transform API thread format to the data used here. Returns Thread.
-  api: ({posts: [op]}: data) -> new Thread
-    &no  = op.no
-    &url = board.threadurl + op.no
-
-    &preview = !!op.omitted_posts
-    &sticky  = !!op.sticky
-    &closed  = !!op.closed
-
-    &[\op ...\replies] = data.posts.map parse-api-post, &
-
-    &postprocess!
-
 # TODO cross-board linking will break this
 thumbs-base = "//thumbs.4chan.org/#{board.name}/thumb/"
 images-base = "//images.4chan.org/#{board.name}/src/"
 
-humanized = (bytes) ->
-  if bytes < 1024
-    "#bytes B"
-  else if (kbytes = Math.round bytes / 1024) < 1024
-    "#kbytes KB"
-  else
-    "#{(kbytes / 1024)toString!substring 0 3} MB"
+enhancer = require \./enhancer
 
-# "this" is thread
-parse-api-post = (data, i) -> new Post
-  &idx      = i
-  &thread   = this
-  &url      = "#{@url}##{data.no}"
-  &time     = new Date data.time * 1000
-  & <<< data{
+# pre-querying board parser, to hopefully speed things up
+function parse-board document
+  # pre-query always-existant post elements, which should be faster than
+  # individual querySelector calls
+  times = document.querySelectorAll \.dateTime
+  comments = document.querySelectorAll \.postMessage
+  names = document.querySelectorAll \.name
+  subjects = document.querySelectorAll \.subject
+
+  # some elements exist on both .mobile info and .desktop info, because moot,
+  # so bicrement past .mobile versions
+  e-idx = 0
+  b-idx = 1
+
+  for document.querySelectorAll \.thread
+    t = new Thread do
+      &
+      times
+      comments
+      names
+      subjects
+      e-idx
+      b-idx
+
+    t.posts.length
+      e-idx += &
+      b-idx += & * 2
+
+    t
+
+class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
+  @no        = el.id.substring 1 # t12345
+  @url       = board.threadurl + @no
+
+  @omitted = if omitted = el.querySelector \.summary
+    replies:
+      parseInt omitted.textContent.match(/\d+(?= posts?)/), 10 or 0
+    imageReplies:
+      parseInt omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10 or 0
+
+  @preview = !!omitted
+
+  @sticky = el.querySelector(\.stickyIcon)? # XXX implicit call doens't work with ?
+  @closed = el.querySelector(\.closedIcon)?
+
+  @op     = new Post do
+    this
+    el.querySelector( \.op )
+    0
+    true
+    times[b-idx]
+    comments[e-idx]
+    names[b-idx]
+    subjects[b-idx]
+  ++e-idx
+  b-idx += 2
+
+  idx = 1 + @omitted?replies || 0
+  @replies = for el.getElementsByClassName( \reply )
+    p = new Post do
+      this
+      &
+      idx++
+      false
+      times[b-idx]
+      comments[e-idx]
+      names[b-idx]
+      subjects[b-idx]
+
+    ++e-idx
+    b-idx += 2
+
+    p
+
+  @postprocess!
+
+Thread::postprocess = ->
+  #convenience array including op
+  @posts = [@op, ...@replies]
+
+  @imageReplies = []
+
+  # build reply hash and image replies array
+  @reply = {}
+  for reply of @replies
+    @imageReplies.push reply if reply.image
+    @reply[reply.no] = reply
+
+  # XXX nasty updater state
+  if Thread[@no] # if this thread has been parsed before
+    @new = []
+    @deleted = []
+    for reply of Thread[@no].replies # old replies
+      @deleted.push reply if not @reply[reply.no]
+    for reply of @replies
+      @new.push reply if not Thread[@no].reply[reply.no]
+
+  Thread[@no] = this
+
+class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el) ->
+  @no  = el.id.substring 1
+
+  @url = if @op then thread.url else "#{thread.url}\#p#{@no}"
+
+  @time = new Date parseInt(time-el.dataset.utc, 10) * 1000ms
+
+  @subject  = subject-el.innerHTML
+
+  @name     = name-el.innerHTML
+  @tripcode = el.querySelector \.postertrip                ?.innerHTML
+  @capcode  = el.querySelector \.capcode                   ?.innerHTML
+
+  @email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto=
+  @sage     = sage-regex.test that if @email
+
+  @comment  = enhancer.enhance comment-el.innerHTML
+
+  @uid = el.querySelector \.hand ?.textContent # hand?
+
+  img = el.querySelector \.fileThumb
+
+  @deleted-image = img?firstElementChild.alt is "File deleted."
+  @image = if img and not @deleted-image then new FImage img, el
+
+class FImage then (el, postel) ->
+  # use getAttribute because `href` property adds the protocol, while
+  # getAttribute returns the protocolless //version (the text of the
+  # actual html attribute)
+  @url        = el.getAttribute \href
+
+  info       = postel.querySelector \.fileInfo .innerHTML
+  dimensions = dimension-regex.exec info
+  thumb      = el.firstElementChild
+  timestamp  = @url.match /\/(\d+)/ .1
+
+  @thumb     = new Thumb timestamp, thumb
+
+  @width     = parseInt dimensions.1, 10
+  @height    = parseInt dimensions.2, 10
+
+  @size      = size-regex.exec thumb.alt .0
+  @filename  = filename-regex.exec(info)?1
+  @md5       = thumb.dataset.md5
+
+  @spoiler  = spoiler-regex.test thumb.alt
+
+class Thumb then (timestamp, el) ->
+  # since thumb's href is spoiler sometimes, recalc
+  # FIXME doesn't work for crossboard fetches
+  @url    = "//thumbs.4chan.org/#{board.name}/thumb/#{timestamp}s.jpg"
+  # FIXME when image is spoiled, these are the spoiler image size.
+  # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+  # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
+  @width  = parseInt el.style.width, 10
+  @height = parseInt el.style.height, 10
+
+# alternate constructor from 4chan JSON API
+APIThread:: = Thread::
+!function APIThread {posts: [op, ...replies]}: data
+  @no  = op.no
+  @url = board.threadurl + op.no
+
+  @preview = !!op.omitted_posts
+  @sticky  = !!op.sticky
+  @closed  = !!op.closed
+
+  @op      = new APIPost this, op, 0
+  idx = 1 + op.omitted_posts || 0
+  @replies = for replies => new APIPost this, &, idx++
+
+  @postprocess!
+
+APIPost:: = Post::
+!function APIPost thread, data, @idx
+  @<<< data{
     no
     subject: sub
     name
@@ -154,26 +193,45 @@ parse-api-post = (data, i) -> new Post
     capcode
     email
   }
-  &sage     = &email is \sage
-  &comment  = if data.com then enhancer.enhance that else ''
-  &image    = if data.fsize
-    thumb:
-     url    : thumbs-base + data.tim + \s.jpg
-     width  : data.tn_w
-     height : data.tn_h
 
-    url      : "#{images-base}#{data.tim}#{data.ext}"
+  @url           = "#{thread.url}\#p#{data.no}"
+  @time          = new Date data.time * 1000
 
-    width    : data.w
-    height   : data.h
+  @sage          = data.email is \sage
+  @comment       = if data.com then enhancer.enhance that else ''
 
-    size     : humanized data.fsize
-    filename : "#{data.filename}#{data.ext}"
-    md5      : data.md5
+  @deleted-image = !!data.filedeleted
+  @image         = if data.fsize then new APIImage data
 
-    spoiler  : !!data.spoiler
+APIImage:: = FImage::
+!function APIImage data
+  @thumb = new APIThumb data
 
-  &deleted-image = !!data.filedeleted
+  @url      = "#{images-base}#{data.tim}#{data.ext}"
 
-  &postprocess!
+  @width    = data.w
+  @height   = data.h
 
+  @size     = humanized data.fsize
+  @filename = "#{data.filename}#{data.ext}"
+  @md5      = data.md5
+
+  @spoiler  = !!data.spoiler
+
+APIThumb:: = Thumb::
+!function APIThumb data
+  @url    = thumbs-base + data.tim + \s.jpg
+  @width  = data.tn_w
+  @height = data.tn_h
+
+export
+  board: parse-board
+  api: -> new APIThread it
+
+function humanized bytes
+  if bytes < 1024
+    "#bytes B"
+  else if (kbytes = Math.round bytes / 1024) < 1024
+    "#kbytes KB"
+  else
+    "#{(kbytes / 1024)toString!substring 0 3} MB"

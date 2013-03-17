@@ -15,3 +15,12 @@
     .file, .comment, .backlinks, .fileinfo
       display: none
 
+.sticky > .op > .post-header:before
+  content url("//static.4chan.org/image/sticky.gif")
+
+.closed > .op > .post-header:before
+  content url("//static.4chan.org/image/closed.gif")
+
+// content doesn't compound normally, so explicitly do it
+.sticky.closed > .op > .post-header:before
+  content url("//static.4chan.org/image/closed.gif") url("//static.4chan.org/image/sticky.gif")

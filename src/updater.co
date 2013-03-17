@@ -1,7 +1,6 @@
 # Keep threads up to date
 #
 # - append new posts as they are made
-# - update backlinks for past posts that are replied to
 # - detect when new posts are read
 #   - keep an unread counter in the favicon
 # - allow the user to manually request an update
@@ -13,7 +12,7 @@ listen = require \./utils/listen
 {onready} = require \./utils/features
 {defer, repeat} = require \./utils/timing
 {$, $$, L} = require \./utils/dom
-Post = require \./classes/Post
+post-template = require \templates/post
 parser = require \./parser
 draw-favicon = require \./utils/favicon
 
@@ -32,24 +31,14 @@ unread        = 0
   $ "t#{thread.no}" .lastElementChild # .replies
     .insertAdjacentHTML do
       \beforeend
-      (for thread.new => &render \article, 'new reply')join ''
+      for thread.new
+        post-template {container: \article classes: 'new reply' ...&}
+      .join ''
 
   for post of thread.new
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: post: $ "p#{post.no}"
-
-# TODO refactor out all the various places backlinks are made
-# into something less coupled
-!function append-new-backlinks thread
-  for $$ '.thread .backlinks'
-    &insertAdjacentHTML do
-      \beforeend
-      # parentNode passed in for backlink event XXX
-      Post[&parentNode.dataset.no]backlinks true, &parentNode
-
-  # clear state
-  Post.new-backlinks = {}
 
 !function update-favicon thread
   unread += thread.new.length
@@ -83,7 +72,6 @@ unread        = 0
   updater.status.textContent = "update detected, parsing"
 
   append-new-posts            thread
-  append-new-backlinks        thread
   update-thread-stats         thread
   update-favicon              thread
 
@@ -171,8 +159,8 @@ fade-when-visible = !->
 
   if (window.innerHeight + window.scrollY) > y
     if document.hidden
-      # fade them once the window/tab is visible again
-      listen window .once \focus !-> fade post
+      # fade them once the tab is visible again
+      listen document .once \visibilitychange !-> fade post
     else
       # now
       fade post
@@ -188,7 +176,7 @@ onready !->
   updater.button = $ \update-now
 
   # autoupdate threads
-  if board.isThread and not board.thread.locked
+  if board.isThread and not board.thread.closed
     updater.countdown.start!
     listen $ \update-now .click !->
       updater

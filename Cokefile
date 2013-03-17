@@ -1,135 +1,101 @@
-fs       = require \fs
 coco     = require \coco
 stylus   = require \stylus
 {cjsify} = require \commonjs-everywhere
 esprima  = require \esprima
 lodash   = require \lodash
-
-haml-coffee = require \haml-coffee
+jadeco-to-jade = require \./jadeco-to-jade
 
 flatten = -> Array::concat.apply [], it # shallow flatten
-
 join = -> flatten @@ .join \\n
-read = -> fs.readFileSync it, \utf8
 
-nib = (it, filename) ->
-  stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)!
+# sexy (arguably) AOP/traditional-style time metrics
+time = let names = {}, last = {}
+  of: (it, pad = it.length) -> "#{it + ' ' * (pad - it.length)} : #{names[it]}ms"
+  end: !->
+    if @@length > 1
+      pad = Math.max.apply Math, (for @@ => &length)
+      for @@
+        time.stop &; say @of &, pad
+    else
+      time.stop it; say @of it
+  start: !->
+    names[it] ?= 0
+    last[it] = Date.now!
+  stop: !->
+    if last[it]
+      names[it] += Date.now! - last[it]
+      delete last[it]
+  as: (name, fn) -> ->
+    time.start name
+    ret = fn ...
+    time.stop name
+    ret
+  restart-all: !-> names := {}
+
+nib = time.as 'Stylus compilation' (it, filename) ->
+  stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)! .render!
+
+compile-coco = time.as 'Coco compilation' coco.~compile
+parse-js = time.as 'Reparse JS' esprima.~parse
+
+coco-to-js = (it, filename) ->
+  src = compile-coco it.toString!, {+bare, filename}
+  parse-js src
+
+cojade = (it, filename) ->
+  src = jadeco-to-jade.compile it.toString!, filename
+  src = compile-coco src, {+bare, filename}
+  parse-js src
+
+ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
 
 outfile = \html5chan.user.js
 
 task \build 'build userscript' ->
   try
-    metadata = read \metadata.txt
+    time.restart-all!
 
-    console.time "Total build time "
+    time.start "Total build time"
 
-    console.time "Commonjsification"
+    metadata = slurp \metadata.txt
 
-    coco-time = 0
-    esprima-time = 0
-
-    hamlc-time = 0
-
-    parse-js = ->
-      c = Date.now!
-      ast = esprima.parse it
-      esprima-time += Date.now! - c
-
-      ast
-
-    parse-hamlc = (it, filename) ->
-      opts =
-        format: \xhtml
-        escape-html: false
-        escape-attributes: false
-        uglify: true
-#            customCleanValue: 'c$'
-        placement: \standalone
-
-      c = Date.now!
-      code = haml-coffee.template it, filename, "this.templates", opts
-      hamlc-time += Date.now! - c
-
-      code
+    time.start "Commonjsification"
 
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
       handlers:
-        \.co : (it, filename) ->
-          c = Date.now! # TODO find better node timing libraries
-          js = coco.compile it.toString!, {+bare, filename}
-          coco-time += Date.now! - c
-
-          c = Date.now!
-          ast = esprima.parse js
-          esprima-time += Date.now! - c
-
-          ast
-
+        \.co : coco-to-js
         # string interp template
-        # XXX fix duplication with .co somehow
         # XXX cjsify doesn't support multipart filenames e.g. .co.html
-        \.cohtml : (it, filename) ->
-          c = Date.now! # TODO find better node timing libraries
-          js = coco.compile it.toString!, {+bare, filename}
-          coco-time += Date.now! - c
-
-          parse-js js
-
-        \.hamlc : (it, filename) ->
-          try
-            code = parse-hamlc it.toString!, filename
-          catch
-            throw new Error "Error compiling #filename : #e"
-
-          # remove wrapper
-          code = (code.trim! / '\n')slice(1 -2) * '\n'
-
-          code # crappy hotfixes :(
-            .=replace do # return left from coffee's {-bare} wrapper
-              'return function(context) {'
-              'function(context) {'
-            .replace /\n  /g '\n' # cut an indent level
-            .replace do # we don't need this!
-              '$o.join("\\n")'
-              '$o.join("")'
-            .trim!
-
-          src = "module.exports = #code"
-
-          parse-js src
-
+        \.cojade : cojade
         \.styl : (it, filename) ->
-          console.time "Stylus"
-          css = nib it.toString!, filename .render!
-          console.timeEnd "Stylus"
-
-          src = "module.exports = '#{css.replace /'/g "\/'" .replace /\n/g '\\n'}'"
-
-          # TODO emit AST node for this rather than esprima a string, since
-          # it's so simple
-
+          src = "module.exports = '#{nib it.toString!, filename
+            .replace /'/g "\/'" .replace /\n/g '\\n'}'"
           parse-js src
 
-    console.timeEnd "Commonjsification"
-    console.log "Coco compilation : #{coco-time}ms"
-    console.log "Haml-Coffee      : #{hamlc-time}ms"
-    console.log "JS reparsing     : #{esprima-time}ms"
+    time.stop "Commonjsification"
 
-    console.time "AST->JS source   "
     # TODO something with sourcemap, when fire(fox|bug) gets support
-    gen = require \escodegen .generate ast
+    gen = ast-to-js ast
 
-    fs.writeFileSync do
+    spit do
       outfile
       join do
         metadata
         "(function(){"
         '"use strict";'
         gen
+        "}).call(this)"
 
-    console.timeEnd "Total build time "
-    console.log "compiled script to #{outfile}"
+    time.end do
+      "Commonjsification"
+      "Reparse JS"
+      "Coco compilation"
+      "Stylus compilation"
+      "AST->JS"
+      "Total build time"
+
+    say "#{new Date}: compiled script to #{outfile}"
   catch
     console.error e
     console.error e.stack
@@ -137,9 +103,9 @@ task \build 'build userscript' ->
 const times = 50 # XXX figure out Cokefile's batty options parsing
 
 task \profile 'build project over and over for profile tick collection' !->
-  console.log "Running build #times times..."
+  say "Running build #times times..."
   for i til times
-    console.log "run #i"
+    say "run #i"
     invoke \build
 
 # lodash, but with superior arguments order
@@ -147,8 +113,8 @@ debounce = (wait, fn) -> lodash.debounce fn, wait
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
-  for it of <[style src templates src/features src/classes src/utils]>
-    fs.watch it, interval: 1000, debounce 1000 !(event, filename) ->
-      console.log "#event event detected on #filename. rebuilding..."
+  for <[style src templates src/features src/utils]>
+    fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
+      say "#event event detected on #filename. rebuilding..."
       invoke \build
 

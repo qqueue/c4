@@ -7,15 +7,12 @@
 
 {$$} = require \../utils/dom
 {onready, onupdate} = require \../utils/features
-Thread = require \../classes/Thread
 
 const threshold = 604800000ms # one week
 
 hidden =
   threads: try JSON.parse localStorage"4chan-hide-t-#{board.name}" or {} catch {}
   replies: try JSON.parse localStorage"4chan-hide-r-#{board.name}" or {} catch {}
-
-console.log hidden
 
 # delete expired entries to keep object small
 let now = Date.now!
@@ -55,7 +52,7 @@ onready !->
         delete hidden.threads[@value]
       else
         # use Thread hash to always persist sticky threads
-        hidden.threads[@value] = if Thread[@value]?sticky
+        hidden.threads[@value] = if board.threads-by-id[@value]?sticky
           Number.MAX_VALUE
         else
           Date.now!

@@ -1,58 +1,7 @@
 # update relative post dates periodically
 
 {onpostinsert, onready} = require \../utils/features
-{repeat, defer} = require \../utils/timing
-{YEAR, MONTH, DAY, HOUR, MINUTE, SECOND} = require \../utils/relative-dates
-
-# each time element adds a function to update itself to the stale list once it
-# becomes inaccurate.  the stale list is flushed and stale times are updated
-# whenever the DOM changes otherwise, which keeps the times as up to date as
-# possible without incurring separate DOM reflows.
-stale = []
-
-debounce-leading = (delay, fn) ->
-  var timeout
-  reset = !-> timeout := null
-  -> unless timeout
-    fn ...
-    timeout := defer delay, reset
-
-flush = debounce-leading SECOND, !->
-  now = Date.now!
-  for stale => & now
-  stale.length = 0
-
-  periodic.restart!
-
-# flush even in absence of other reflows
-periodic = repeat MINUTE, {-auto} flush
-
-keep-up-to-date = !(el) ->
-  time = new Date(el.getAttribute \datetime)
-
-  update = !(now) ->
-    el.textContent = time.relative-date now
-    make-timeout now - time.getTime!
-
-  add-to-stale = !-> stale.push update
-
-  make-timeout = !(diff) ->
-    # calculate when relative date will be stale again
-    delay = if diff < MINUTE
-      diff % SECOND
-    else if diff < HOUR
-      diff % MINUTE
-    else if diff < DAY
-      diff % HOUR
-    else if diff < MONTH
-      diff % DAY
-    else if diff < YEAR
-      diff % MONTH
-    else
-      diff % YEAR
-    defer delay, add-to-stale
-
-  make-timeout Date.now! - time.getTime!
+{keep-up-to-date, periodic, flush} = require \../utils/relative-dates
 
 onpostinsert !->
   keep-up-to-date it.detail.post.querySelector \time
@@ -61,7 +10,7 @@ onpostinsert !->
   flush!
 
 # flush when user switches back to the tab
-window.addEventListener \visibilitystatechange !->
+window.addEventListener \visibilitychange !->
   flush! unless document.hidden
 
 onready -> periodic.start!

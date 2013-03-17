@@ -6,6 +6,11 @@ export $$ = -> document.querySelectorAll it
 # get it, 'L'ement?
 export L = -> document.createElement it
 
+# html string to DOM
+export DOM = -> L \div |>
+  &innerHTML = it
+  &firstElementChild
+
 Element::matchesSelector ?= Element::mozMatchesSelector
 
 # DOM4 mutation methods

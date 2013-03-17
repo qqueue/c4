@@ -27,7 +27,10 @@ window.board = {}
 
   &favicons = require \./favicon-data
 
+  &spoiler-url = "https://static.4chan.org/image/spoiler-#{&name}1.png"
+
 require \./archives
+require \./backlinks
 require \./poster
 require \./updater
 require \./onready
