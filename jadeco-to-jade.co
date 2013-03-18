@@ -35,16 +35,23 @@ interp = (line, extra) ->
   line .= slice extra * 2
   trimmed = line.trim!
 
-  if # `== abc` is jade, `= abc` is ours
+  if
     trimmed.0 is '-'
       ; # jade interpolation
-    trimmed.0 is '=' and trimmed.1 is not '='
-      line = line.replace('=' '| #{(') + ') or ""}'
+    
     trimmed.slice(0 2) is \#{
       # tag interpolation => #{tag} becomes should be #{"tag"}
       line .= replace \#{ '%{"__INTER__'
       line .= replace \} '__OUTER__"}'
-    ~line.indexOf '= ' and not ~line.indexOf '== '
+    
+    # `== abc` is jade, `= abc` is coco
+    trimmed.0 is '=' and trimmed.1 is not '='
+      line = line.replace('=' '| #{(') + ') or ""}'
+
+    ~line.indexOf '== '
+      line .= replace '== ' '= '
+
+    ~line.indexOf '= '
       # BAAH this is bad, it's gonna do bad things such as
       # a(foo= "bar")
       # but well...

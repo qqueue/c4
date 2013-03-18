@@ -22,7 +22,7 @@ if board.isBoard
       li: a(href="#{board.page - 1}") previous
     li: a(href="#{board.url}") 0
     - for (var i = 1; i <= 10; ++i)
-      li: a(href=i) xd
+      li: a(href=i)== i
     if board.page < 10
       li: a(href="#{board.page + 1}") next
     li: a(href="catalog") Catalog
