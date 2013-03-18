@@ -1,14 +1,14 @@
 #{@container}(data-no="#{@no}", class="#{@classes}", post="post",
   imagepost="#{if @image then 'imagepost ' else ''}", sage="#{if @sage then 'sage ' else ''}",
-  tripcode="#{if @tripcode then 'tripcoded' else ''}", admin="#{if @capcode is '## Admin' then 'admin ' else ''}",
-  mod="#{if @capcode and @capcode isnt '## Admin' then ' mod' else ''}",
+  tripcode="#{if @tripcode then 'tripcoded' else ''}", admin="#{if @capcode is '## Admin' then 'admin' else ''}",
+  mod="#{if @capcode and @capcode is not '## Admin' then 'mod' else ''}",
   uid="#{if @uid then 'uid' else ''}"
   data-tripcode="#{if @tripcoded then that else ''}",
-  data-idx="#{@idx}", id="#{id or 'p' + @no}")
+  data-idx="#{@idx}", id="#{@id or 'p' + @no}")
   h1.post-header
     button.hide(type="button", value="#{@no}") &times;
     button.report(type="submit", form="reportform",
-      class="report", name="no", value="#{@no}") !
+      name="no", value="#{@no}") !
     a.subject(href="#{@url}"))= @subject
     a.name(href="#{if @email then 'mailto:'+@email else ''}")= @name
 
@@ -34,7 +34,7 @@
       a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}",
         target="_blank") foolz
     a.file(target="_blank", href="#{@image.url}", data-width="#{@image.width}", data-height="#{@image.height}")
-      img.thumb(src="#{if @image.spoiler then @board.spoiler-url else @image.thumb.url}",
+      img.thumb(src="#{if @image.spoiler then board.spoiler-url else @image.thumb.url}",
         width="#{unless @image.spoiler then @image.thumb.width else ''}",
         height="#{unless @image.spoiler then @image.thumb.height else ''}")
   else if @deletedImage

@@ -1,5 +1,5 @@
-- thread = require \./thread
-nav#toplinks.boardlinks= @board.nav
+~ thread = require \./thread
+nav#toplinks.boardlinks= board.nav
 header#header
   a#banner(href="//boards.4chan.org/#{board.name}/")
     img(src="#{board.banner}", alt="4chan::")
@@ -13,7 +13,7 @@ if board.message
     .message= that
 
 #threads
-  for threads
+  for @threads
     = thread {container: \article ...&}
 
 if board.isBoard
@@ -21,16 +21,8 @@ if board.isBoard
     if board.page
       li: a(href="#{board.page - 1}") previous
     li: a(href="#{board.url}") 0
-    li: a(href="1") 1
-    li: a(href="2") 2
-    li: a(href="3") 3
-    li: a(href="4") 4
-    li: a(href="5") 5
-    li: a(href="6") 6
-    li: a(href="7") 7
-    li: a(href="8") 8
-    li: a(href="9") 9
-    li: a(href="10") 10
+    - for (var i = 1; i <= 10; ++i)
+      li: a(href=i) xd
     if board.page < 10
       li: a(href="#{board.page + 1}") next
     li: a(href="catalog") Catalog
@@ -44,7 +36,7 @@ unless board.thread?closed
       input(type="hidden", value="regist", name="mode")
       input(id="password", type="hidden", name="pwd", value="#{board.password}")
       #fields
-        input(type="text", name="name", id="name", tabindex="10", placeholder="name\#{tripcode}")
+        input(type="text", name="name", id="name", tabindex="10", placeholder="name\#{@tripcode}")
         input(type="text", id="email", name="email", tabindex="10", placeholder="email")
         input(type="text", id="subject", name="sub", tabindex="10", placeholder="subject")
         #comment-field

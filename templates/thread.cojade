@@ -1,4 +1,4 @@
-- post = require \./post
+~ post = require \./post
 
 #{@container}(id="#{@id or "t#{@no}"}', data-no="#{@no}",
   class="#{@classes} thread #{if @sticky then 'sticky ' else ''} #{if @closed then 'closed ' else ''}")
@@ -8,5 +8,5 @@
     if board.is-board
       a.expand-link(href="#{@url}") Expand
   .replies
-    for reply in @replies
-      = post {container: \article classes: \reply ...@reply}
+    for reply of @replies
+      = post {container: \article classes: \reply ...reply}

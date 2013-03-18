@@ -16,8 +16,8 @@ export compile = (src, filename) ->
     fn = jade.compile src, {+pretty}
   catch
     say src
-    say "Jade Error compiling #filename : #e"
-  
+    blame "Jade Error compiling #filename : #e"
+
   fn = fn!
   
   # used for tag interpolation (`#{tag} text`)
@@ -30,18 +30,21 @@ export compile = (src, filename) ->
 
   wrap fn.replace /\{\{/g \#{
 
+# prepares interpolations
 interp = (line, extra) ->
   line .= slice extra * 2
   trimmed = line.trim!
 
-  if
-    trimmed.0 is '='
+  if # `== abc` is jade, `= abc` is ours
+    trimmed.0 is '-'
+      ; # jade interpolation
+    trimmed.0 is '=' and trimmed.1 is not '='
       line = line.replace('=' '| #{(') + ') or ""}'
     trimmed.slice(0 2) is \#{
       # tag interpolation => #{tag} becomes should be #{"tag"}
       line .= replace \#{ '%{"__INTER__'
       line .= replace \} '__OUTER__"}'
-    ~line.indexOf '= '
+    ~line.indexOf '= ' and not ~line.indexOf '== '
       # BAAH this is bad, it's gonna do bad things such as
       # a(foo= "bar")
       # but well...
@@ -73,7 +76,7 @@ export convert = ->
 
   var prev-indent
   for line of (it + "\n") / '\n'
-    if src[*-1]?[*-1] is ','
+    if line.trim!0 is '-' or src[*-1]?[*-1] is ','
       # attributes continuation
       src.push interp line, extra-level
       continue
@@ -95,8 +98,9 @@ export convert = ->
       --extra-level # decrease debt
 
     if
-      tag is '-'
-        line = "| \#{((#{line.slice 1}); '')}"
+      tag is '~'
+        tabs = entab indent - extra-level
+        line = tabs + "| \#{((#{line.trim!slice 1}); '')}"
       tag of tags
         # insert the tag
         code = line.trim!
@@ -134,7 +138,7 @@ export convert = ->
 
 export wrap = ->
   """
-    join = -> it.join ''
+    join = -> if it then it.join '' else ''
     module.exports = (locals) ->
       \"""
        #it
