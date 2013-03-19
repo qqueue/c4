@@ -33,10 +33,12 @@ unread        = 0
       \beforeend
       (for thread.new => post-template &, \article, 'new reply')join ''
 
-  for post of thread.new
+  for thread.new
+    # XXX update global post hash. still not great global state
+    board.posts[&no] = &
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
-      detail: post: $ "p#{post.no}"
+      detail: post: $ "p#{&no}"
 
 !function update-favicon thread
   unread += thread.new.length
