@@ -6,10 +6,21 @@
 #   - Toggle button text should reflect display state
 # - Persist message display state between sessions
 # - Show _new_ messages regardless of previous message display state
+#
+# Uses 4chan-JS's localStorage location so catalog page's global message will
+# also be hidden
 
 {onready} = require \../utils/features
 {set, get} = require \../utils/storage
 {$} = require \../utils/dom
+
+# 4chanJS's hash function, line 80-86
+function hash str
+  msg = 0
+  for i til str.length
+    msg = ((msg << 5) - msg) + str.charCodeAt i
+
+  return msg
 
 # bacon.js-alike implementation, for kicks, until browserification
 class Observable
@@ -66,29 +77,29 @@ if $ \message-container
   button  = $ \hide-message
   message = $ \message
 
-  message.hidden = get \message-hidden
+  # per 4chan-JS, the old hash only exists when the message is hidden
+  # toString! since localStorage only stores strings, which makes coco's strict
+  # equality fail
+  new-hash = hash message.textContent .toString!
+  console.log new-hash
+  if new-hash is not localStorage\4chan-msg
+    localStorage.removeItem \4chan-msg
+
+  message.hidden = localStorage[\4chan-msg]?
 
   # toggle concern
   message-hidden = EventStream.from-events button, \click
     .scan message.hidden, -> not it
 
   message-hidden.assign message, \hidden
-  message-hidden.each !-> set \message-hidden it
+  message-hidden.each !->
+    if it
+      localStorage\4chan-msg = new-hash
+    else
+      localStorage.removeItem \4chan-msg
 
   # button text concern
   message-hidden
     .map -> "#{if it then "Show" else "Hide"} News"
     .assign button, \textContent
-
-  # show _new_ messages concern
-
-  # unlikely to be 2 consecutive messages with the same length, so cheat
-  hash = -> it.innerHTML.length
-
-  previous = get \message-hash
-
-  # XXX not that reactive
-  if hash message is not previous
-    message.hidden = false
-    set \message-hash hash message
 
