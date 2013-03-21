@@ -14,7 +14,7 @@ if board.message
 
 #threads
   for @threads
-    = thread {container: \article ...&}
+    = thread &, container: \article
 
 if board.isBoard
   ul#pages
@@ -36,7 +36,7 @@ unless board.thread?closed
       input(type="hidden", value="regist", name="mode")
       input(id="password", type="hidden", name="pwd", value="#{board.password}")
       #fields
-        input(type="text", name="name", id="name", tabindex="10", placeholder="name\#{@tripcode}")
+        input(type="text", name="name", id="name", tabindex="10", placeholder="name\\\\#tripcode")
         input(type="text", id="email", name="email", tabindex="10", placeholder="email")
         input(type="text", id="subject", name="sub", tabindex="10", placeholder="subject")
         #comment-field

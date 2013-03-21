@@ -32,7 +32,7 @@ unread        = 0
     .insertAdjacentHTML do
       \beforeend
       for thread.new
-        post-template {container: \article classes: 'new reply' ...&}
+        post-template &, container: \article classes: 'new reply'
       .join ''
 
   for post of thread.new

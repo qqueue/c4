@@ -3,6 +3,7 @@ blame = -> console.log it; process.exit!
 jade = require \jade
 
 export compile = (src, filename) ->
+  src .= replace /@@/g \extra.
   src .= replace /@/g \locals.
 
   src = convert src
@@ -98,15 +99,16 @@ export convert = ->
     [tag] = line.trim!split ' '
 
     # auto-close
-    while indent < indent-levels[*-1]
+    while indent <= indent-levels[*-1]
       indent-levels.pop!
       #        INDENT            close the """ and nullcheck
       src.push entab(real-indents.pop!) + '| """) or ""}'
       --extra-level # decrease debt
 
+    tabs = entab indent - extra-level
+    
     if
       tag is '~'
-        tabs = entab indent - extra-level
         line = tabs + "| \#{((#{line.trim!slice 1}); '')}"
       tag of tags
         # insert the tag
@@ -116,22 +118,19 @@ export convert = ->
           \join
         else ''
 
-        tabs = entab indent - extra-level
         line = tabs + '| #{' + filter + '(' + code + ' then """'
 
         # we're expecting an outdent
-        indent-levels.push indent + 1
+        indent-levels.push indent
         real-indents.push indent - extra-level
       tag of chained-tags
         # answer to another tag
 
-        closing = src.pop! # remove closing + nullcheck
-        tabs = closing.match /^ +/ |> &0
-
-        line =   tabs + '| """ ' + line.trim! + ' then """'
+        src.pop! # remove closing + nullcheck
+        line = tabs + '| """ ' + line.trim! + ' then """'
 
         # we're expecting an outdent
-        indent-levels.push indent + 1
+        indent-levels.push indent
         real-indents.push indent - extra-level
       else
         line = interp line, extra-level
@@ -146,7 +145,7 @@ export convert = ->
 export wrap = ->
   """
     join = -> if it then it.join '' else ''
-    module.exports = (locals) ->
+    module.exports = (locals, extra) ->
       \"""
        #it
       \"""

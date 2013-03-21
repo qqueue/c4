@@ -1,0 +1,12 @@
+export post = ->
+  classes = ""
+  classes += 'imagepost ' if it.image
+  classes += 'sage ' if it.sage
+  classes += 'tripcoded ' if it.tripcode 
+  if it.capcode
+    classes += if it.capcode is '## Admin'
+      'admin '
+    else 'mod '
+  classes += 'uid ' if it.uid 
+  classes += that if it.tripcoded
+  classes

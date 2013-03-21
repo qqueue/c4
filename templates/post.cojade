@@ -1,10 +1,7 @@
-#{@container}(data-no="#{@no}", class="#{@classes}", post="post",
-  imagepost="#{if @image then 'imagepost ' else ''}", sage="#{if @sage then 'sage ' else ''}",
-  tripcode="#{if @tripcode then 'tripcoded' else ''}", admin="#{if @capcode is '## Admin' then 'admin' else ''}",
-  mod="#{if @capcode and @capcode is not '## Admin' then 'mod' else ''}",
-  uid="#{if @uid then 'uid' else ''}"
-  data-tripcode="#{if @tripcoded then that else ''}",
-  data-idx="#{@idx}", id="#{@id or 'p' + @no}")
+~ {post: post-classes} = require 'src/utils/gen-class'
+
+#{@@container}(data-no="#{@no}", class="#{@@classes or ''} #{post-classes locals}", post="post",
+  data-idx="#{@idx}", id="#{@@id or 'p' + @no}")
   h1.post-header
     button.hide(type="button", value="#{@no}") &times;
     button.report(type="submit", form="reportform",

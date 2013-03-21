@@ -1,12 +1,12 @@
 ~ post = require \./post
 
-#{@container}(id="#{@id or "t#{@no}"}', data-no="#{@no}",
-  class="#{@classes} thread #{if @sticky then 'sticky ' else ''} #{if @closed then 'closed ' else ''}")
-  = post {container: \div classes: \op ...@op}
+#{@@container}(id="#{@id or "t#{@no}"}', data-no="#{@no}",
+  class="#{@classes ? ''} thread #{if @sticky then 'sticky ' else ''} #{if @closed then 'closed ' else ''}")
+  = post @op, container: \div classes: \op
   .thread-info
     | #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
     if board.is-board
       a.expand-link(href="#{@url}") Expand
   .replies
     for reply of @replies
-      = post {container: \article classes: \reply ...reply}
+      = post reply, container: \article classes: \reply
