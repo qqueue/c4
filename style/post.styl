@@ -217,7 +217,9 @@ a,strong
   padding-bottom 0
 
   // paperfold effect from the left, to indicate threading without full border
-  background linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.05) 0.5em, rgba(0, 0, 0, 0.02) 10px, transparent 2em, transparent)
+  // also paperfold from the top. It's less subtle (and not a natural fold)
+  // but it makes the backlink/reply tree a bit more readable.
+  background linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.05) 0.5em, rgba(0, 0, 0, 0.02) 10px, transparent 2em, linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.03) 0.5em, rgba(0, 0, 0, 0.02) 10px, transparent 2em, transparent)
 
 .inline .backlinks > .recursivelink
   display none
