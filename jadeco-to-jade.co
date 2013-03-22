@@ -20,9 +20,7 @@ export compile = (src, filename) ->
     blame "Jade Error compiling #filename : #e"
 
   fn = fn!
-  say src
-  say '-----------'
-
+  
   # used for tag interpolation (`#{tag} text`)
   # WARNING : can not use ''
   fn .= replace /__INTER__/g \#{
@@ -30,9 +28,8 @@ export compile = (src, filename) ->
 
   # clean a bit. Sadly no way to disable escaping
   fn .= replace /&quot;/g \"
-  fn .= replace /\{\{/g \#{
 
-  wrap fn
+  wrap fn.replace /\{\{/g \#{
 
 # prepares interpolations
 interp = (line, extra) ->
@@ -50,7 +47,7 @@ interp = (line, extra) ->
     
     # `== abc` is jade, `= abc` is coco
     trimmed.0 is '=' and trimmed.1 is not '='
-      line = line.replace('=' '| #{(') + ' ) or ""}'
+      line = line.replace('=' '| #{(') + ') or ""}'
 
     ~line.indexOf '== '
       line .= replace '== ' '= '
@@ -59,7 +56,7 @@ interp = (line, extra) ->
       # BAAH this is bad, it's gonna do bad things such as
       # a(foo= "bar")
       # but well...
-      line = line.replace('= ' ' #{(') + ' ) or ""}'
+      line = line.replace('= ' ' #{(') + ') or ""}'
 
   line
 
