@@ -3,6 +3,7 @@ stylus   = require \stylus
 {cjsify} = require \commonjs-everywhere
 esprima  = require \esprima
 lodash   = require \lodash
+jadeco-to-jade = require \./jadeco-to-jade
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
@@ -41,6 +42,11 @@ coco-to-js = (it, filename) ->
   src = compile-coco it.toString!, {+bare, filename}
   parse-js src
 
+cojade = (it, filename) ->
+  src = jadeco-to-jade.compile it.toString!, filename
+  src = compile-coco src, {+bare, filename}
+  parse-js src
+
 ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
 
 outfile = \html5chan.user.js
@@ -61,7 +67,7 @@ task \build 'build userscript' ->
         \.co : coco-to-js
         # string interp template
         # XXX cjsify doesn't support multipart filenames e.g. .co.html
-        \.cohtml : coco-to-js
+        \.cojade : cojade
         \.styl : (it, filename) ->
           src = "module.exports = '#{nib it.toString!, filename
             .replace /'/g "\/'" .replace /\n/g '\\n'}'"
