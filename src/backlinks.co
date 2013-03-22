@@ -56,7 +56,7 @@ onready !-> onpostinsert !-> it.detail.post
     for &querySelectorAll '.comment .quotelink'
       if &href.match /#p(\d+)/
         quoted = that.1
-        for $$ "\#p#quoted > .backlinks"
+        for $$ ".post[data-no=\"#quoted\"] > .backlinks"
           # if it's not already linked
           if not &querySelector ".backlink[href$=\"#quoter\"]"
 
