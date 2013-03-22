@@ -1,7 +1,7 @@
+~ {topic: topic-classes} = require \src/utils/gen-class 
 ~ post = require \./post
 
-#{@@container}(id="#{@id or "t#{@no}"}', data-no="#{@no}",
-  class="#{@classes ? ''} thread #{if @sticky then 'sticky ' else ''} #{if @closed then 'closed ' else ''}")
+#{@@container}(id="#{@id or 't' + @no}", data-no="#{@no}", class="#{@classes ? ''} #{topic-classes locals}")
   = post @op, container: \div classes: \op
   .thread-info
     | #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.

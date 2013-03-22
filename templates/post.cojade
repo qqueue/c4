@@ -1,4 +1,4 @@
-~ {post: post-classes} = require 'src/utils/gen-class'
+~ {post: post-classes} = require \src/utils/gen-class
 
 #{@@container}(data-no="#{@no}", class="#{@@classes or ''} #{post-classes locals}", post="post",
   data-idx="#{@idx}", id="#{@@id or 'p' + @no}")
@@ -6,7 +6,7 @@
     button.hide(type="button", value="#{@no}") &times;
     button.report(type="submit", form="reportform",
       name="no", value="#{@no}") !
-    a.subject(href="#{@url}"))= @subject
+    a.subject(href="#{@url}")= @subject
     a.name(href="#{if @email then 'mailto:'+@email else ''}")= @name
 
     span.tripcode= @tripcode

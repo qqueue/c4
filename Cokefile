@@ -43,8 +43,13 @@ coco-to-js = (it, filename) ->
   parse-js src
 
 cojade = (it, filename) ->
+  say "---GO #filename ---------"
   src = jadeco-to-jade.compile it.toString!, filename
+  say src
+  say '-------------'
   src = compile-coco src, {+bare, filename}
+  say src
+  say '---------NEXT--------'
   parse-js src
 
 ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
