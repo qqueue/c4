@@ -81,7 +81,6 @@ if $ \message-container
   # toString! since localStorage only stores strings, which makes coco's strict
   # equality fail
   new-hash = hash message.textContent .toString!
-  console.log new-hash
   if new-hash is not localStorage\4chan-msg
     localStorage.removeItem \4chan-msg
 
