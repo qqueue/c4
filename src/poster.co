@@ -5,6 +5,7 @@
 listen = require \./utils/listen
 {onready} = require \./utils/features
 {L, $, $$} = require \./utils/dom
+{get, set} = require \./utils/storage
 
 postStatus = -> $ \post-status .textContent = it
 
