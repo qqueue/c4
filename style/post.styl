@@ -110,6 +110,12 @@
   .capcode:after
     content url(https://static.4chan.org/image/modicon.gif)
 
+// put spacing between inline spans
+.name, .tripcode, .capcode, .posteruid, time, .permalink,
+.filename, .dimensions, .size, .saucelink
+  &:after
+    content " "
+
 .hide, .report
   float right
   padding 0 1px
