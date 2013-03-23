@@ -1,0 +1,44 @@
+~ {post: post-classes} = require \src/utils/gen-class
+
+#{@@container}(data-no="#{@no}", class="#{@@classes or ''} #{post-classes locals}",
+  data-idx="#{@idx}", id="#{@@id or 'p' + @no}")
+  h1.post-header
+    button.hide(type="button", value="#{@no}") &times;
+    button.report(type="submit", form="reportform",
+      name="no", value="#{@no}") !
+    a.subject(href="#{@url}")= @subject
+    if @email
+      a.name(href="#{'mailto:'+@email}")= @name
+    else
+      a.name= @name
+
+    span.tripcode= @tripcode
+    span.capcode= @capcode
+    span.posteruid= "(ID: #that)" if @uid
+    time(pubdate, datetime="#{@time.toISOString!}", title="#{@time}")
+      = @time.relative-date!
+    a.permalink(href="#{@url}") No.
+      span.no= @no
+
+  if @image
+    .fileinfo
+      span.filename= @image.filename
+      span.dimensions= "#{@image.width}x#{@image.height}"
+      span.size= @image.size
+      a.saucelink(href="http://iqdb.org/?url=http:#{@image.url}",
+        target="_blank") iqdb
+      a.saucelink(href="http://google.com/searchbyimage?image_url=http:#{@image.url}",
+        target="_blank") google
+      a.saucelink(href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{@image.url}",
+        target="_blank") exif
+      a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}",
+        target="_blank") foolz
+    a.file(target="_blank", href="#{@image.url}", data-width="#{@image.width}", data-height="#{@image.height}")
+      img.thumb(src="#{if @image.spoiler then board.spoiler-url else @image.thumb.url}",
+        width="#{unless @image.spoiler then @image.thumb.width else ''}",
+        height="#{unless @image.spoiler then @image.thumb.height else ''}")
+  else if @deletedImage
+    img.deleted-image(alt="File deleted.", src="//static.4chan.org/image/filedeleted.gif")
+
+  div.comment= @comment
+  footer.backlinks

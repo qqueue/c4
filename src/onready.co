@@ -102,7 +102,7 @@ body
                #{if board.isThread then \threadpage else \boardpage}"
 
 console.time "generate new HTML body"
-body-html = require(\templates/board) board, board.threads
+body-html = require(\templates/board) board
 console.timeEnd "generate new HTML body"
 
 console.time "parse new body HTML"
