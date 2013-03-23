@@ -1,10 +1,12 @@
+~ {thread: thread-classes} = require \src/utils/gen-class
+~ post-template = require \./post
 
-#{@@container}(id="#{@id or 't' + @no}", data-no="#{@no}", class="#{@classes ? ''} #{@@thread-classes locals}")
-  = @@post-template @op, \div \op @@post-classes
+#{@@container}(id="#{@id or 't' + @no}", data-no="#{@no}", class="#{@classes ? ''} #{thread-classes locals}")
+  = post-template @op, container: \div classes: \op
   .thread-info
     | #{(@omitted?replies or 0) + @replies.length} replies and #{(@omitted?imageReplies or 0) + @imageReplies.length} images.
     if board.is-board
       a.expand-link(href="#{@url}") Expand
   .replies
     for reply of @replies
-      = post-template reply, \article \reply @@post-classes
+      = post-template reply, container: \article classes: \reply

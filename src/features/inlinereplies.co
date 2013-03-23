@@ -2,7 +2,6 @@
 {on-posts, onbacklink} = require \../utils/features
 {DOM, $$, $, closest, classify, L} = require \../utils/dom
 post-template = require \templates/post
-{post: post-classes} = require \../utils/gen-class
 {defer} = require \../utils/timing
 
 # scroll! returns to the scroll position when
@@ -64,7 +63,7 @@ onclick = !(e) ->
     toggle-off this, inlined
   else # create
     is-backlink = @classList.contains \backlink
-    inlined = DOM post-template post, \article "inline hovered" post-classes, inlined-id
+    inlined = DOM post-template post, container: \article classes: "inline hovered" id: inlined-id
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
     while wrapper.parentElement.matchesSelector 'a,span'

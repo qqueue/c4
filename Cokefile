@@ -1,9 +1,6 @@
-coco     = require \coco
 stylus   = require \stylus
 {cjsify} = require \commonjs-everywhere
-esprima  = require \esprima
 lodash   = require \lodash
-jadeco-to-jade = require \./jadeco-to-jade
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
@@ -35,15 +32,16 @@ time = let names = {}, last = {}
 nib = time.as 'Stylus compilation' (it, filename) ->
   stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)! .render!
 
-compile-coco = time.as 'Coco compilation' coco.~compile
-parse-js = time.as 'Reparse JS' esprima.~parse
+compile-coco = time.as 'Coco compilation' require(\coco)~compile
+parse-js = time.as 'Reparse JS' require(\esprima)~parse
+cojade-to-jade = time.as 'Cojade compilation' require(\cojade-to-jade/jadeco-to-jade)~compile
 
 coco-to-js = (it, filename) ->
   src = compile-coco it.toString!, {+bare, filename}
   parse-js src
 
 cojade = (it, filename) ->
-  src = jadeco-to-jade.compile it.toString!, filename
+  src = cojade-to-jade it.toString!, filename
   src = compile-coco src, {+bare, filename}
   parse-js src
 
@@ -91,6 +89,7 @@ task \build 'build userscript' ->
       "Commonjsification"
       "Reparse JS"
       "Coco compilation"
+      "Cojade compilation"
       "Stylus compilation"
       "AST->JS"
       "Total build time"

@@ -1,3 +1,5 @@
+~ thread-template = require \./thread
+
 nav#toplinks.boardlinks= board.nav
 header#header
   a#banner(href="//boards.4chan.org/#{board.name}/")
@@ -13,7 +15,7 @@ if board.message
 
 #threads
   for @threads
-    = @@thread-template &, \article @@thread-classes, @@post-template, @@post-classes
+    = thread-template &, container: \article
 
 if board.isBoard
   ul#pages
