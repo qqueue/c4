@@ -1,17 +1,23 @@
 # update relative post dates periodically
 
+{$$} = require \../utils/dom
 {onpostinsert, onready} = require \../utils/features
 {keep-up-to-date, periodic, flush} = require \../utils/relative-dates
-
-onpostinsert !->
-  keep-up-to-date it.detail.post.querySelector \time
-
-  # take advantage of DOM reflow
-  flush!
 
 # flush when user switches back to the tab
 window.addEventListener \visibilitychange !->
   flush! unless document.hidden
 
-onready -> periodic.start!
+onready !->
+  console.log 'keeping relative dates...'
+  periodic.start!
+
+  for $$ \time
+    keep-up-to-date &
+
+  onpostinsert !->
+    keep-up-to-date it.detail.post.querySelector \time
+
+    # take advantage of DOM reflow
+    flush!
 
