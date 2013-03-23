@@ -5,6 +5,7 @@
 {DOM, $$, $, closest, classify} = require \../utils/dom
 parser = require \../parser
 post-template = require \templates/post
+{post: post-classes} = require \../utils/gen-class
 listen = require \../utils/listen
 
 # XXX also will break weirdly if there is a cross-board link to a board with
@@ -62,7 +63,7 @@ create-preview = !(no, post) ->
 
   {width, height, left, top} = @getBoundingClientRect!
 
-  preview = DOM post-template post, container: \article id: \postpreview
+  preview = DOM post-template post, \article, , post-classes, \postpreview
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: post: preview

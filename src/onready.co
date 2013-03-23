@@ -3,6 +3,10 @@ parser = require \./parser
 {onready} = require \./utils/features
 {truncate} = require \./utils/string
 {get, set, sset, sget} = require \./utils/storage
+board-template = require \templates/board
+thread-template = require \templates/thread
+post-template = require \templates/post
+{post: post-classes, thread: thread-classes} = require \./utils/gen-class
 
 # pre-create new DOM
 html = L \html
@@ -102,7 +106,13 @@ body
                #{if board.isThread then \threadpage else \boardpage}"
 
 console.time "generate new HTML body"
-body-html = require(\templates/board) board
+# XXX passing in function because of cojade deficencies
+body-html = board-template do
+  board
+  thread-template
+  thread-classes
+  post-template
+  post-classes
 console.timeEnd "generate new HTML body"
 
 console.time "parse new body HTML"

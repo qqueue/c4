@@ -1,6 +1,4 @@
-~ {post: post-classes} = require \src/utils/gen-class
-
-#{@@container}(data-no="#{@no}", class="#{@@classes or ''} #{post-classes locals}",
+#{@@container}(data-no="#{@no}", class="#{@@classes or ''} #{@@post-classes locals}",
   data-idx="#{@idx}", id="#{@@id or 'p' + @no}")
   h1.post-header
     button.hide(type="button", value="#{@no}") &times;

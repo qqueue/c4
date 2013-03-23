@@ -1,17 +1,18 @@
+# TODO is .push/.join faster than +=?
 export post = ->
   classes = 'post '
   classes += 'imagepost ' if it.image
   classes += 'sage ' if it.sage
-  classes += 'tripcoded ' if it.tripcode 
+  classes += 'tripcoded ' if it.tripcode
   if it.capcode
     classes += if it.capcode is '## Admin'
       'admin '
     else 'mod '
-  classes += 'uid ' if it.uid 
+  classes += 'uid ' if it.uid
   classes += that if it.tripcoded
   classes
 
-export topic = ->
+export thread = ->
   classes = 'thread '
   classes += 'sticky ' if it.sticky
   classes += 'closed ' if it.closed
