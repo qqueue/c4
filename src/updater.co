@@ -13,7 +13,6 @@ listen = require \./utils/listen
 {defer, repeat} = require \./utils/timing
 {$, $$, L} = require \./utils/dom
 post-template = require \templates/post
-{post: post-classes} = require \./utils/gen-class
 parser = require \./parser
 draw-favicon = require \./utils/favicon
 
@@ -33,7 +32,7 @@ unread        = 0
     .insertAdjacentHTML do
       \beforeend
       for thread.new
-        post-template &, \article 'new reply' post-classes
+        post-template &, container: \article classes: 'new reply'
       .join ''
 
   for thread.new
