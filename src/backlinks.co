@@ -16,10 +16,11 @@ onprerender !->
         quoted = that.1
         backlinks@[quoted][quoter] = true
         it.detail.body.querySelector "\#p#quoted > .backlinks"
-          &?appendChild with L \a
-            &href = "\#p#quoter"
-            &className = 'backlink quotelink'
-            &textContent = "«#idx"
+          unless &?querySelector ".backlink[href$=\"#q\"]"
+            &appendChild with L \a
+              &href = "\#p#quoter"
+              &className = 'backlink quotelink'
+              &textContent = "«#idx"
 
 # after initial postinserts, add new backlinks
 # TODO think harder about event structure to avoid having to wrap onready and
