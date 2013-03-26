@@ -67,7 +67,7 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
   ++e-idx
   b-idx += 2
 
-  idx = 1 + @omitted?replies || 0
+  idx = 1 + (@omitted?replies || 0)
   @replies = for el.getElementsByClassName( \reply )
     p = new Post do
       this
@@ -177,7 +177,7 @@ APIThread:: = Thread::
   @closed  = !!op.closed
 
   @op      = new APIPost this, op, 0
-  idx = 1 + op.omitted_posts || 0
+  idx = 1 + (op.omitted_posts || 0)
   @replies = for replies => new APIPost this, &, idx++
 
   @postprocess!
