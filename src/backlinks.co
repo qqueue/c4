@@ -16,7 +16,7 @@ onprerender !->
         quoted = that.1
         backlinks@[quoted][quoter] = true
         it.detail.body.querySelector "\#p#quoted > .backlinks"
-          unless &?querySelector ".backlink[href$=\"#q\"]"
+          unless &?querySelector ".backlink[href$=\"#quoter\"]"
             &appendChild with L \a
               &href = "\#p#quoter"
               &className = 'backlink quotelink'
