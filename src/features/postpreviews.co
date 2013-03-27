@@ -5,7 +5,6 @@
 {DOM, $$, $, closest, classify} = require \../utils/dom
 parser = require \../parser
 post-template = require \templates/post
-{post: post-classes} = require \../utils/gen-class
 listen = require \../utils/listen
 
 # XXX also will break weirdly if there is a cross-board link to a board with

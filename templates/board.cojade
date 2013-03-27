@@ -15,7 +15,7 @@ if board.message
 
 #threads
   for @threads
-    = thread-template &, container: \article
+    = thread-template &
 
 if board.isBoard
   ul#pages

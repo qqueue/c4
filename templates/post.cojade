@@ -1,7 +1,19 @@
-~ {post: post-classes} = require \src/utils/gen-class
+~ classes = ->
+~   c = 'post '
+~   c += 'imagepost ' if it.image
+~   c += 'sage '      if it.sage
+~   c += 'tripcoded ' if it.tripcode
+~   if it.capcode
+~     c += if it.capcode is '## Admin'
+~       'admin '
+~     else 'mod '
+~   c += 'uid ' if it.uid
+~   c
 
-#{@@container}(data-no="#{@no}", class="#{@@classes or ''} #{post-classes locals}",
-  data-idx="#{@idx}", id="#{@@id or 'p' + @no}")
+#{@@container}(data-no="#{@no}",
+               class="#{@@classes or ''} #{classes locals}",
+               data-idx="#{@idx}",
+               id="#{@@id or 'p' + @no}")
   h1.post-header
     button.hide(type="button", value="#{@no}") &times;
     button.report(type="submit", form="reportform",
