@@ -8,7 +8,7 @@
                    , "esprima"             : "1.0.2"
                    , "escodegen"           : "0.0.17"
                    , "lodash"              : "1.0.1"
-                   , "cojade-to-jade"      : "1.1.1"
+                   , "nephrite"            : "1.1.2"
                    }
 , "scripts"      : { "build" : "coke build"
                    , "watch" : "coke watch"

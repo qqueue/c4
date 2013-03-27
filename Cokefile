@@ -34,7 +34,7 @@ nib = time.as 'Stylus compilation' (it, filename) ->
 
 compile-coco = time.as 'Coco compilation' require(\coco)~compile
 parse-js = time.as 'Reparse JS' require(\esprima)~parse
-cojade-to-jade = time.as 'Cojade compilation' require(\cojade-to-jade/jadeco-to-jade)~compile
+cojade-to-jade = time.as 'Nephrite compilation' require(\nephrite)~compile
 
 coco-to-js = (it, filename) ->
   src = compile-coco it.toString!, {+bare, filename}
@@ -89,7 +89,7 @@ task \build 'build userscript' ->
       "Commonjsification"
       "Reparse JS"
       "Coco compilation"
-      "Cojade compilation"
+      "Nephrite compilation"
       "Stylus compilation"
       "AST->JS"
       "Total build time"
