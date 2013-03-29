@@ -73,6 +73,10 @@ unread        = 0
 !function handle-new-posts thread
   updater.status.textContent = "update detected, parsing"
 
+  # if at the bottom of the page before adding new posts, smooth-scroll later
+  if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
+    scroll = true
+
   append-new-posts            thread
   update-thread-stats         thread
   update-favicon              thread
@@ -82,8 +86,7 @@ unread        = 0
   read-posts-when-scrolled-to thread
 
   # if on the bottom of the page
-  if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
-    smooth-scroll-to-bottom!
+  smooth-scroll-to-bottom! if scroll
 
 !function disable-updater
   updater.countdown.stop!
