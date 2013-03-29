@@ -34,14 +34,14 @@ nib = time.as 'Stylus compilation' (it, filename) ->
 
 compile-coco = time.as 'Coco compilation' require(\coco)~compile
 parse-js = time.as 'Reparse JS' require(\esprima)~parse
-cojade-to-jade = time.as 'Nephrite compilation' require(\nephrite)~compile
+nephrite = time.as 'Nephrite compilation' require(\nephrite)
 
 coco-to-js = (it, filename) ->
   src = compile-coco it.toString!, {+bare, filename}
   parse-js src
 
 cojade = (it, filename) ->
-  src = cojade-to-jade it.toString!, filename
+  src = nephrite it.toString!, filename
   src = compile-coco src, {+bare, filename}
   parse-js src
 
