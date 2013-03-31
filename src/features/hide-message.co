@@ -13,6 +13,7 @@
 {onready} = require \../utils/features
 {set, get} = require \../utils/storage
 {$} = require \../utils/dom
+Bacon = require \baconjs
 
 # 4chanJS's hash function, line 80-86
 function hash str
@@ -21,55 +22,6 @@ function hash str
     msg = ((msg << 5) - msg) + str.charCodeAt i
 
   return msg
-
-# bacon.js-alike implementation, for kicks, until browserification
-class Observable
-  ->
-    @callbacks = []
-
-  emit: (event) ->
-    for @callbacks
-      & event
-
-  # onValue in bacon, but each makes more sense with `map` and others, and is
-  # more like clojure's `doseq`
-  each: -> @callbacks.push it
-
-  map: (fn) ->
-    with new EventStream
-      @each ->
-        &emit fn it
-
-  scan: (seed, reduce) ->
-    with new Property seed
-      @each -> &emit reduce &value, it
-
-class EventStream extends Observable
-  -> super ...
-
-  ..from-events = (el, event) ->
-    with new EventStream
-      el.addEventListener event, &~emit
-
-class Property extends Observable
-  (@value) ->
-    super ...
-
-  emit: (val) ->
-    @value = val
-    super ...
-
-  # properties map to new properties
-  map: (fn) ->
-    with new Property fn @value
-      @each -> &emit fn it
-
-  assign: (obj, property) ->
-    asn = !-> obj[property] = it
-    @each asn
-
-    # initialize if necessary
-    asn that if @value?
 
 <-! onready
 
@@ -87,11 +39,11 @@ if $ \message-container
   message.hidden = localStorage[\4chan-msg]?
 
   # toggle concern
-  message-hidden = EventStream.from-events button, \click
+  message-hidden = Bacon.from-event-target button, \click
     .scan message.hidden, -> not it
 
-  message-hidden.assign message, \hidden
-  message-hidden.each !->
+  message-hidden.on-value !-> message.hidden = it
+  message-hidden.on-value !->
     if it
       localStorage\4chan-msg = new-hash
     else
@@ -100,5 +52,5 @@ if $ \message-container
   # button text concern
   message-hidden
     .map -> "#{if it then "Show" else "Hide"} News"
-    .assign button, \textContent
+    .on-value !-> button.textContent = it
 
