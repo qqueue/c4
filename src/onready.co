@@ -78,10 +78,30 @@ console.timeEnd "parse page"
 
 console.log board
 
-console.time "parse board"
-board.threads = parser.board d
-console.timeEnd "parse board"
-board.thread = board.threads.0 if board.isThread
+# if I click a link off of a threadpage that has been updated, then click the
+# back button, the updated posts won't appear until the updater hits the
+# new version again, i.e. the browser back state is using the old version
+# of the page. Thus, check the session storage cache for threads and use
+# that instead of reparsing the page, which can't possibly be newer
+# information.  TODO invalidate the cache somehow on recompilation (so
+# fixing parser bugs will take affect) however, maybe it'll work with
+# shift+F5 if that clears sessionStorage
+
+function date-reviver k, v
+  if k is \time
+    new Date v
+  else
+    v
+
+if board.is-thread and (thread = sget "cache-#{board.thread-no}" date-reviver)
+  console.log "using cached thread data"
+  board.thread = thread
+  board.threads =[thread]
+else
+  console.time "parse board"
+  board.threads = parser.board d
+  console.timeEnd "parse board"
+  board.thread = board.threads.0 if board.isThread
 
 # global lookup post by hash
 # XXX cross-board still conflicts
@@ -95,7 +115,7 @@ board.threads-by-id = {}
 for board.threads
   board.threads-by-id[&no] = &
 
-console.log board.threads
+# console.log board.threads
 
 body
   &id = board.name
@@ -163,6 +183,11 @@ if window.location.hash and not sget document.URL
     window.removeEventListener \scroll registerPage
 
 board.ready = true
+
+# cache current thread hash (which is updated by updater)
+if board.is-thread
+  window.addEventListener \unload !->
+    sset "cache-#{board.thread-no}" board.thread
 
 console.time "onready handlers"
 document.dispatchEvent new CustomEvent do

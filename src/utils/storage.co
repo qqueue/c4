@@ -6,7 +6,11 @@ setter = (storage) -> !(key, val) ->
   for key, val in obj or key
     storage.setItem "html5chan-#key", JSON.stringify val
 
-getter = (storage) -> -> try JSON.parse storage.getItem "html5chan-#it"
+getter = (storage) -> (key, reviver) ->
+  try
+    JSON.parse do
+      storage.getItem "html5chan-#key"
+      reviver
 
 export
   set: setter localStorage
