@@ -122,6 +122,9 @@ updater.update = !->
           thread = parser.api JSON.parse @response
           handle-new-posts thread
 
+          # swap out old thread state with new
+          board.thread = thread
+
           reset-delay!
         else # no new posts
           increase-delay!
