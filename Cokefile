@@ -82,6 +82,8 @@ task \build 'build userscript' ->
         metadata
         "(function(){"
         '"use strict";'
+        # XXX hack to invalidate cached data in html5 storage when code changes
+        "var HTML5CHAN_COMPILATION_VERSION = #{Math.random!};"
         gen
         "}).call(this)"
 

@@ -83,20 +83,21 @@ console.log board
 # new version again, i.e. the browser back state is using the old version
 # of the page. Thus, check the session storage cache for threads and use
 # that instead of reparsing the page, which can't possibly be newer
-# information.  TODO invalidate the cache somehow on recompilation (so
-# fixing parser bugs will take affect) however, maybe it'll work with
-# shift+F5 if that clears sessionStorage
-
+# information.
 function date-reviver k, v
   if k is \time
     new Date v
   else
     v
 
-if board.is-thread and (thread = sget "cache-#{board.thread-no}" date-reviver)
+# XXX kinda messy compilation version hack
+version = HTML5CHAN_COMPILATION_VERSION
+data = sget "cache-#{board.thread-no}" date-reviver if board.is-thread
+
+if board.is-thread and data.version is version
   console.log "using cached thread data"
-  board.thread = thread
-  board.threads =[thread]
+  board.thread = data.thread
+  board.threads = [data.thread]
 else
   console.time "parse board"
   board.threads = parser.board d
@@ -187,7 +188,7 @@ board.ready = true
 # cache current thread hash (which is updated by updater)
 if board.is-thread
   window.addEventListener \unload !->
-    sset "cache-#{board.thread-no}" board.thread
+    sset "cache-#{board.thread-no}" {version, board.thread}
 
 console.time "onready handlers"
 document.dispatchEvent new CustomEvent do
