@@ -27,35 +27,35 @@ current-delay = 0 # index into delay
 last-update   = new Date
 unread        = 0
 
-!function append-new-posts thread
+!function append-new-posts thread, new-posts, deleted
   $ "t#{thread.no}" .lastElementChild # .replies
     .insertAdjacentHTML do
       \beforeend
-      for thread.new
+      for new-posts
         post-template &, container: \article classes: 'new reply'
       .join ''
 
-  for thread.new
+  for new-posts
     # XXX update global post hash. still not great global state
     board.posts[&no] = &
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: post: $ "p#{&no}"
 
-!function update-favicon thread
-  unread += thread.new.length
+!function update-favicon thread, new-posts, deleted
+  unread += new-posts.length
   draw-favicon board.favicon, if unread > 0 then "#unread" else ''
 
-!function read-posts-when-scrolled-to thread
-  for thread.new => fade-when-visible &
+!function read-posts-when-scrolled-to thread, new-posts, deleted
+  for new-posts => fade-when-visible &
 
-!function update-thread-stats thread
+!function update-thread-stats thread, new-posts, deleted
   $ "t#{thread.no}" .querySelector ".thread-info" .textContent =
     "#{thread.replies.length} replies \
      and #{thread.imageReplies.length} image replies."
 
 # TODO update event should govern above features too
-!function dispatch-update-event thread
+!function dispatch-update-event thread, new-posts, deleted
   document.dispatchEvent new CustomEvent do
     \html5chan-update
     detail: {thread}
@@ -70,20 +70,20 @@ unread        = 0
       window.scrollBy 0, remaining / 4
       last := window.scrollY
 
-!function handle-new-posts thread
+!function handle-new-posts thread, new-posts, deleted
   updater.status.textContent = "update detected, parsing"
 
   # if at the bottom of the page before adding new posts, smooth-scroll later
   if (window.scrollMaxY - window.scrollY) < 50 and not document.hidden
     scroll = true
 
-  append-new-posts            thread
-  update-thread-stats         thread
-  update-favicon              thread
+  append-new-posts            thread, new-posts, deleted
+  update-thread-stats         thread, new-posts, deleted
+  update-favicon              thread, new-posts, deleted
 
-  dispatch-update-event       thread
+  dispatch-update-event       thread, new-posts, deleted
 
-  read-posts-when-scrolled-to thread
+  read-posts-when-scrolled-to thread, new-posts, deleted
 
   # if on the bottom of the page
   smooth-scroll-to-bottom! if scroll
@@ -119,8 +119,14 @@ updater.update = !->
         if last-modified > last-update
           last-update := last-modified
 
+          old-thread = board.thread
+
           thread = parser.api JSON.parse @response
-          handle-new-posts thread
+
+          new-posts = thread.replies.filter -> not old-thread.reply[it.no]
+          deleted = old-thread.replies.filter -> not thread.reply[it.no]
+
+          handle-new-posts thread, new-posts, deleted
 
           # swap out old thread state with new
           board.thread = thread

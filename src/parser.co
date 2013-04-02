@@ -98,15 +98,6 @@ Thread::postprocess = ->
     @imageReplies.push reply if reply.image
     @reply[reply.no] = reply
 
-  # XXX nasty updater state
-  if Thread[@no] # if this thread has been parsed before
-    @new = []
-    @deleted = []
-    for reply of Thread[@no].replies # old replies
-      @deleted.push reply if not @reply[reply.no]
-    for reply of @replies
-      @new.push reply if not Thread[@no].reply[reply.no]
-
   Thread[@no] = this
 
 class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el) ->
