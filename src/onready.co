@@ -94,7 +94,7 @@ function date-reviver k, v
 version = HTML5CHAN_COMPILATION_VERSION
 data = sget "cache-#{board.thread-no}" date-reviver if board.is-thread
 
-if board.is-thread and data.version is version
+if board.is-thread and data?version is version
   console.log "using cached thread data"
   board.thread = data.thread
   board.threads = [data.thread]
