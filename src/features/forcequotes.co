@@ -35,10 +35,7 @@ munge = !(ctx) ->
           &textContent = ' '
           &setAttribute \data-width post.image.width
           &setAttribute \data-height post.image.height
-          &href = if post.image.spoiler
-            board.spoiler-url
-          else
-            post.image.url
+          &href = post.image.url
           &appendChild with L \img
             &className = \thumb
             &style <<<
@@ -46,7 +43,10 @@ munge = !(ctx) ->
               display: \inline-block
               vertical-align: \middle
 
-            &src = post.image.thumb.url
+            &src = if post.image.spoiler
+              board.spoiler-url
+            else
+              post.image.thumb.url
 
             # XXX I'm cheating ....
             &addEventListener \mouseover handle-preview
