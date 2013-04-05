@@ -62,15 +62,13 @@ unread        = 0
 
 !function smooth-scroll-to-bottom
   last = window.scrollY
-  repeat 50ms !->
-    #if user scrolls upwards manually, abort.
-    if window.scrollY < last
-      @stop!
-    else if (remaining = window.scrollMaxY - window.scrollY) > 1
-      window.scrollBy 0, 1 >? remaining / 4
-      last := window.scrollY
-    else
-      @stop!
+  repeat 50ms {-auto} !->
+    # unless user fights the scroll downwards
+    unless window.scrollY < last
+      if (remaining = window.scrollMaxY - window.scrollY) > 1
+        window.scrollBy 0, 1 >? remaining / 4
+        last := window.scrollY
+        @repeat!
 
 !function handle-new-posts thread, new-posts, deleted
   updater.status.textContent = "update detected, parsing"
