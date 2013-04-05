@@ -44,17 +44,20 @@ export repeat = class
     @fn = fn
     @timeoutee = !~>
       @fn ...
-      @repeat! if @auto
+      @repeat! if @auto and not @stopped
 
     @auto = if options.auto? then options.auto else true
     @start! unless options.start is false
 
-  stop: !-> clearTimeout @timeout
+  stop: !->
+    @stopped = true
+    clearTimeout @timeout
 
   # the args of start are passed to the timeoutee
   start: !(...args) ->
     @stop! # for safety
     @timeout = setTimeout.apply null, [@timeoutee, @delay].concat args
+    @stopped = false
 
   restart: ::start
 
