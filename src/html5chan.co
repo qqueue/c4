@@ -20,13 +20,12 @@ window.board = {}
   &page        = parseInt page, 10 or 0
 
   &url         = "//boards.4chan.org/#{&name}/"
-  &threadurl   = &url + \res/
-  &thread-path = "/#{&name}/res/#{&thread-no}"
 
   &ready       = false # flag similar to document.readyState
 
   &favicons = require \./favicon-data
 
+  # TODO moot's crazy spoiler number bullshit
   &spoiler-url = "https://static.4chan.org/image/spoiler-#{&name}1.png"
 
 require \./archives

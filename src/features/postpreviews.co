@@ -22,12 +22,12 @@ fetch-new-post = !(no) ->
     &onload = !->
       # TODO handle 404 -> archive
       if @status is 200
-        thread = parser.api JSON.parse @response
+        thread = parser.api JSON.parse(@response), board-name
 
         if still-hovered
           link.style.removeProperty \cursor
 
-          # update board.posts has
+          # update board.posts hash
           for thread.posts
             board.posts[&no] = &
 

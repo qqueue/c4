@@ -51,7 +51,7 @@ d = document.replaceChild html, document.documentElement
 
 # init
 <-! document.addEventListener \DOMContentLoaded
-console.profile!
+#console.profile!
 
 console.time "initial render"
 
@@ -100,7 +100,7 @@ if board.is-thread and data?version is version
   board.threads = [data.thread]
 else
   console.time "parse board"
-  board.threads = parser.board d
+  board.threads = parser.board d, board.name
   console.timeEnd "parse board"
   board.thread = board.threads.0 if board.isThread
 
@@ -196,4 +196,4 @@ document.dispatchEvent new CustomEvent do
   detail: {board.threads, el: $ \threads}
 console.timeEnd "onready handlers"
 
-console.profileEnd!
+#console.profileEnd!

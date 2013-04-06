@@ -4,20 +4,20 @@ filename-regex  = /title="([^"]+)"/
 spoiler-regex   = /^Spoiler Image/
 sage-regex      = /^sage$/i
 
-# TODO cross-board linking will break this
-thumbs-base = "//thumbs.4chan.org/#{board.name}/thumb/"
-images-base = "//images.4chan.org/#{board.name}/src/"
-
 enhancer = require \./enhancer
 
 # pre-querying board parser, to hopefully speed things up
-function parse-board document
+function parse-board document, board
+  thumbs-base = "//thumbs.4chan.org/#board/thumb/"
+  images-base = "//images.4chan.org/#board/src/"
+  thread-url  = "//boards.4chan.org/#board/res/"
+
   # pre-query always-existant post elements, which should be faster than
   # individual querySelector calls
-  times = document.querySelectorAll \.dateTime
-  comments = document.querySelectorAll \.postMessage
-  names = document.querySelectorAll \.name
-  subjects = document.querySelectorAll \.subject
+  times    =  document.querySelectorAll \.dateTime
+  comments =  document.querySelectorAll \.postMessage
+  names    =  document.querySelectorAll \.name
+  subjects =  document.querySelectorAll \.subject
 
   # some elements exist on both .mobile info and .desktop info, because moot,
   # so bicrement past .mobile versions
@@ -33,6 +33,9 @@ function parse-board document
       subjects
       e-idx
       b-idx
+      thumbs-base
+      images-base
+      thread-url
 
     t.posts.length
       e-idx += &
@@ -40,9 +43,10 @@ function parse-board document
 
     t
 
-class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
+class Thread then (el, times, comments, names, subjects, e-idx, b-idx, thumbs-base,
+                   images-base, thread-url) ->
   @no        = el.id.substring 1 # t12345
-  @url       = board.threadurl + @no
+  @url       = thread-url + @no
 
   @omitted = if omitted = el.querySelector \.summary
     replies:
@@ -52,7 +56,7 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
 
   @preview = !!omitted
 
-  @sticky = el.querySelector(\.stickyIcon)? # XXX implicit call doens't work with ?
+  @sticky = el.querySelector(\.stickyIcon)?
   @closed = el.querySelector(\.closedIcon)?
 
   @op     = new Post do
@@ -64,6 +68,8 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
     comments[e-idx]
     names[b-idx]
     subjects[b-idx]
+    thumbs-base
+    images-base
   ++e-idx
   b-idx += 2
 
@@ -78,6 +84,8 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx) ->
       comments[e-idx]
       names[b-idx]
       subjects[b-idx]
+      thumbs-base
+      images-base
 
     ++e-idx
     b-idx += 2
@@ -100,10 +108,11 @@ Thread::postprocess = ->
 
   Thread[@no] = this
 
-class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el) ->
+class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el,
+                 thumbs-base, images-base) ->
   @no  = el.id.substring 1
 
-  @url = if @op then thread.url else "#{thread.url}\#p#{@no}"
+  @url = "#{thread.url}\#p#{@no}"
 
   @time = new Date parseInt(time-el.dataset.utc, 10) * 1000ms
 
@@ -123,9 +132,10 @@ class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el
   img = el.querySelector \.fileThumb
 
   @deleted-image = img?firstElementChild.alt is "File deleted."
-  @image = if img and not @deleted-image then new FImage img, el
+  @image = if img and not @deleted-image
+    new FImage img, el, thumbs-base, images-base
 
-class FImage then (el, postel) ->
+class FImage then (el, postel, thumbs-base, images-base) ->
   # use getAttribute because `href` property adds the protocol, while
   # getAttribute returns the protocolless //version (the text of the
   # actual html attribute)
@@ -136,7 +146,7 @@ class FImage then (el, postel) ->
   thumb      = el.firstElementChild
   timestamp  = @url.match /\/(\d+)/ .1
 
-  @thumb     = new Thumb timestamp, thumb
+  @thumb     = new Thumb timestamp, thumb, thumbs-base
 
   @width     = parseInt dimensions.1, 10
   @height    = parseInt dimensions.2, 10
@@ -147,10 +157,8 @@ class FImage then (el, postel) ->
 
   @spoiler  = spoiler-regex.test thumb.alt
 
-class Thumb then (timestamp, el) ->
-  # since thumb's href is spoiler sometimes, recalc
-  # FIXME doesn't work for crossboard fetches
-  @url    = "//thumbs.4chan.org/#{board.name}/thumb/#{timestamp}s.jpg"
+class Thumb then (timestamp, el, thumbs-base) ->
+  @url    = thumbs-base + "#{timestamp}s.jpg"
   # FIXME when image is spoiled, these are the spoiler image size.
   # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
   # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
@@ -159,22 +167,25 @@ class Thumb then (timestamp, el) ->
 
 # alternate constructor from 4chan JSON API
 APIThread:: = Thread::
-!function APIThread {posts: [op, ...replies]}: data
+!function APIThread {posts: [op, ...replies]}: data, board
+  thumbs-base = "//thumbs.4chan.org/#board/thumb/"
+  images-base = "//images.4chan.org/#board/src/"
+  thread-url  = "//boards.4chan.org/#board/res/"
   @no  = op.no
-  @url = board.threadurl + op.no
+  @url = thread-url + op.no
 
   @preview = !!op.omitted_posts
   @sticky  = !!op.sticky
   @closed  = !!op.closed
 
-  @op      = new APIPost this, op, 0
+  @op      = new APIPost this, op, 0, images-base, thumbs-base
   idx = 1 + (op.omitted_posts || 0)
-  @replies = for replies => new APIPost this, &, idx++
+  @replies = for replies => new APIPost this, &, idx++, images-base, thumbs-base
 
   @postprocess!
 
 APIPost:: = Post::
-!function APIPost thread, data, @idx
+!function APIPost thread, data, @idx, images-base, thumbs-base
   @<<< data{
     no
     subject: sub
@@ -192,32 +203,32 @@ APIPost:: = Post::
   @comment       = if data.com then enhancer.enhance that else ''
 
   @deleted-image = !!data.filedeleted
-  @image         = if data.fsize then new APIImage data
+  @image         = if data.fsize then new APIImage data, images-base, thumbs-base
 
 APIImage:: = FImage::
-!function APIImage data
-  @thumb = new APIThumb data
+!function APIImage data, images-base, thumbs-base
+  @thumb = new APIThumb data, thumbs-base
 
-  @url      = "#{images-base}#{data.tim}#{data.ext}"
+  @url      = images-base + data.tim + data.ext
 
   @width    = data.w
   @height   = data.h
 
   @size     = humanized data.fsize
-  @filename = "#{data.filename}#{data.ext}"
+  @filename = data.filename + data.ext
   @md5      = data.md5
 
   @spoiler  = !!data.spoiler
 
 APIThumb:: = Thumb::
-!function APIThumb data
+!function APIThumb data, thumbs-base
   @url    = thumbs-base + data.tim + \s.jpg
   @width  = data.tn_w
   @height = data.tn_h
 
 export
   board: parse-board
-  api: -> new APIThread it
+  api: (data, board) -> new APIThread data, board
 
 function humanized bytes
   if bytes < 1024
