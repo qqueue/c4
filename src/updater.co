@@ -121,7 +121,7 @@ updater.update = !->
 
           old-thread = board.thread
 
-          thread = parser.api JSON.parse @response
+          thread = parser.api JSON.parse(@response), board.name
 
           new-posts = thread.replies.filter -> not old-thread.reply[it.no]
           deleted = old-thread.replies.filter -> not thread.reply[it.no]
