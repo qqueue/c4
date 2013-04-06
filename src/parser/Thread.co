@@ -1,0 +1,18 @@
+# To (slightly) speed up parsing as well as share the postprocess method,
+# threads share a prototype.
+#
+# the class's constructor is defined separately for DOM/API objects.
+module.exports = class Thread
+  postprocess: ->
+    #convenience array including op
+    @posts = [@op, ...@replies]
+
+    @imageReplies = []
+
+    # build reply hash and image replies array
+    @reply = {}
+    for reply of @replies
+      @imageReplies.push reply if reply.image
+      @reply[reply.no] = reply
+
+    Thread[@no] = this

@@ -1,13 +1,8 @@
-dimension-regex = /(\d+)x(\d+)/
-size-regex      = /[\d\.]+ [KM]?B/
-filename-regex  = /title="([^"]+)"/
-spoiler-regex   = /^Spoiler Image/
-sage-regex      = /^sage$/i
-
-enhancer = require \./enhancer
-
-# pre-querying board parser, to hopefully speed things up
-function parse-board document, board
+# `document` is a HTMLDocument or HTMLElement that contains the .threads div 
+# from 4chan's pages.
+#
+# `board` is a string for the name of the board, e.g. 'a'.
+module.exports = (document, board) ->
   thumbs-base = "//thumbs.4chan.org/#board/thumb/"
   images-base = "//images.4chan.org/#board/src/"
   thread-url  = "//boards.4chan.org/#board/res/"
@@ -25,7 +20,7 @@ function parse-board document, board
   b-idx = 1
 
   for document.querySelectorAll \.thread
-    t = new Thread do
+    t = new DOMThread do
       &
       times
       comments
@@ -43,8 +38,9 @@ function parse-board document, board
 
     t
 
-class Thread then (el, times, comments, names, subjects, e-idx, b-idx, thumbs-base,
-                   images-base, thread-url) ->
+DOMThread:: = require(\./Thread)::
+!function DOMThread el, times, comments, names, subjects, e-idx, b-idx, \
+                   thumbs-base, images-base, thread-url
   @no        = el.id.substring 1 # t12345
   @url       = thread-url + @no
 
@@ -59,7 +55,7 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx, thumbs-ba
   @sticky = el.querySelector(\.stickyIcon)?
   @closed = el.querySelector(\.closedIcon)?
 
-  @op     = new Post do
+  @op     = new DOMPost do
     this
     el.querySelector( \.op )
     0
@@ -75,7 +71,7 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx, thumbs-ba
 
   idx = 1 + (@omitted?replies || 0)
   @replies = for el.getElementsByClassName( \reply )
-    p = new Post do
+    p = new DOMPost do
       this
       &
       idx++
@@ -94,22 +90,11 @@ class Thread then (el, times, comments, names, subjects, e-idx, b-idx, thumbs-ba
 
   @postprocess!
 
-Thread::postprocess = ->
-  #convenience array including op
-  @posts = [@op, ...@replies]
+sage-regex = /^sage$/i
 
-  @imageReplies = []
-
-  # build reply hash and image replies array
-  @reply = {}
-  for reply of @replies
-    @imageReplies.push reply if reply.image
-    @reply[reply.no] = reply
-
-  Thread[@no] = this
-
-class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el,
-                 thumbs-base, images-base) ->
+DOMPost:: = require(\./Post)::
+!function DOMPost thread, el, @idx, @op, time-el, comment-el, name-el, subject-el, \
+                  thumbs-base, images-base
   @no  = el.id.substring 1
 
   @url = "#{thread.url}\#p#{@no}"
@@ -125,7 +110,7 @@ class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el
   @email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto=
   @sage     = sage-regex.test that if @email
 
-  @comment  = enhancer.enhance comment-el.innerHTML
+  @comment  = comment-el.innerHTML
 
   @uid = el.querySelector \.hand ?.textContent # hand?
 
@@ -134,6 +119,11 @@ class Post then (thread, el, @idx, @op, time-el, comment-el, name-el, subject-el
   @deleted-image = img?firstElementChild.alt is "File deleted."
   @image = if img and not @deleted-image
     new FImage img, el, thumbs-base, images-base
+
+dimension-regex = /(\d+)x(\d+)/
+size-regex      = /[\d\.]+ [KM]?B/
+filename-regex  = /title="([^"]+)"/
+spoiler-regex   = /^Spoiler Image/
 
 class FImage then (el, postel, thumbs-base, images-base) ->
   # use getAttribute because `href` property adds the protocol, while
@@ -146,7 +136,7 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   thumb      = el.firstElementChild
   timestamp  = @url.match /\/(\d+)/ .1
 
-  @thumb     = new Thumb timestamp, thumb, thumbs-base
+  @thumb     = new DOMThumb timestamp, thumb, thumbs-base
 
   @width     = parseInt dimensions.1, 10
   @height    = parseInt dimensions.2, 10
@@ -157,83 +147,11 @@ class FImage then (el, postel, thumbs-base, images-base) ->
 
   @spoiler  = spoiler-regex.test thumb.alt
 
-class Thumb then (timestamp, el, thumbs-base) ->
+DOMThumb:: = require(\./Thumb)::
+!function DOMThumb timestamp, el, thumbs-base
   @url    = thumbs-base + "#{timestamp}s.jpg"
   # FIXME when image is spoiled, these are the spoiler image size.
   # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
   # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
   @width  = parseInt el.style.width, 10
   @height = parseInt el.style.height, 10
-
-# alternate constructor from 4chan JSON API
-APIThread:: = Thread::
-!function APIThread {posts: [op, ...replies]}: data, board
-  thumbs-base = "//thumbs.4chan.org/#board/thumb/"
-  images-base = "//images.4chan.org/#board/src/"
-  thread-url  = "//boards.4chan.org/#board/res/"
-  @no  = op.no
-  @url = thread-url + op.no
-
-  @preview = !!op.omitted_posts
-  @sticky  = !!op.sticky
-  @closed  = !!op.closed
-
-  @op      = new APIPost this, op, 0, images-base, thumbs-base
-  idx = 1 + (op.omitted_posts || 0)
-  @replies = for replies => new APIPost this, &, idx++, images-base, thumbs-base
-
-  @postprocess!
-
-APIPost:: = Post::
-!function APIPost thread, data, @idx, images-base, thumbs-base
-  @<<< data{
-    no
-    subject: sub
-    name
-    tripcode: trip
-    uid: id
-    capcode
-    email
-  }
-
-  @url           = "#{thread.url}\#p#{data.no}"
-  @time          = new Date data.time * 1000
-
-  @sage          = data.email is \sage
-  @comment       = if data.com then enhancer.enhance that else ''
-
-  @deleted-image = !!data.filedeleted
-  @image         = if data.fsize then new APIImage data, images-base, thumbs-base
-
-APIImage:: = FImage::
-!function APIImage data, images-base, thumbs-base
-  @thumb = new APIThumb data, thumbs-base
-
-  @url      = images-base + data.tim + data.ext
-
-  @width    = data.w
-  @height   = data.h
-
-  @size     = humanized data.fsize
-  @filename = data.filename + data.ext
-  @md5      = data.md5
-
-  @spoiler  = !!data.spoiler
-
-APIThumb:: = Thumb::
-!function APIThumb data, thumbs-base
-  @url    = thumbs-base + data.tim + \s.jpg
-  @width  = data.tn_w
-  @height = data.tn_h
-
-export
-  board: parse-board
-  api: (data, board) -> new APIThread data, board
-
-function humanized bytes
-  if bytes < 1024
-    "#bytes B"
-  else if (kbytes = Math.round bytes / 1024) < 1024
-    "#kbytes KB"
-  else
-    "#{(kbytes / 1024)toString!substring 0 3} MB"

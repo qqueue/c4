@@ -1,0 +1,3 @@
+# Posts share a prototype for marginally faster microbenchmarked JS speed. The
+# actual constructors are defined for DOM/API separately.
+module.exports = class Post

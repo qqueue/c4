@@ -1,0 +1,78 @@
+# why do I need to parse the already JSON-formatted 4chan API. because it's
+# dumb, that's why.
+# `data` is the JSON parsed to JS objects
+# `board` is the board name, e.g. 'a'
+#
+# Note that this parses the thread JSON objects, not the board JSON objects or
+# catalog JSON objects.
+module.exports = (data, board) -> new APIThread data, board
+
+APIThread:: = require(\./Thread)::
+!function APIThread {posts: [op, ...replies]}: data, board
+  thumbs-base = "//thumbs.4chan.org/#board/thumb/"
+  images-base = "//images.4chan.org/#board/src/"
+  thread-url  = "//boards.4chan.org/#board/res/"
+  @no  = op.no
+  @url = thread-url + op.no
+
+  @preview = !!op.omitted_posts
+  @sticky  = !!op.sticky
+  @closed  = !!op.closed
+
+  @op      = new APIPost this, op, 0, images-base, thumbs-base
+  idx = 1 + (op.omitted_posts || 0)
+  @replies = for replies => new APIPost this, &, idx++, images-base, thumbs-base
+
+  @postprocess!
+
+APIPost:: = require(\./Post)::
+!function APIPost thread, data, @idx, images-base, thumbs-base
+  @<<< data{
+    no
+    subject: sub
+    name
+    tripcode: trip
+    uid: id
+    capcode
+    email
+  }
+
+  @url           = "#{thread.url}\#p#{data.no}"
+  @time          = new Date data.time * 1000
+
+  @sage          = data.email is \sage
+  @comment       = data.com or ''
+
+  @deleted-image = !!data.filedeleted
+  @image         = if data.fsize then new APIImage data, images-base, thumbs-base
+
+APIImage:: = require(\./FImage)::
+!function APIImage data, images-base, thumbs-base
+  @thumb = new APIThumb data, thumbs-base
+
+  @url      = images-base + data.tim + data.ext
+
+  @width    = data.w
+  @height   = data.h
+
+  @size     = humanized data.fsize
+  @filename = data.filename + data.ext
+  @md5      = data.md5
+
+  @spoiler  = !!data.spoiler
+
+APIThumb:: = require(\./Thumb)::
+!function APIThumb data, thumbs-base
+  @url    = thumbs-base + data.tim + \s.jpg
+  @width  = data.tn_w
+  @height = data.tn_h
+
+# 4chan format image sizes like this on its HTML pages.
+# TODO this might be better to do during templating actually.
+function humanized bytes
+  if bytes < 1024
+    "#bytes B"
+  else if (kbytes = Math.round bytes / 1024) < 1024
+    "#kbytes KB"
+  else
+    "#{(kbytes / 1024)toString!substring 0 3} MB"

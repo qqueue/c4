@@ -100,7 +100,7 @@ if board.is-thread and data?version is version
   board.threads = [data.thread]
 else
   console.time "parse board"
-  board.threads = parser.board d, board.name
+  board.threads = parser.dom d, board.name
   console.timeEnd "parse board"
   board.thread = board.threads.0 if board.isThread
 

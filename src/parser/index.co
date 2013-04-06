@@ -1,0 +1,72 @@
+# Parse 4chan's ad-hoc, poorly named DOM structures and API format into equally
+# ad-hoc but much more friendly JS object structures. It's better, man,
+# I swear.
+#
+# Rough documentation:
+#
+# Thread = {
+#   no  : unique post number of the OP.
+#   url : protocol-less URL (begins with '//') to thread on 4chan.
+#
+#   preview: boolean, whether all posts are present in `replies`.
+#   omitted : if the thread is not a preview then `undefined` otherwise:
+#     replies      : Number of omitted replies
+#     imageReplies : Number of omitted image replies
+#
+#   sticky: boolean, whether thread is stuck on top of the board pages.
+#   closed: boolean, whether thread is open to replies
+#
+#   op: the first Post of the thread.
+#   replies: Array of reply posts.
+#
+#   reply: Object, with references to each reply by `no` (for lookup)
+#   imageReplies: Array of replies with images.
+#
+# }
+#
+# Post: {
+#   no: unique post number within a board
+#   url: URL to specific post, with hash to its ID (#p{no})
+#
+#   time: Date object when the post was made, accurate to seconds on most
+#   boards.
+#
+#   subject: post subject (blue text)
+#
+#   name: poster's enetered name, usually 'Anonymous'
+#   tripcode: tripcode or `undefined`
+#
+#   capcode: 'Admin' or 'Mod' or 'Developer' are the only ones I think exist.
+#
+#   uid: the posterID string or `undefined`
+#
+#   email: email or `undefined`
+#   sage: boolean, if post didn't bump the thread
+#
+#   comment: HTML string of post's text.
+#
+#   deletedImage: boolean, whether post had an image but it was removed.
+#
+#   image: Image object or `undefined`.
+# }
+#
+# Image: {
+#   url: URL to full size image.
+#
+#   width, height: Numbers
+#
+#   size: string of human readable image size, e.g. '1.8MB'
+#
+#   filename: original filename.
+#   md5: hash of original image.
+#
+#   spoiler: boolean, whether image is marked as a spoiler
+#
+#   thumb:
+#     url: thumbnail image url
+#
+#     width, height: Numbers
+# }
+export
+  dom : require \./DOM
+  api : require \./API
