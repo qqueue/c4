@@ -52,6 +52,7 @@ require \./features/quote
 require \./utils/relative-dates
 require \./features/relative-dates
 require \./features/youtube
+require \./features/read-status
 
 {onready} = require \./utils/features
 

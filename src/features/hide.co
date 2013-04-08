@@ -5,7 +5,7 @@
 # Uses 4chan's "native" localStorage hidden hash, so hidden threads are
 # persisted to the 4chan catalog.
 
-{$$} = require \../utils/dom
+{$, $$} = require \../utils/dom
 {onready, onupdate} = require \../utils/features
 
 const threshold = 604800000ms # one week
