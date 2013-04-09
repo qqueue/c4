@@ -6,7 +6,7 @@
 {get, set, sset, sget} = require \../utils/storage
 {onready, onpostinsert} = require \../utils/features
 {$, $$} = require \../utils/dom
-{debounce} = require \../utils/timing
+{debounce, defer} = require \../utils/timing
 
 # TODO threshold sticky posts or other posts that will stick around longer.
 const threshold = 604800000ms # one week
@@ -22,16 +22,32 @@ let now = Date.now!
 unread = []
 
 onready !->
-  # mark all unread posts below the fold
+  # mark all unread posts.
+  # don't read posts that are visible immediately, to give some indication of
+  # which posts on the current view are still unread.
+  visible = []
   page-bottom = window.scrollY + window.innerHeight
   for $$ \.post
     if not read[&dataset.no]
+      &classList.add \unread
       if &getBoundingClientRect!bottom > page-bottom
         unread.push &
-        &classList.add \unread
       else
-        # read on sight, presumably
-        read[&dataset.no] = Date.now!
+        # mark as read in a view seconds
+        visible.push &
+
+  # then visiblize them
+  defer 2000ms !->
+    now = Date.now!
+    page-bottom = window.scrollY + window.innerHeight
+    for visible =>
+      # if still visible
+      if &getBoundingClientRect!bottom > page-bottom
+        &classList.remove \unread
+        read[&dataset.no] = now
+      else
+        # add to 'real' unread list
+        unread.push &
 
   # mark as read once scrolled past
   # hopefully won't use too much CPU and make scrolling janky
@@ -50,7 +66,7 @@ onready !->
     unread := still-unread
 
   window.addEventListener \unload !->
-    # since other tabs could have changed this in the interim time, merge with 
+    # since other tabs could have changed this in the interim time, merge with
     # current localStorage version
     set \read {...read, ...get \read}
 
