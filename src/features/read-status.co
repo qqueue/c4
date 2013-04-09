@@ -22,7 +22,6 @@ let now = Date.now!
 unread = []
 
 onready !->
-
   # mark all unread posts below the fold
   page-bottom = window.scrollY + window.innerHeight
   for $$ \.post
@@ -51,7 +50,9 @@ onready !->
     unread := still-unread
 
   window.addEventListener \unload !->
-    set \read read
+    # since other tabs could have changed this in the interim time, merge with 
+    # current localStorage version
+    set \read {...read, ...get \read}
 
 onpostinsert !->
   # two possible cases: new updated post, or inlined/previews post
