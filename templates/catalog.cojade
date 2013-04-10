@@ -1,0 +1,4 @@
+~ catalog-thread = require \./catalog-thread
+#threads
+  for @order.date
+    = catalog-thread @threads[&]

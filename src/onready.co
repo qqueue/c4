@@ -63,9 +63,7 @@ if board.is-catalog
     # XXX I sure hope the code doesn't change...
     catalog = JSON.parse catalog-text.substring 14, catalog-text.length - 72
 
-    # TODO
-    body.appendChild with L \pre
-      &textContent = JSON.stringify catalog, , 2
+    body.innerHTML = require(\templates/catalog) catalog
 
     html.appendChild body
 else

@@ -1,0 +1,2 @@
+p= @teaser
+img(src="//thumbs.4chan.org/#{board.name}/thumb/#{@imgurl}s.jpg")
