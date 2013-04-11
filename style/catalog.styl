@@ -1,0 +1,39 @@
+cat-width = 150px
+
+#catalog
+  clear both
+
+  padding 1em
+
+  -moz-columns auto cat-width
+
+.catalog-link
+  display block
+  color inherit
+
+.catalog-thread
+  // this prevents the caption from breaking into the next column
+  // TODO better way to do this?
+  display inline-block
+
+  padding 0
+  margin 1em 0
+
+.catalog-caption
+  font-size 8pt
+  font-family sans-serif
+
+  max-width cat-width
+
+.reply-count
+  text-align center
+
+.teaser
+  max-height 150px
+  overflow hidden
+
+.catalog-thumb
+  // TODO would prefer to specify width and height in html to prevent
+  // reflowing, but that would require object-fit CSS to make simple max-width
+  // scaling 'just werk'.
+  max-width cat-width

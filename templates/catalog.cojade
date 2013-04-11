@@ -1,4 +1,7 @@
 ~ catalog-thread = require \./catalog-thread
-#threads
+~ header = require \./header
+
+= header!
+#catalog
   for @order.date
-    = catalog-thread @threads[&]
+    = catalog-thread @threads[&], no: &

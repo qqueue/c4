@@ -1,2 +1,6 @@
-p= @teaser
-img(src="//thumbs.4chan.org/#{board.name}/thumb/#{@imgurl}s.jpg")
+a.catalog-link(href="//boards.4chan.org/#{board.name}/res/#{@@no}")
+  figure.catalog-thread
+    img.catalog-thumb(src="//thumbs.4chan.org/#{board.name}/thumb/#{@imgurl}s.jpg")
+    figcaption.catalog-caption
+      .reply-count= "R: #{@r}, I: #{@i}"
+      p.teaser= @teaser

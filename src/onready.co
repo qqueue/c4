@@ -49,9 +49,41 @@ body = L \body
 # CHROME, negating the need to handle 'beforescriptexeute' or whatever. crazy.
 d = document.replaceChild html, document.documentElement
 
+!function parse-header
+  console.time "parse page"
+  # get other useful information
+  board
+    &title    = d.querySelector \.boardTitle      ?.textContent or ''
+    &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
+    &nav      = d.querySelector \#boardNavDesktop  .innerHTML
+    &banner   = d.querySelector \.title            .src
+    &message  = d.querySelector \.globalMessage   ?.innerHTML
+
+    # detect based on favicon href
+    &sfw =
+      d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
+
+    &type = if &sfw then \sfw else \nsfw
+    &favicon = board.favicons[&type]
+
+    # for post deletion
+    &password = get \password or Math.random!toString!substr -8
+
+  console.timeEnd "parse page"
+
+  console.log board
+
+  # XXX needs to go somewhere else
+  body
+    &id = board.name
+    &className = "#{board.type} \
+                 #{if board.isThread then \threadpage else \boardpage}"
+
 # init
 if board.is-catalog
   document.addEventListener \DOMContentLoaded !->
+    parse-header!
+
     # find script tag that defines `catalog`
     [catalog-text] = Array::filter.call d.querySelectorAll(\script), ->
       /var catalog/.test it.textContent
@@ -63,6 +95,8 @@ if board.is-catalog
     # XXX I sure hope the code doesn't change...
     catalog = JSON.parse catalog-text.substring 14, catalog-text.length - 72
 
+    console.log catalog
+
     body.innerHTML = require(\templates/catalog) catalog
 
     html.appendChild body
@@ -72,28 +106,7 @@ else
 
     console.time "initial render"
 
-    console.time "parse page"
-    # get other useful information
-    board
-      &title    = d.querySelector \.boardTitle      ?.textContent or ''
-      &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
-      &nav      = d.querySelector \#boardNavDesktop  .innerHTML
-      &banner   = d.querySelector \.title            .src
-      &message  = d.querySelector \.globalMessage   ?.innerHTML
-
-      # detect based on favicon href
-      &sfw =
-        d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
-
-      &type = if &sfw then \sfw else \nsfw
-      &favicon = board.favicons[&type]
-
-      # for post deletion
-      &password = get \password or Math.random!toString!substr -8
-
-    console.timeEnd "parse page"
-
-    console.log board
+    parse-header!
 
     # if I click a link off of a threadpage that has been updated, then click the
     # back button, the updated posts won't appear until the updater hits the
@@ -134,11 +147,6 @@ else
       board.threads-by-id[&no] = &
 
     # console.log board.threads
-
-    body
-      &id = board.name
-      &className = "#{board.type} \
-                   #{if board.isThread then \threadpage else \boardpage}"
 
     console.time "generate new HTML body"
     body-html = board-template board
