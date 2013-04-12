@@ -194,7 +194,11 @@ s
 
 .backlinks
   clear both
+  word-wrap break-word
 
+// wrap backlinks even though they don't have textNodes between them
+.backlink
+  display inline-block
 
 .backlink, .backlinks > .recursivelink
   margin-right 1em
