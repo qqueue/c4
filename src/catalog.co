@@ -1,0 +1,14 @@
+{L, $$, $} = require \./utils/dom
+catalog-thread = require \templates/catalog-thread
+
+{catalog} = board
+
+# 4chan catalog features, since I'm clobbering desuwa's version
+for $$ \.order
+  &addEventListener \change !->
+    if @checked
+      # rerender
+      $ \catalog .innerHTML = (for catalog.order[@value]
+        catalog-thread catalog.threads[&], no: &
+      )join ''
+

@@ -79,6 +79,8 @@ d = document.replaceChild html, document.documentElement
     &className = "#{board.type} \
                  #{if board.isThread then \threadpage else \boardpage}"
 
+catalog-template = require \templates/catalog
+
 # init
 if board.is-catalog
   document.addEventListener \DOMContentLoaded !->
@@ -95,11 +97,17 @@ if board.is-catalog
     # XXX I sure hope the code doesn't change...
     catalog = JSON.parse catalog-text.substring 14, catalog-text.length - 72
 
+    board.catalog = catalog
+
     console.log catalog
 
-    body.innerHTML = require(\templates/catalog) catalog
+    body.innerHTML = catalog-template catalog, order: \date
 
     html.appendChild body
+
+    # XXX need to think a lot harder about how to structure this code. hiding the 
+    # two types of pages behind if-statements isn't that great of an architecture
+    require \./catalog
 else
   document.addEventListener \DOMContentLoaded !->
     #console.profile!
