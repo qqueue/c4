@@ -6,13 +6,22 @@ cat-width = 150px
 #catalog
   clear both
 
-  padding 1em
+  -moz-columns auto cat-width + 20
 
-  -moz-columns auto cat-width
+  -moz-column-gap 0
 
 .catalog-link
   display block
   color inherit
+
+  padding 1em
+  margin 0
+
+  // paperfold-ish
+  background linear-gradient(0deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 1em, transparent 2em), linear-gradient(270deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 1em, transparent 2em) , linear-gradient(180deg, rgba(0, 0, 0, 0.03), transparent 1em, transparent) , linear-gradient(90deg, rgba(0,0,0,0.03), transparent 1em, transparent)
+
+  &:hover
+    box-shadow 0 0 15px rgba(0,0,0,0.3) inset
 
 .catalog-thread
   // this prevents the caption from breaking into the next column
@@ -20,7 +29,7 @@ cat-width = 150px
   display inline-block
 
   padding 0
-  margin 1em 0
+  margin 0
 
 .catalog-caption
   font-size 8pt
