@@ -1,7 +1,7 @@
 stylus     = require \stylus
 {cjsify}   = require \commonjs-everywhere
 lodash     = require \lodash
-{basename} = require \path
+md5        = require \MD5
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
@@ -34,6 +34,13 @@ time = let names = {}, last = {}
 # recompilation.
 ast-cache = {}
 
+# map from filename to md5sum, to determine if files really changed
+contents-hash = {}
+
+# flag whether something changed during compilation at all
+# XXX kinda gross global state, oh well
+var changed
+
 nib = time.as 'Stylus compilation' (it, filename) ->
   stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)! .render!
 
@@ -41,12 +48,22 @@ compile-coco = time.as 'Coco compilation' require(\coco)~compile
 parse-js = time.as 'Reparse JS' require(\esprima)~parse
 nephrite = time.as 'Nephrite compilation' require(\nephrite)
 
+# if file hasn't actually changed from last compilation (by hash), use cached
+# compiled AST. Unfortunately the hash check has to be done for every required
+# file since cjsify will run `readFile` on every required file. It'd be better
+# if we could skip the hash check for all but the file `fs.watch` tells us has
+# changed, but hashing is pretty fast anyway.
 cached-compilation = (compile) ->
   (it, filename) ->
-    # cjsify gives paths relative to the root, while `watch` gives pathnames
-    # relative to the watched directory, i.e. just the basename, so chop off
-    # cjsify's added path
-    filename = basename filename
+    hash = md5 it
+
+    if hash is not contents-hash[filename]
+      # invalidate
+      delete ast-cache[filename]
+      # invalidate entire last compilation
+      changed := true
+
+    contents-hash[filename] = hash
 
     ast-cache[filename] ?= parse-js compile it, filename
 
@@ -67,6 +84,8 @@ outfile = \html5chan.user.js
 
 task \build 'build userscript' ->
   try
+    changed := false
+
     time.restart-all!
 
     time.start "Total build time"
@@ -84,19 +103,24 @@ task \build 'build userscript' ->
 
     time.stop "Commonjsification"
 
-    # TODO something with sourcemap, when fire(fox|bug) gets support
-    gen = ast-to-js ast
+    if changed
+      # TODO something with sourcemap, when fire(fox|bug) gets support
+      gen = ast-to-js ast
 
-    spit do
-      outfile
-      join do
-        metadata
-        "(function(){"
-        '"use strict";'
-        # XXX hack to invalidate cached data in html5 storage when code changes
-        "var HTML5CHAN_COMPILATION_VERSION = #{Math.random!};"
-        gen
-        "}).call(this)"
+      spit do
+        outfile
+        join do
+          metadata
+          "(function(){"
+          '"use strict";'
+          # XXX hack to invalidate cached data in html5 storage when code changes
+          "var HTML5CHAN_COMPILATION_VERSION = #{Math.random!};"
+          gen
+          "}).call(this)"
+
+      say "#{new Date}: compiled script to #{outfile}"
+    else
+      say "#{new Date}: no actual changes detected."
 
     time.end do
       "Commonjsification"
@@ -106,8 +130,6 @@ task \build 'build userscript' ->
       "Stylus compilation"
       "AST->JS"
       "Total build time"
-
-    say "#{new Date}: compiled script to #{outfile}"
   catch
     console.error e
     console.error e.stack
@@ -127,9 +149,6 @@ task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
   for <[style src templates src/features src/utils]>
     fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
-      # invalidate cache
-      delete ast-cache[filename]
-
       say "#event event detected on #filename. rebuilding..."
       invoke \build
 
