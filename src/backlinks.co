@@ -16,5 +16,5 @@ onupdate !->
             &className = 'backlink quotelink'
             &textContent = "«#idx"
           document.dispatchEvent new CustomEvent do
-            \html5chan-backlink
+            \c4-backlink
             detail: {backlink}

@@ -1,4 +1,4 @@
-# features helpers, specific to html5chan
+# features helpers, specific to c4
 # extracting out boilerplate for fewer absolute SLOC
 
 {$$} = require \./dom
@@ -15,11 +15,11 @@ function catch-event evt
         console.error e
         throw e
 export
-  onprerender  = catch-event \html5chan-prerender
-  onready      = catch-event \html5chan-ready
-  onupdate     = catch-event \html5chan-update
-  onpostinsert = catch-event \html5chan-postinsert
-  onbacklink   = catch-event \html5chan-backlink
+  onprerender  = catch-event \c4-prerender
+  onready      = catch-event \c4-ready
+  onupdate     = catch-event \c4-update
+  onpostinsert = catch-event \c4-postinsert
+  onbacklink   = catch-event \c4-backlink
 
 # define listeners that are attached to every post. e.g.
 #

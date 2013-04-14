@@ -1,11 +1,11 @@
-# html5chan, main code entry point
+# c4, main code entry point
 
 # XXX most of these `require`s calls just run side effects, due to legacy code
 # structure. Should rethink flow
 
-console.group "html5chan"
+console.group "c4"
 
-console.timeStamp "html5chan-init"
+console.timeStamp "c4-init"
 console.time "init"
 console.time "interactive"
 
@@ -62,7 +62,7 @@ require \./features/read-status
 onready !->
   console.timeEnd "onready handlers"
   console.timeEnd "interactive"
-  console.timeStamp "html5chan-loaded"
+  console.timeStamp "c4-loaded"
   console.groupEnd!
 
 console.timeEnd "init"

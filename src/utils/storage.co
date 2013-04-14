@@ -4,12 +4,12 @@
 setter = (storage) -> !(key, val) ->
   obj = (key): val if val? # support both hash and key,val syntax
   for key, val in obj or key
-    storage.setItem "html5chan-#key", JSON.stringify val
+    storage.setItem "c4-#key", JSON.stringify val
 
 getter = (storage) -> (key, reviver) ->
   try
     JSON.parse do
-      storage.getItem "html5chan-#key"
+      storage.getItem "c4-#key"
       reviver
 
 export

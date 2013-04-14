@@ -65,7 +65,7 @@ create-preview = !(no, post, thread = board.thread) ->
   # FIXME broken on board pages
   preview = DOM post-template post, thread: thread, container: \article id: \postpreview
     document.dispatchEvent new CustomEvent do
-      \html5chan-postinsert
+      \c4-postinsert
       detail: post: preview
 
     for &querySelectorAll ".quotelink[href$=\"#hostid\"]"

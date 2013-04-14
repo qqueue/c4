@@ -80,7 +80,7 @@ stylus-to-module = cached-compilation (it, filename) ->
 
 ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
 
-outfile = \html5chan.user.js
+outfile = \c4.user.js
 
 task \build 'build userscript' ->
   try
@@ -94,8 +94,8 @@ task \build 'build userscript' ->
 
     time.start "Commonjsification"
 
-    ast = cjsify \src/html5chan.co __dirname,
-      export: \html5chan
+    ast = cjsify \src/c4.co __dirname,
+      export: \c4
       handlers:
         \.co     : coco-to-js
         \.cojade : cojade
@@ -114,7 +114,7 @@ task \build 'build userscript' ->
           "(function(){"
           '"use strict";'
           # XXX hack to invalidate cached data in html5 storage when code changes
-          "var HTML5CHAN_COMPILATION_VERSION = #{Math.random!};"
+          "var c4_COMPILATION_VERSION = #{Math.random!};"
           gen
           "}).call(this)"
 
