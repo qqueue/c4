@@ -56,4 +56,6 @@
     img.deleted-image(alt="File deleted.", src="//static.4chan.org/image/filedeleted.gif")
 
   div.comment= enhancer.enhance @comment
-  footer.backlinks
+  .backlinks
+    for b of @backlinks
+      a.backlink.quotelink(href="#{'#'}p#{b}")= "«#{@@thread.post[b]idx}"

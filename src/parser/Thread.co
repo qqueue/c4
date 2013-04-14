@@ -9,17 +9,17 @@ module.exports = class Thread
 
     @imageReplies = []
 
-    # build reply hash and image replies array
-    @reply = {}
+    # build post by number hash and image replies array
+    @post = {(@no): @op}
     for reply of @replies
       @imageReplies.push reply if reply.image
-      @reply[reply.no] = reply
+      @post[reply.no] = reply
 
     # build backlinks arrays of posts
-    # XXX I'm not totally happy how this works, but it should be correct at 
+    # XXX I'm not totally happy how this works, but it should be correct at
     # least
-    for reply of @replies
-      for quoted of reply.quotelinks
-        @reply[quoted]backlinks.push reply.no
+    for post of @posts
+      for quoted of post.quotelinks
+        @post[quoted]backlinks.push post.no
 
     Thread[@no] = this

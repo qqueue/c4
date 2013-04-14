@@ -1,74 +1,20 @@
 # backlinks concern
 
-{onprerender, onready, onpostinsert} = require \./utils/features
+{onupdate} = require \./utils/features
 {L, $$} = require \./utils/dom
 
-# faster hash-based lookup cache
-backlinks = {}
-
-# initial scan
-onprerender !->
-  for it.detail.body.querySelectorAll '.post'
-    quoter = &dataset.no
-    idx    = &dataset.idx
-    for &querySelectorAll '.comment .quotelink'
-      if &href.match /#p(\d+)/
-        quoted = that.1
-        backlinks@[quoted][quoter] = true
-        it.detail.body.querySelector "\#p#quoted > .backlinks"
-          if &? and not &?querySelector ".backlink[href$=\"#quoter\"]"
-            &appendChild with L \a
-              &href = "\#p#quoter"
-              &className = 'backlink quotelink'
-              &textContent = "«#idx"
-
-# after initial postinserts, add new backlinks
-# TODO think harder about event structure to avoid having to wrap onready and
-# onpostinsert.
-# TODO use type to detect whether postinsert is an updated post
-# or just a preview/inline
-onready !-> onpostinsert !-> it.detail.post
-  quoter = &dataset.no
-  idx    = &dataset.idx
-
-  # add backlinks to this new post
-  if backlinks[quoter]
-    el = &querySelector '.backlinks'
-    for q in that
-      pidx = board.posts[q]idx
-      # unless it already exists (because of a rare forwardlink edge case in
-      # which a poster successfully guesses a number later in the thread, in
-      # which case the backlink will be added by the below block)
-      # TODO prevent this better somehow
-      unless el.querySelector ".backlink[href$=\"#q\"]"
-        el.appendChild with backlink = L \a
-          &href = "\#p#q"
-          &className = 'backlink quotelink'
-          &textContent = "«#pidx"
-        document.dispatchEvent new CustomEvent do
-          \html5chan-backlink
-          detail: {backlink}
-
-  # if this post is new (from an update)
-  # XXX shouldn't be necessary to query for this
-  if $$ ".post[data-no=\"#quoter\"]" .length is 1
-    # add new backlinks
-    # XXX refactor duplicate code
-    for &querySelectorAll '.comment .quotelink'
-      if &href.match /#p(\d+)/
-        quoted = that.1
-        for $$ ".post[data-no=\"#quoted\"] > .backlinks"
-          # if it's not already linked
-          if not &querySelector ".backlink[href$=\"#quoter\"]"
-
-            # register backlink
-            backlinks@[quoted][quoter] = true
-
-            &appendChild with backlink = L \a
-              &href = "\#p#quoter"
-              &className = 'backlink quotelink'
-              &textContent = "«#idx"
-            document.dispatchEvent new CustomEvent do
-              \html5chan-backlink
-              detail: {backlink}
-
+onupdate !->
+  # add any new backlinks to the DOM
+  for quoter of it.detail.new-posts
+    {idx} = quoter
+    for quoted of quoter.quotelinks
+      for $$ ".post[data-no=\"#quoted\"] > .backlinks"
+        # if it's not already linked
+        if not &querySelector ".backlink[href$=\"#quoter\"]"
+          &appendChild with backlink = L \a
+            &href = "\#p#quoter"
+            &className = 'backlink quotelink'
+            &textContent = "«#idx"
+          document.dispatchEvent new CustomEvent do
+            \html5chan-backlink
+            detail: {backlink}

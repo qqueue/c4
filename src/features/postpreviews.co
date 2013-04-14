@@ -32,7 +32,7 @@ fetch-new-post = !(no) ->
             board.posts[&no] = &
 
           # then use that to look up our post
-          create-preview.call link, no, board.posts[no]
+          create-preview.call link, no, board.posts[no], thread
 
     &send!
 
@@ -54,7 +54,7 @@ handle-preview = !->
   else
     create-preview.call this, no, post
 
-create-preview = !(no, post) ->
+create-preview = !(no, post, thread = board.thread) ->
   $ \postpreview ?.remove!
 
   host = closest \.post this
@@ -62,7 +62,8 @@ create-preview = !(no, post) ->
 
   {width, height, left, top} = @getBoundingClientRect!
 
-  preview = DOM post-template post, container: \article id: \postpreview
+  # FIXME broken on board pages
+  preview = DOM post-template post, thread: thread, container: \article id: \postpreview
     document.dispatchEvent new CustomEvent do
       \html5chan-postinsert
       detail: post: preview
