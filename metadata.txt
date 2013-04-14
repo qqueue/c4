@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        html5chan
-// @namespace   https://github.com/qqueue/html5chan
-// @description The Roger Bacon of 4chan userscripts
+// @name        c4
+// @namespace   https://github.com/qqueue/c4
+// @description The Higgs Boson of 4chan userscripts
 // @author      queue <queue@lavabit.com>
 //
 // @license     none (public domain)
