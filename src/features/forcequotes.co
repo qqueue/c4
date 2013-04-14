@@ -4,8 +4,7 @@
 {L} = require \../utils/dom
 {truncate} = require \../utils/string
 
-# XXX cheating
-{handle-preview} = require \./image-previews
+lightbox = require(\../utils/lightbox) -> it.dataset{src, width, height}
 
 munge = !(ctx) ->
   for quote of ctx.querySelectorAll '.quotelink:not(.backlink):not(.forcequoted)'
@@ -30,26 +29,22 @@ munge = !(ctx) ->
           &className = 'quote forcedquote'
 
       if post.image
-        quote.after with L \a
-          &className = \forcedimage
-          &textContent = ' '
-          &setAttribute \data-width post.image.width
+        quote.after ' ' with L \img
+          &className = \forcedthumb
+          &setAttribute \data-width  post.image.width
           &setAttribute \data-height post.image.height
-          &href = post.image.url
-          &appendChild with L \img
-            &className = \thumb
-            &style <<<
-              max-height: \15px
-              display: \inline-block
-              vertical-align: \middle
+          &setAttribute \data-src    post.image.url
+          &style <<<
+            max-height: \15px
+            display: \inline-block
+            vertical-align: \middle
 
-            &src = if post.image.spoiler
-              board.spoiler-url
-            else
-              post.image.thumb.url
+          &src = if post.image.spoiler
+            board.spoiler-url
+          else
+            post.image.thumb.url
 
-            # XXX I'm cheating ....
-            &addEventListener \mouseover handle-preview
+          &addEventListener \mouseover lightbox
 
       # compact post number
       quote.textContent = "»#{post.idx}"

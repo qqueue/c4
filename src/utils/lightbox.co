@@ -1,0 +1,73 @@
+# center an image in the viewport "lightbox"-style, i.e. with a dimmed
+# background.
+
+{L, $, $$} = require \../utils/dom
+{defer} = require \../utils/timing
+{tooltip} = require \../utils/tooltip
+
+# scaled width and height from original width and height. manual version of CSS
+# object-fit (only in opera)
+function object-fit container, width, height
+  ratio = Math.min 1, container.height/height, container.width/width
+  width: ratio * width, height: ratio * height
+
+# a mouseover event listener for an element to trigger the lightbox.
+# `image-of` is a fn returning {src, width, height}, the properties of the
+# image to be lightboxed. It is passed the eventTarget as a parameter.
+module.exports = (image-of) ->
+  tooltip do
+    show: !->
+      {src, width, height} = image-of this
+      console.log src
+
+      @style.cursor = \none # hide cursor while hovering
+
+      # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
+      # size of viewport excluding scrollbars.
+      viewport = document.documentElement{width: clientWidth, height: clientHeight}
+
+      document.body.append with L \img
+        &id = \imgpreview
+        &alt = "Loading..."
+        &src = src
+
+        &{width, height} = object-fit viewport, width, height
+
+        &addEventListener \load  -> @removeAttribute \alt
+        &addEventListener \error -> @alt = "Unable to load image."
+
+        &style <<<
+          position            : \fixed
+          left                : 0
+          top                 : 0
+          pointer-events      : \none
+
+          # give a lightbox-like shading to the page
+          background-color    : 'rgba(0,0,0,.5)'
+
+          # pad out the background-color to the entire viewport
+          padding             : "#{(viewport.height - &height) / 2}px \
+                                 #{(viewport.width  - &width ) / 2}px"
+
+          transition-duration : \.5s
+          opacity             : 0
+
+        # remove once faded completely.
+        &addEventListener \transitionend ({propertyName}: e) ->
+          if propertyName is \opacity and @style.opacity is '0'
+            @remove!
+
+        # fade in, deferred to trigger transition animation.
+        defer 100ms !-> &style.opacity = 1
+
+    hide: !->
+      # fade out. would be nice if DOM removal triggered CSS opacity transitions,
+      # but it doesn't.
+      $ \imgpreview ?.style.opacity = 0
+
+      # if this is called before the deferred opacity -> 1 fn is called above,
+      # then the above opacity line won't trigger transitionend, so ensure the
+      # preview is removed eventually.
+      defer 100ms !-> $ \imgpreview ?.remove!
+
+      @style.removeProperty \cursor

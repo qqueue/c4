@@ -1,72 +1,16 @@
-# show a centered image preview when hovering over an image after a short delay
+## problem: viewing full-size or at least larger-than-thumbnail images on 4chan
+#requires a mouse-click.
+#
+# Solution: full image lightbox on mouse hover.
 
 {on-posts} = require \../utils/features
-{L, $, $$} = require \../utils/dom
-{tooltip} = require \../utils/tooltip
-{defer} = require \../utils/timing
+lightbox = require \../utils/lightbox
 
-# scaled width and height from original width and height. manual version of CSS
-# object-fit (only in opera)
-object-fit = (container, width, height) ->
-  ratio = Math.min 1, container.height/height, container.width/width
-  width: ratio * width, height: ratio * height
+on-posts \.thumb : mouseover: lightbox ({{dataset, href}: parentElement}) ->
+  console.log parentElement
+  {dataset.width, dataset.height, src: href}
 
-# XXX export so forcequotes can preview the little quoted images
-export handle-preview = tooltip do
-  show: !->
-    @style.cursor = \none # hide cursor while hovering
-
-    a = @parentElement
-
-    # http://code.google.com/p/doctype-mirror/wiki/ArticleViewportSize
-    # size of viewport excluding scrollbars.
-    viewport = document.documentElement{width: clientWidth, height: clientHeight}
-
-    document.body.append with L \img
-      &id = \imgpreview
-      &alt = "Loading..."
-      &src = a.href
-
-      &{width, height} = object-fit viewport, a.dataset.width, a.dataset.height
-
-      &addEventListener \load  -> @removeAttribute \alt
-      &addEventListener \error -> @alt = "Unable to load image."
-
-      &style <<<
-        position            : \fixed
-        left                : 0
-        top                 : 0
-        pointer-events      : \none
-
-        # give a lightbox-like shading to the page
-        background-color    : 'rgba(0,0,0,.5)'
-
-        # pad out the background-color to the entire viewport
-        padding             : "#{(viewport.height - &height) / 2}px \
-                               #{(viewport.width  - &width ) / 2}px"
-
-        transition-duration : \.5s
-        opacity             : 0
-
-      # remove once faded completely.
-      &addEventListener \transitionend ({propertyName}: e) ->
-        if propertyName is \opacity and @style.opacity is '0'
-          @remove!
-
-      # fade in, deferred to trigger transition animation.
-      defer 100ms !-> &style.opacity = 1
-
-  hide: !->
-    # fade out. would be nice if DOM removal triggered CSS opacity transitions,
-    # but it doesn't.
-    $ \imgpreview ?.style.opacity = 0
-
-    # if this is called before the deferred opacity -> 1 fn is called above,
-    # then the above opacity line won't trigger transitionend, so ensure the
-    # preview is removed eventually.
-    defer 100ms !-> $ \imgpreview ?.remove!
-
-    @style.removeProperty \cursor
-
-on-posts \.thumb : mouseover: handle-preview
-
+# TODO alternative destructuring, I think there's an even shorter version
+# though
+# { ...it.parentElement{src: href}, ...it.parentElement.dataset{width, height} 
+# }
