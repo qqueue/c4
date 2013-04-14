@@ -1,13 +1,14 @@
-stylus   = require \stylus
-{cjsify} = require \commonjs-everywhere
-lodash   = require \lodash
+stylus     = require \stylus
+{cjsify}   = require \commonjs-everywhere
+lodash     = require \lodash
+{basename} = require \path
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
 
 # sexy (arguably) AOP/traditional-style time metrics
 time = let names = {}, last = {}
-  of: (it, pad = it.length) -> "#{it + ' ' * (pad - it.length)} : #{names[it]}ms"
+  of: (it, pad = it.length) -> "#{it + ' ' * (pad - it.length)} : #{names[it] or 0}ms"
   end: !->
     if @@length > 1
       pad = Math.max.apply Math, (for @@ => &length)
@@ -29,6 +30,10 @@ time = let names = {}, last = {}
     ret
   restart-all: !-> names := {}
 
+# for watch task, keep the AST of files not changed in memory for faster
+# recompilation.
+ast-cache = {}
+
 nib = time.as 'Stylus compilation' (it, filename) ->
   stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)! .render!
 
@@ -36,14 +41,25 @@ compile-coco = time.as 'Coco compilation' require(\coco)~compile
 parse-js = time.as 'Reparse JS' require(\esprima)~parse
 nephrite = time.as 'Nephrite compilation' require(\nephrite)
 
-coco-to-js = (it, filename) ->
-  src = compile-coco it.toString!, {+bare, filename}
-  parse-js src
+cached-compilation = (compile) ->
+  (it, filename) ->
+    # cjsify gives paths relative to the root, while `watch` gives pathnames
+    # relative to the watched directory, i.e. just the basename, so chop off
+    # cjsify's added path
+    filename = basename filename
 
-cojade = (it, filename) ->
+    ast-cache[filename] ?= parse-js compile it, filename
+
+coco-to-js = cached-compilation (it, filename) ->
+  compile-coco it.toString!, {+bare, filename}
+
+cojade = cached-compilation (it, filename) ->
   src = nephrite it.toString!, filename
   src = compile-coco src, {+bare, filename}
-  parse-js src
+
+stylus-to-module = cached-compilation (it, filename) ->
+  "module.exports = '#{nib it.toString!, filename
+                         .replace /'/g "\/'" .replace /\n/g '\\n'}'"
 
 ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
 
@@ -62,14 +78,9 @@ task \build 'build userscript' ->
     ast = cjsify \src/html5chan.co __dirname,
       export: \html5chan
       handlers:
-        \.co : coco-to-js
-        # string interp template
-        # XXX cjsify doesn't support multipart filenames e.g. .co.html
+        \.co     : coco-to-js
         \.cojade : cojade
-        \.styl : (it, filename) ->
-          src = "module.exports = '#{nib it.toString!, filename
-            .replace /'/g "\/'" .replace /\n/g '\\n'}'"
-          parse-js src
+        \.styl   : stylus-to-module
 
     time.stop "Commonjsification"
 
@@ -116,6 +127,9 @@ task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
   for <[style src templates src/features src/utils]>
     fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
+      # invalidate cache
+      delete ast-cache[filename]
+
       say "#event event detected on #filename. rebuilding..."
       invoke \build
 
