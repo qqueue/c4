@@ -1,0 +1,12 @@
+regex = /<a href="\d+#p(\d+)" class="quotelink">/g
+
+# a list of post numbers that are quoted by the comment (HTML)
+# TODO will fail on cross-board links probably
+module.exports = (comment) ->
+  # use a hash in order to dedupe quotelinks to the same post
+  set = {}
+  regex.lastIndex = 0
+  while regex.exec comment
+    set[that.1] = true # the post number
+
+  Object.keys set
