@@ -5,6 +5,9 @@
 #
 # Note that this parses the thread JSON objects, not the board JSON objects or
 # catalog JSON objects.
+
+quotelinks-of = require \./quotelinks-of
+
 module.exports = (data, board) -> new APIThread data, board
 
 APIThread:: = require(\./Thread)::
@@ -45,6 +48,9 @@ APIPost:: = require(\./Post)::
 
   @deleted-image = !!data.filedeleted
   @image         = if data.fsize then new APIImage data, images-base, thumbs-base
+
+  @quoted        = quotelinks-of @comment
+  @backlinks     = []
 
 APIImage:: = require(\./FImage)::
 !function APIImage data, images-base, thumbs-base

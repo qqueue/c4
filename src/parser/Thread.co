@@ -15,4 +15,11 @@ module.exports = class Thread
       @imageReplies.push reply if reply.image
       @reply[reply.no] = reply
 
+    # build backlinks arrays of posts
+    # XXX I'm not totally happy how this works, but it should be correct at 
+    # least
+    for reply of @replies
+      for quoted of reply.quotelinks
+        @reply[quoted]backlinks.push reply.no
+
     Thread[@no] = this

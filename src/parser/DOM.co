@@ -1,4 +1,6 @@
-# `document` is a HTMLDocument or HTMLElement that contains the .threads div 
+quotelinks-of = require \./quotelinks-of
+
+# `document` is a HTMLDocument or HTMLElement that contains the .threads div
 # from 4chan's pages.
 #
 # `board` is a string for the name of the board, e.g. 'a'.
@@ -119,6 +121,9 @@ DOMPost:: = require(\./Post)::
   @deleted-image = img?firstElementChild.alt is "File deleted."
   @image = if img and not @deleted-image
     new FImage img, el, thumbs-base, images-base
+
+  @quoted        = quotelinks-of @comment
+  @backlinks     = []
 
 dimension-regex = /(\d+)x(\d+)/
 size-regex      = /[\d\.]+ [KM]?B/
