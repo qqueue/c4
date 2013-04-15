@@ -147,7 +147,7 @@ debounce = (wait, fn) -> lodash.debounce fn, wait
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
-  for <[style src templates src/features src/utils]>
+  for <[style src templates src/features src/parser src/utils]>
     fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
       say "#event event detected on #filename. rebuilding..."
       invoke \build
