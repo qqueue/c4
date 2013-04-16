@@ -134,7 +134,7 @@ on-posts '.quotelink:not(.hiddenlink)':
   dblclick: follow
 
 onbacklink !->
-  it.detail.backlink
+  @backlink
     &addEventListener \click onclick
     &addEventListener \dblclick follow
 

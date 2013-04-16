@@ -138,6 +138,6 @@ onready !->
 
   # then on updates
   onpostinsert !->
-    pending-videos.push ...it.detail.post.querySelectorAll \.youtube
+    pending-videos.push ...@post.querySelectorAll \.youtube
     load-info!
 

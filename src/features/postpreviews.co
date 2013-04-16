@@ -107,6 +107,5 @@ create-preview = !(no, post, thread = board.thread) ->
 
 on-posts \.quotelink : mouseover: handle-preview
 
-onbacklink !->
-  it.detail.backlink.addEventListener \mouseover handle-preview
+onbacklink !-> @backlink.addEventListener \mouseover handle-preview
 

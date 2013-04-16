@@ -5,7 +5,7 @@
 
 onupdate !->
   # add any new backlinks to the DOM
-  for quoter of it.detail.new-posts
+  for quoter of @new-posts
     {idx} = quoter
     for quoted of quoter.quotelinks
       for $$ ".post[data-no=\"#quoted\"] > .backlinks"
