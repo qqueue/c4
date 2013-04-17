@@ -29,8 +29,8 @@ munge = !(ctx) ->
           &className = 'quote forcedquote'
 
       if post.image
-        quote.after ' ' with L \img
-          &className = \forcedthumb
+        quote.after with L \img
+          &className = \forcedimage
           &setAttribute \data-width  post.image.width
           &setAttribute \data-height post.image.height
           &setAttribute \data-src    post.image.url
