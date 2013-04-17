@@ -20,6 +20,9 @@ module.exports = class Thread
     # least
     for post of @posts
       for quoted of post.quotelinks
-        @post[quoted]backlinks.push post.no
+        # quotelinks can contain cross-thread/board links, so guard against those.
+        # TODO is it useful that quotelinks contains cross links while
+        # backlinks doesn't?
+        @post[quoted]?backlinks.push post.no
 
     Thread[@no] = this
