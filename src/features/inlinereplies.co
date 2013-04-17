@@ -31,7 +31,7 @@ toggle-off = !(link, inlined) ->
 
   # and for nested posts
   for inlined.querySelectorAll '.post.inline'
-    pid = (&no / \-)pop!
+    pid = &dataset.no
     if $$ ".inline[data-no=\"#pid\"]" .length is 1
       $ "p#pid" ?.classList.remove \inlined
 
