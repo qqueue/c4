@@ -150,5 +150,12 @@ task \watch 'watch for changes and rebuild automatically' ->
   for <[style src templates src/features src/utils]>
     fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
       say "#event event detected on #filename. rebuilding..."
+
+      # XXX styl's internal @include mechanism means only c4.styl is
+      # invalidated if it changes, so hack around this
+      if /styl/.test filename
+        Object.keys contents-hash .filter /styl/~test .forEach !->
+          delete contents-hash[it]
+
       invoke \build
 
