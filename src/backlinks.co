@@ -6,15 +6,14 @@
 onupdate !->
   # add any new backlinks to the DOM
   for quoter of @new-posts
-    {idx} = quoter
     for quoted of quoter.quotelinks
       for $$ ".post[data-no=\"#quoted\"] > .backlinks"
         # if it's not already linked
         if not &querySelector ".backlink[href$=\"#quoter\"]"
           &appendChild with backlink = L \a
-            &href = "\#p#quoter"
+            &href = "\#p#{quoter.no}"
             &className = 'backlink quotelink'
-            &textContent = "«#idx"
+            &textContent = "«#{quoter.idx}"
           document.dispatchEvent new CustomEvent do
             \c4-backlink
             detail: {backlink}

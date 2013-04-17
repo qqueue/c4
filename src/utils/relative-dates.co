@@ -33,7 +33,7 @@ export keep-up-to-date = !(el) ->
 
   update = !(now) ->
     if document.contains el # el still on page
-      el.textContent = time.relative-date now
+      el.textContent = relative-date time, now
       make-timeout now - time.getTime!
 
   add-to-stale = !-> stale.push update
@@ -59,8 +59,8 @@ export keep-up-to-date = !(el) ->
 
   make-timeout Date.now! - time.getTime!
 
-Date::relative-date = (now = Date.now!) ->
-  diff = now - @getTime!
+export relative-date = (date, relative-to = Date.now!) ->
+  diff = relative-to - date.getTime!
   absdiff = Math.abs diff
   if
     absdiff < MINUTE

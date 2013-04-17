@@ -12,6 +12,7 @@
     c
 
 ~ enhancer = require \src/enhancer
+~ {relative-date} = require \src/utils/relative-dates
 
 #{@@container}(data-no="#{@no}",
                class="#{@@classes or ''} #{classes locals}",
@@ -31,7 +32,7 @@
     span.capcode= @capcode
     span.posteruid= "(ID: #that)" if @uid
     time(pubdate, datetime="#{@time.toISOString!}", title="#{@time}")
-      = @time.relative-date!
+      = relative-date @time
     a.permalink(href="#{@url}") No.
       span.no= @no
 

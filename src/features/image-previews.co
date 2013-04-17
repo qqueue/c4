@@ -7,10 +7,9 @@
 lightbox = require \../utils/lightbox
 
 on-posts \.thumb : mouseover: lightbox ({{dataset, href}: parentElement}) ->
-  console.log parentElement
   {dataset.width, dataset.height, src: href}
 
 # TODO alternative destructuring, I think there's an even shorter version
 # though
-# { ...it.parentElement{src: href}, ...it.parentElement.dataset{width, height} 
+# { ...it.parentElement{src: href}, ...it.parentElement.dataset{width, height}
 # }
