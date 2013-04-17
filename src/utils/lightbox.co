@@ -18,7 +18,6 @@ module.exports = (image-of) ->
   tooltip do
     show: !->
       {src, width, height} = image-of this
-      console.log src
 
       @style.cursor = \none # hide cursor while hovering
 
