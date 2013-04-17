@@ -29,6 +29,7 @@ for <[ prerender ready update postinsert backlink ]>
 #
 # attaches the click handler to all '.file' elements in each post, the
 # mouseover handler to all '.poster' els, and so on.
+{onready, onpostinsert} = exports
 export on-posts = !(listener-spec) ->
   for selector, listeners in listener-spec
     for event, listener in listeners
