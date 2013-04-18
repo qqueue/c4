@@ -29,8 +29,8 @@ munge = !(ctx) ->
           &className = 'quote forcedquote'
 
       if post.image
-        quote.after ' ' with L \img
-          &className = \forcedthumb
+        quote.after with L \img
+          &className = \forcedimage
           &setAttribute \data-width  post.image.width
           &setAttribute \data-height post.image.height
           &setAttribute \data-src    post.image.url
@@ -52,9 +52,9 @@ munge = !(ctx) ->
 
 if board.isThread
   onprerender !->
-    for it.detail.body.querySelectorAll \.post
+    for @body.querySelectorAll \.post
       munge &
   # after real render, munge any new posts
   onready !->
-    onpostinsert !-> munge it.detail.post
+    onpostinsert !-> munge @post
 

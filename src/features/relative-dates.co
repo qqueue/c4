@@ -16,7 +16,7 @@ onready !->
     keep-up-to-date &
 
   onpostinsert !->
-    keep-up-to-date it.detail.post.querySelector \time
+    keep-up-to-date @post.querySelector \time
 
     # take advantage of DOM reflow
     flush!

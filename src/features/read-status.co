@@ -72,16 +72,17 @@ onready !->
 
 onpostinsert !->
   # two possible cases: new updated post, or inlined/previews post
-  if it.detail.post.classList.contains \new
+  if @post.classList.contains \new
     # TODO get rid of 'new' class somehow
-    unread.push it.detail.post
-    it.detail.post.classList.add \unread
+    unread.push @post
+    @post.classList.add \unread
   else
     # find original post and mark as read
-    $ "p#{it.detail.post.dataset.no}"
-      &classList.remove \unread
-      if (idx = unread.indexOf(&)) >= 0
-        unread.splice idx, 1
-      unless read[&dataset.no]
-        read[&dataset.no] = Date.now!
+    $ "p#{@post.dataset.no}"
+      if &?
+        &classList.remove \unread
+        if (idx = unread.indexOf(&)) >= 0
+          unread.splice idx, 1
+        unless read[&dataset.no]
+          read[&dataset.no] = Date.now!
 

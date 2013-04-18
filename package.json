@@ -4,14 +4,14 @@
 , "dependencies"    : { "coco"                : "0.9.1"
                       , "stylus"              : "0.32.x"
                       , "nib"                 : "0.9.x"
-                      , "commonjs-everywhere" : "0.3.3"
+                      , "commonjs-everywhere" : "0.6.1"
                       , "esprima"             : "1.0.2"
                       , "escodegen"           : "0.0.17"
-                      , "lodash"              : "1.0.1"
                       , "nephrite"            : "2.0.0"
                       , "baconjs"             : "0.3.0"
                       }
-, "devDependencies" : { "MD5" : "1.0.3"
+, "devDependencies" : { "MD5"  : "1.0.3"
+                      , "gaze" : "0.3.3"
                       }
 , "scripts"         : { "build" : "coke build"
                       , "watch" : "coke watch"

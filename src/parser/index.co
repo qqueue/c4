@@ -28,6 +28,10 @@
 #   no: unique post number within a board
 #   url: URL to specific post, with hash to its ID (#p{no})
 #
+#   threadNo: number of this post's containing thread.
+#
+#   op: boolean, whether this post is op
+#
 #   time: Date object when the post was made, accurate to seconds on most
 #   boards.
 #
@@ -48,6 +52,16 @@
 #   deletedImage: boolean, whether post had an image but it was removed.
 #
 #   image: Image object or `undefined`.
+#
+#   quotelinks: An array of post numbers this post quotes, as parsed by 4chan
+#               into anchors. Multiple quotelinks to the same post are
+#               deduplicated, i.e. this array is a set.
+#
+#   backlinks: an array of post numbers whose posts *which are in the same
+#              thread is this post*, quote this post. In other words, only
+#              in-thread backlinks are listed, which is usually good enough,
+#              but you should query your own backlinks if you want
+#              cross-thread/board ones.
 # }
 #
 # Image: {

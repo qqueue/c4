@@ -10,16 +10,16 @@ function catch-event evt
   return (handler) ->
     document.addEventListener evt, !->
       try
-        handler ...
+        # since the rest of the CustomEvent object isn't that useful, use the
+        # details hash for both `this` and the first argument, whatever's more
+        # convenient
+        handler.call it.detail, it.detail
       catch
         console.error e
         throw e
-export
-  onprerender  = catch-event \c4-prerender
-  onready      = catch-event \c4-ready
-  onupdate     = catch-event \c4-update
-  onpostinsert = catch-event \c4-postinsert
-  onbacklink   = catch-event \c4-backlink
+
+for <[ prerender ready update postinsert backlink ]>
+  exports"on#&" = catch-event "c4-#&"
 
 # define listeners that are attached to every post. e.g.
 #
@@ -29,17 +29,18 @@ export
 #
 # attaches the click handler to all '.file' elements in each post, the
 # mouseover handler to all '.poster' els, and so on.
+{onready, onpostinsert} = exports
 export on-posts = !(listener-spec) ->
   for selector, listeners in listener-spec
     for event, listener in listeners
       let
         onready !->
           # initially, run one query
-          for it.detail.el.querySelectorAll selector
+          for @el.querySelectorAll selector
             &addEventListener event, listener
 
           # for updates, use insert
           onpostinsert !->
-            for it.detail.post.querySelectorAll selector
+            for @post.querySelectorAll selector
               &addEventListener event, listener
 

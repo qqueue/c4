@@ -1,7 +1,6 @@
-stylus     = require \stylus
-{cjsify}   = require \commonjs-everywhere
-lodash     = require \lodash
-md5        = require \MD5
+stylus       = require \stylus
+{cjsifySync} = require \commonjs-everywhere
+md5          = require \MD5
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
@@ -32,7 +31,7 @@ time = let names = {}, last = {}
 
 # for watch task, keep the AST of files not changed in memory for faster
 # recompilation.
-ast-cache = {}
+js-cache = {}
 
 # map from filename to md5sum, to determine if files really changed
 contents-hash = {}
@@ -49,23 +48,26 @@ parse-js = time.as 'Reparse JS' require(\esprima)~parse
 nephrite = time.as 'Nephrite compilation' require(\nephrite)
 
 # if file hasn't actually changed from last compilation (by hash), use cached
-# compiled AST. Unfortunately the hash check has to be done for every required
+# compiled JS. Unfortunately the hash check has to be done for every required
 # file since cjsify will run `readFile` on every required file. It'd be better
 # if we could skip the hash check for all but the file `fs.watch` tells us has
 # changed, but hashing is pretty fast anyway.
+#
+# XXX would cache the ast to avoid reparsing JS, but cjsify mangles the ast 
+# object, so compilation fails the second time around.
 cached-compilation = (compile) ->
   (it, filename) ->
     hash = md5 it
 
     if hash is not contents-hash[filename]
       # invalidate
-      delete ast-cache[filename]
+      delete js-cache[filename]
       # invalidate entire last compilation
       changed := true
 
     contents-hash[filename] = hash
 
-    ast-cache[filename] ?= parse-js compile it, filename
+    parse-js js-cache[filename] ?= compile it, filename
 
 coco-to-js = cached-compilation (it, filename) ->
   compile-coco it.toString!, {+bare, filename}
@@ -94,7 +96,8 @@ task \build 'build userscript' ->
 
     time.start "Commonjsification"
 
-    ast = cjsify \src/c4.co __dirname,
+    ast = cjsifySync \src/c4.co __dirname,
+      node: false
       export: \c4
       handlers:
         \.co     : coco-to-js
@@ -142,13 +145,22 @@ task \profile 'build project over and over for profile tick collection' !->
     say "run #i"
     invoke \build
 
-# lodash, but with superior arguments order
-debounce = (wait, fn) -> lodash.debounce fn, wait
-
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
-  for <[style src templates src/features src/parser src/utils]>
-    fs.watch &, interval: 1000, debounce 1000 !(event, filename) ->
-      say "#event event detected on #filename. rebuilding..."
-      invoke \build
 
+  require(\gaze) do
+    <[ metadata.txt src/**/* style/**/* templates/**/* ]>
+    debounce-delay: 2000ms
+    !->
+      say "watching for changes..."
+
+      @on \all !(event, filepath) ->
+        say "#event event detected on #{filepath.slice __dirname.length}. rebuilding..."
+
+        # XXX styl's internal @include mechanism means only c4.styl is
+        # invalidated if it changes, so hack around this
+        if /styl/.test filepath
+          Object.keys contents-hash .filter /styl/~test .forEach !->
+            delete contents-hash[it]
+
+        invoke \build
