@@ -105,7 +105,7 @@ if board.is-catalog
 
     html.appendChild body
 
-    # XXX need to think a lot harder about how to structure this code. hiding the 
+    # XXX need to think a lot harder about how to structure this code. hiding the
     # two types of pages behind if-statements isn't that great of an architecture
     require \./catalog
 else
@@ -154,7 +154,7 @@ else
     for board.threads
       board.threads-by-id[&no] = &
 
-    # console.log board.threads
+    console.log board.threads
 
     console.time "generate new HTML body"
     body-html = board-template board

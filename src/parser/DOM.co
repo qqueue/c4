@@ -127,7 +127,6 @@ DOMPost:: = require(\./Post)::
 
 dimension-regex = /(\d+)x(\d+)/
 size-regex      = /[\d\.]+ [KM]?B/
-filename-regex  = /title="([^"]+)"/
 spoiler-regex   = /^Spoiler Image/
 
 class FImage then (el, postel, thumbs-base, images-base) ->
@@ -136,8 +135,12 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   # actual html attribute)
   @url        = el.getAttribute \href
 
-  info       = postel.querySelector \.fileInfo .innerHTML
-  dimensions = dimension-regex.exec info
+  info       = postel.querySelector \.fileText
+
+  # the dimensions appear before the original filename, so it will be matched
+  # before any (\d+)x(\d+) patterns in the original filename
+  dimensions = dimension-regex.exec info.textContent
+
   thumb      = el.firstElementChild
   timestamp  = @url.match /\/(\d+)/ .1
 
@@ -147,10 +150,15 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   @height    = parseInt dimensions.2, 10
 
   @size      = size-regex.exec thumb.alt .0
-  @filename  = filename-regex.exec(info)?1
-  @md5       = thumb.dataset.md5
 
   @spoiler  = spoiler-regex.test thumb.alt
+
+  @filename  = if @spoiler
+    info.title
+  else
+    info.querySelector 'span[title]' .title
+
+  @md5       = thumb.dataset.md5
 
 DOMThumb:: = require(\./Thumb)::
 !function DOMThumb timestamp, el, thumbs-base
