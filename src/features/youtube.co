@@ -48,14 +48,12 @@ pending-videos = []
 queued-videos = {}
 
 # unique by ids
-var to-fetch
+to-fetch = {}
 
 # adds click handler, and sets cached data, or adds vid to fetch pending.
 # batch-requests is called debounced
 # XXX needs better rewrite, not hack
 load-info = !->
-  to-fetch := {}
-
   for vid of pending-videos
     vid.addEventListener \click onclick
     if cache[vid.dataset.id]
@@ -79,6 +77,8 @@ batch-requests = debounce 1000ms !->
       batches.push batch
       batch = []
   batches.push batch
+
+  to-fetch := {}
 
   for batch of batches
     if batch.length > 0
