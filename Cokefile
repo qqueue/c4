@@ -1,6 +1,5 @@
 stylus     = require \stylus
 {cjsify}   = require \commonjs-everywhere
-lodash     = require \lodash
 md5        = require \MD5
 
 flatten = -> Array::concat.apply [], it # shallow flatten
@@ -142,24 +141,22 @@ task \profile 'build project over and over for profile tick collection' !->
     say "run #i"
     invoke \build
 
-# lodash, but with superior arguments order
-debounce = (wait, fn) -> lodash.debounce fn, wait
-
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
 
-  require(\gaze) <[ metadata.txt src/**/* style/**/* templates/**/* ]> !->
+  require(\gaze) do
+    <[ metadata.txt src/**/* style/**/* templates/**/* ]>
+    debounce-delay: 2000ms
+    !->
+      say "watching for changes..."
 
-    say "watching for changes..."
+      @on \all !(event, filepath) ->
+        say "#event event detected on #filepath. rebuilding..."
 
-    @on \all debounce 1000ms !(event, filepath) ->
-      say "#event event detected on #filepath. rebuilding..."
+        # XXX styl's internal @include mechanism means only c4.styl is
+        # invalidated if it changes, so hack around this
+        if /styl/.test filepath
+          Object.keys contents-hash .filter /styl/~test .forEach !->
+            delete contents-hash[it]
 
-      # XXX styl's internal @include mechanism means only c4.styl is
-      # invalidated if it changes, so hack around this
-      if /styl/.test filepath
-        Object.keys contents-hash .filter /styl/~test .forEach !->
-          delete contents-hash[it]
-
-      invoke \build
-
+        invoke \build

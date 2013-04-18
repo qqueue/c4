@@ -7,7 +7,6 @@
                       , "commonjs-everywhere" : "0.3.3"
                       , "esprima"             : "1.0.2"
                       , "escodegen"           : "0.0.17"
-                      , "lodash"              : "1.0.1"
                       , "nephrite"            : "2.0.0"
                       , "baconjs"             : "0.3.0"
                       }
