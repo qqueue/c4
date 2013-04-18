@@ -11,7 +11,8 @@
                       , "nephrite"            : "2.0.0"
                       , "baconjs"             : "0.3.0"
                       }
-, "devDependencies" : { "MD5" : "1.0.3"
+, "devDependencies" : { "MD5"  : "1.0.3"
+                      , "gaze" : "0.3.3"
                       }
 , "scripts"         : { "build" : "coke build"
                       , "watch" : "coke watch"
