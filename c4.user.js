@@ -18,39 +18,28 @@
 
 (function(){
 "use strict";
-var c4_COMPILATION_VERSION = 0.7506437399424613;
+var c4_COMPILATION_VERSION = 0.7116271876730025;
 (function (global) {
-    function require(file) {
+    function require(file, parentModule) {
         if ({}.hasOwnProperty.call(require.cache, file))
             return require.cache[file];
         var resolved = require.resolve(file);
         if (!resolved)
             throw new Error('Failed to resolve module ' + file);
-        var process = {
-                title: 'browser',
-                browser: true,
-                env: {},
-                argv: [],
-                nextTick: function (fn) {
-                    setTimeout(fn, 0);
-                },
-                cwd: function () {
-                    return '/';
-                },
-                chdir: function () {
-                }
-            };
         var module$ = {
                 id: file,
                 require: require,
                 filename: file,
                 exports: {},
                 loaded: false,
-                parent: null,
+                parent: parentModule,
                 children: []
             };
+        if (parentModule)
+            parentModule.children.push(module$);
         var dirname = file.slice(0, file.lastIndexOf('/') + 1);
-        resolved.call(module$.exports, module$, module$.exports, dirname, file, process);
+        require.cache[file] = module$.exports;
+        resolved.call(module$.exports, module$, module$.exports, dirname, file);
         module$.loaded = true;
         return require.cache[file] = module$.exports;
     }
@@ -62,7 +51,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
     require.define = function (file, fn) {
         require.modules[file] = fn;
     };
-    require.define('/src/c4.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/c4.co', function (module, exports, __dirname, __filename) {
         var x0$, ref$, page, onready, split$ = ''.split;
         console.group('c4');
         console.timeStamp('c4-init');
@@ -79,27 +68,27 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
         x0$.page = parseInt(page, 10) || 0;
         x0$.url = '//boards.4chan.org/' + x0$.name + '/';
         x0$.ready = false;
-        x0$.favicons = require('/src/favicon-data.co');
+        x0$.favicons = require('/src/favicon-data.co', module);
         x0$.spoilerUrl = 'https://static.4chan.org/image/spoiler-' + x0$.name + '1.png';
-        require('/src/archives.co');
-        require('/src/backlinks.co');
-        require('/src/poster.co');
-        require('/src/updater.co');
-        require('/src/onready.co');
-        require('/src/features/forcequotes.co');
-        require('/src/features/hide-message.co');
-        require('/src/features/hide.co');
-        require('/src/features/highlight.co');
-        require('/src/features/image-expansion.co');
-        require('/src/features/image-previews.co');
-        require('/src/features/inlinereplies.co');
-        require('/src/features/postpreviews.co');
-        require('/src/features/quote.co');
-        require('/src/utils/relative-dates.co');
-        require('/src/features/relative-dates.co');
-        require('/src/features/youtube.co');
-        require('/src/features/read-status.co');
-        onready = require('/src/utils/features.co').onready;
+        require('/src/archives.co', module);
+        require('/src/backlinks.co', module);
+        require('/src/poster.co', module);
+        require('/src/updater.co', module);
+        require('/src/onready.co', module);
+        require('/src/features/forcequotes.co', module);
+        require('/src/features/hide-message.co', module);
+        require('/src/features/hide.co', module);
+        require('/src/features/highlight.co', module);
+        require('/src/features/image-expansion.co', module);
+        require('/src/features/image-previews.co', module);
+        require('/src/features/inlinereplies.co', module);
+        require('/src/features/postpreviews.co', module);
+        require('/src/features/quote.co', module);
+        require('/src/utils/relative-dates.co', module);
+        require('/src/features/relative-dates.co', module);
+        require('/src/features/youtube.co', module);
+        require('/src/features/read-status.co', module);
+        onready = require('/src/utils/features.co', module).onready;
         onready(function () {
             console.timeEnd('onready handlers');
             console.timeEnd('interactive');
@@ -108,9 +97,9 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
         });
         console.timeEnd('init');
     });
-    require.define('/src/utils/features.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/features.co', function (module, exports, __dirname, __filename) {
         var $$, i$, x0$, ref$, len$, onready, onpostinsert, onPosts, out$ = typeof exports != 'undefined' && exports || this;
-        $$ = require('/src/utils/dom.co').$$;
+        $$ = require('/src/utils/dom.co', module).$$;
         function catchEvent(evt) {
             return function (handler) {
                 return document.addEventListener(evt, function (it) {
@@ -163,7 +152,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         };
     });
-    require.define('/src/utils/dom.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/dom.co', function (module, exports, __dirname, __filename) {
         var $, $$, L, DOM, ref$, mutationMacro, x0$, classify, closest, out$ = typeof exports != 'undefined' && exports || this;
         out$.$ = $ = function (it) {
             return document.getElementById(it);
@@ -269,12 +258,12 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         };
     });
-    require.define('/src/features/read-status.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/read-status.co', function (module, exports, __dirname, __filename) {
         var ref$, get, set, sset, sget, ref1$, onready, onpostinsert, ref2$, $, $$, ref3$, debounce, defer, threshold, read, unread;
-        ref$ = require('/src/utils/storage.co'), get = ref$.get, set = ref$.set, sset = ref$.sset, sget = ref$.sget;
-        ref1$ = require('/src/utils/features.co'), onready = ref1$.onready, onpostinsert = ref1$.onpostinsert;
-        ref2$ = require('/src/utils/dom.co'), $ = ref2$.$, $$ = ref2$.$$;
-        ref3$ = require('/src/utils/timing.co'), debounce = ref3$.debounce, defer = ref3$.defer;
+        ref$ = require('/src/utils/storage.co', module), get = ref$.get, set = ref$.set, sset = ref$.sset, sget = ref$.sget;
+        ref1$ = require('/src/utils/features.co', module), onready = ref1$.onready, onpostinsert = ref1$.onpostinsert;
+        ref2$ = require('/src/utils/dom.co', module), $ = ref2$.$, $$ = ref2$.$$;
+        ref3$ = require('/src/utils/timing.co', module), debounce = ref3$.debounce, defer = ref3$.defer;
         threshold = 604800000;
         read = get('read') || {};
         (function (now) {
@@ -344,12 +333,14 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                 this.post.classList.add('unread');
             } else {
                 x0$ = $('p' + this.post.dataset.no);
-                x0$.classList.remove('unread');
-                if ((idx = unread.indexOf(x0$)) >= 0) {
-                    unread.splice(idx, 1);
-                }
-                if (!read[x0$.dataset.no]) {
-                    read[x0$.dataset.no] = Date.now();
+                if (x0$ != null) {
+                    x0$.classList.remove('unread');
+                    if ((idx = unread.indexOf(x0$)) >= 0) {
+                        unread.splice(idx, 1);
+                    }
+                    if (!read[x0$.dataset.no]) {
+                        read[x0$.dataset.no] = Date.now();
+                    }
                 }
             }
         });
@@ -361,7 +352,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return obj;
         }
     });
-    require.define('/src/utils/timing.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/timing.co', function (module, exports, __dirname, __filename) {
         var debounce, debounceLeading, defer, repeat, out$ = typeof exports != 'undefined' && exports || this, slice$ = [].slice;
         out$.debounce = debounce = function (delay, fn) {
             var timeout;
@@ -446,7 +437,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return repeat;
         }();
     });
-    require.define('/src/utils/storage.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/storage.co', function (module, exports, __dirname, __filename) {
         var setter, getter, ref$, out$ = typeof exports != 'undefined' && exports || this;
         setter = function (storage) {
             return function (key, val) {
@@ -474,13 +465,13 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
         ref$.sset = setter(sessionStorage);
         ref$.sget = getter(sessionStorage);
     });
-    require.define('/src/features/youtube.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/youtube.co', function (module, exports, __dirname, __filename) {
         var ref$, onready, onpostinsert, ref1$, L, $, $$, truncate, ref2$, defer, debounce, ref3$, sget, sset, apiKey, batchSize, rate, requestQueue, ready, queue, cache, setTitle, pendingVideos, queuedVideos, toFetch, loadInfo, batchRequests, onclick;
-        ref$ = require('/src/utils/features.co'), onready = ref$.onready, onpostinsert = ref$.onpostinsert;
-        ref1$ = require('/src/utils/dom.co'), L = ref1$.L, $ = ref1$.$, $$ = ref1$.$$;
-        truncate = require('/src/utils/string.co').truncate;
-        ref2$ = require('/src/utils/timing.co'), defer = ref2$.defer, debounce = ref2$.debounce;
-        ref3$ = require('/src/utils/storage.co'), sget = ref3$.sget, sset = ref3$.sset;
+        ref$ = require('/src/utils/features.co', module), onready = ref$.onready, onpostinsert = ref$.onpostinsert;
+        ref1$ = require('/src/utils/dom.co', module), L = ref1$.L, $ = ref1$.$, $$ = ref1$.$$;
+        truncate = require('/src/utils/string.co', module).truncate;
+        ref2$ = require('/src/utils/timing.co', module), defer = ref2$.defer, debounce = ref2$.debounce;
+        ref3$ = require('/src/utils/storage.co', module), sget = ref3$.sget, sset = ref3$.sset;
         apiKey = 'AIzaSyCe5gXUv-EFyNMoESO8ONZnottbsd-2ayA';
         batchSize = 30;
         rate = 5000;
@@ -514,9 +505,9 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
         };
         pendingVideos = [];
         queuedVideos = {};
+        toFetch = {};
         loadInfo = function () {
             var i$, ref$, len$, vid, that;
-            toFetch = {};
             for (i$ = 0, len$ = (ref$ = pendingVideos).length; i$ < len$; ++i$) {
                 vid = ref$[i$];
                 vid.addEventListener('click', onclick);
@@ -542,6 +533,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                 }
             }
             batches.push(batch);
+            toFetch = {};
             for (i$ = 0, len$ = batches.length; i$ < len$; ++i$) {
                 batch = batches[i$];
                 if (batch.length > 0) {
@@ -605,7 +597,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             });
         });
     });
-    require.define('/src/utils/string.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/string.co', function (module, exports, __dirname, __filename) {
         var truncate, out$ = typeof exports != 'undefined' && exports || this;
         out$.truncate = truncate = function (it, length) {
             length == null && (length = 20);
@@ -616,11 +608,11 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         };
     });
-    require.define('/src/features/relative-dates.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/relative-dates.co', function (module, exports, __dirname, __filename) {
         var $$, ref$, onpostinsert, onready, ref1$, keepUpToDate, periodic, flush;
-        $$ = require('/src/utils/dom.co').$$;
-        ref$ = require('/src/utils/features.co'), onpostinsert = ref$.onpostinsert, onready = ref$.onready;
-        ref1$ = require('/src/utils/relative-dates.co'), keepUpToDate = ref1$.keepUpToDate, periodic = ref1$.periodic, flush = ref1$.flush;
+        $$ = require('/src/utils/dom.co', module).$$;
+        ref$ = require('/src/utils/features.co', module), onpostinsert = ref$.onpostinsert, onready = ref$.onready;
+        ref1$ = require('/src/utils/relative-dates.co', module), keepUpToDate = ref1$.keepUpToDate, periodic = ref1$.periodic, flush = ref1$.flush;
         window.addEventListener('visibilitychange', function () {
             if (!document.hidden) {
                 flush();
@@ -640,9 +632,9 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             });
         });
     });
-    require.define('/src/utils/relative-dates.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/relative-dates.co', function (module, exports, __dirname, __filename) {
         var ref$, repeat, defer, debounceLeading, YEAR, HALFYEAR, MONTH, HALFMONTH, DAY, HALFDAY, HOUR, HALFHOUR, MINUTE, HALFMINUTE, SECOND, HALFSECOND, pluralize, stale, flush, periodic, keepUpToDate, relativeDate, out$ = typeof exports != 'undefined' && exports || this;
-        ref$ = require('/src/utils/timing.co'), repeat = ref$.repeat, defer = ref$.defer, debounceLeading = ref$.debounceLeading;
+        ref$ = require('/src/utils/timing.co', module), repeat = ref$.repeat, defer = ref$.defer, debounceLeading = ref$.debounceLeading;
         YEAR = 31560000000;
         HALFYEAR = YEAR / 2;
         MONTH = 2629740000;
@@ -724,10 +716,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         };
     });
-    require.define('/src/features/quote.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/quote.co', function (module, exports, __dirname, __filename) {
         var onPosts, $;
-        onPosts = require('/src/utils/features.co').onPosts;
-        $ = require('/src/utils/dom.co').$;
+        onPosts = require('/src/utils/features.co', module).onPosts;
+        $ = require('/src/utils/dom.co', module).$;
         onPosts({
             '.no': {
                 click: function (e) {
@@ -744,17 +736,20 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/features/postpreviews.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/postpreviews.co', function (module, exports, __dirname, __filename) {
         var ref$, onPosts, onbacklink, defer, ref1$, DOM, $$, $, closest, classify, parser, postTemplate, listen, fetchNewPost, handlePreview, createPreview, split$ = ''.split;
-        ref$ = require('/src/utils/features.co'), onPosts = ref$.onPosts, onbacklink = ref$.onbacklink;
-        defer = require('/src/utils/timing.co').defer;
-        ref1$ = require('/src/utils/dom.co'), DOM = ref1$.DOM, $$ = ref1$.$$, $ = ref1$.$, closest = ref1$.closest, classify = ref1$.classify;
-        parser = require('/src/parser/index.co');
-        postTemplate = require('/templates/post.cojade');
-        listen = require('/src/utils/listen.co');
+        ref$ = require('/src/utils/features.co', module), onPosts = ref$.onPosts, onbacklink = ref$.onbacklink;
+        defer = require('/src/utils/timing.co', module).defer;
+        ref1$ = require('/src/utils/dom.co', module), DOM = ref1$.DOM, $$ = ref1$.$$, $ = ref1$.$, closest = ref1$.closest, classify = ref1$.classify;
+        parser = require('/src/parser/index.co', module);
+        postTemplate = require('/templates/post.cojade', module);
+        listen = require('/src/utils/listen.co', module);
         fetchNewPost = function (no) {
             var ref$, boardName, thread, link, x0$, xhr, stillHovered;
             ref$ = this.pathname.split('/'), boardName = ref$[1], thread = ref$[3];
+            if (!thread) {
+                return;
+            }
             link = this;
             this.style.cursor = 'progress';
             x0$ = xhr = new XMLHttpRequest();
@@ -769,6 +764,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                             x1$ = ref$[i$];
                             board.posts[x1$.no] = x1$;
                         }
+                        board.threadsById[thread.no] = thread;
                         createPreview.call(link, no, board.posts[no], thread);
                     }
                 }
@@ -796,20 +792,20 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                 createPreview.call(this, no, post);
             }
         };
-        createPreview = function (no, post, thread) {
-            var ref$, host, hostid, ref1$, width, height, left, top, x0$, preview, i$, x1$, ref2$, len$, x2$, x3$, ref3$, ref4$, ref5$, ref6$, ref7$, x4$, docWidth;
-            thread == null && (thread = board.thread);
+        createPreview = function (no, post) {
+            var ref$, host, hostid, ref1$, width, height, left, top, preview, x0$, i$, x1$, ref2$, len$, x2$, x3$, ref3$, ref4$, ref5$, ref6$, ref7$, x4$, docWidth;
             if ((ref$ = $('postpreview')) != null) {
                 ref$.remove();
             }
             host = closest('.post', this);
             hostid = split$.call(host.id, '-').pop();
             ref1$ = this.getBoundingClientRect(), width = ref1$.width, height = ref1$.height, left = ref1$.left, top = ref1$.top;
-            x0$ = preview = DOM(postTemplate(post, {
-                thread: thread,
+            preview = DOM(postTemplate(post, {
+                thread: board.threadsById[post.threadNo],
                 container: 'article',
                 id: 'postpreview'
             }));
+            x0$ = preview;
             document.dispatchEvent(new CustomEvent('c4-postinsert', { detail: { post: preview } }));
             for (i$ = 0, len$ = (ref2$ = x0$.querySelectorAll('.quotelink[href$="' + hostid + '"]')).length; i$ < len$; ++i$) {
                 x1$ = ref2$[i$];
@@ -850,7 +846,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             this.backlink.addEventListener('mouseover', handlePreview);
         });
     });
-    require.define('/src/utils/listen.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/listen.co', function (module, exports, __dirname, __filename) {
         var listen, split$ = ''.split;
         module.exports = listen = function () {
             listen.displayName = 'listen';
@@ -920,7 +916,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return listen;
         }();
     });
-    require.define('/templates/post.cojade', function (module, exports, __dirname, __filename, process) {
+    require.define('/templates/post.cojade', function (module, exports, __dirname, __filename) {
         var classes, join;
         classes = function (it) {
             var c;
@@ -951,7 +947,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
         };
         module.exports = function (locals, extra) {
             var enhancer, relativeDate, that, b;
-            return '    ' + (enhancer = require('/src/enhancer.co'), '') + '\n' + (relativeDate = require('/src/utils/relative-dates.co').relativeDate, '') + '\n<' + extra.container + ' data-no="' + locals.no + '" data-idx="' + locals.idx + '" id="' + (extra.id || 'p' + locals.no) + '" class="' + (extra.classes || '') + ' ' + classes(locals) + '">\n  <h1 class="post-header">\n    <button type="button" value="' + locals.no + '" class="hide">&times;</button>\n    <button type="submit" form="reportform" name="no" value="' + locals.no + '" class="report">!</button><a href="' + locals.url + '" class="subject">' + (locals.subject || '') + '</a>' + ((locals.email ? '<a href="' + ('mailto:' + locals.email) + '" class="name">' + (locals.name || '') + '</a>' : '<a class="name">' + (locals.name || '') + '</a>') || '') + '<span class="tripcode">' + (locals.tripcode || '') + '</span><span class="capcode">' + (locals.capcode || '') + '</span><span class="posteruid">' + (((that = locals.uid) ? '(ID: ' + that + ')' : void 8) || '') + '</span>\n    <time pubdate="pubdate" datetime="' + locals.time.toISOString() + '" title="' + locals.time + '">' + (relativeDate(locals.time) || '') + '</time><a href="' + locals.url + '" class="permalink">No.<span class="no">' + (locals.no || '') + '</span></a>\n  </h1>' + ((locals.image ? '<div class="fileinfo"><span class="filename">' + (locals.image.filename || '') + '</span><span class="dimensions">' + (locals.image.width + 'x' + locals.image.height || '') + '</span><span class="size">' + (locals.image.size || '') + '</span><a href="http://iqdb.org/?url=http:' + locals.image.url + '" target="_blank" class="saucelink">iqdb</a><a href="http://google.com/searchbyimage?image_url=http:' + locals.image.url + '" target="_blank" class="saucelink">google</a><a href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:' + locals.image.url + '" target="_blank" class="saucelink">exif</a><a href="http://archive.foolz.us/' + board.name + '/search/image/' + encodeURIComponent(locals.image.md5) + '" target="_blank" class="saucelink">foolz</a></div><a target="_blank" href="' + locals.image.url + '" data-width="' + locals.image.width + '" data-height="' + locals.image.height + '" class="file"><img src="' + (locals.image.spoiler ? board.spoilerUrl : locals.image.thumb.url) + '" width="' + (!locals.image.spoiler ? locals.image.thumb.width : '') + '" height="' + (!locals.image.spoiler ? locals.image.thumb.height : '') + '" class="thumb"/></a>' : locals.deletedImage ? '<img alt="File deleted." src="//static.4chan.org/image/filedeleted.gif" class="deleted-image"/>' : void 8) || '') + '\n  <div class="comment">' + (enhancer.enhance(locals.comment) || '') + '</div>\n  <div class="backlinks">' + (join(function () {
+            return '    ' + (enhancer = require('/src/enhancer.co', module), '') + '\n' + (relativeDate = require('/src/utils/relative-dates.co', module).relativeDate, '') + '\n<' + extra.container + ' data-no="' + locals.no + '" data-idx="' + locals.idx + '" id="' + (extra.id || 'p' + locals.no) + '" class="' + (extra.classes || '') + ' ' + classes(locals) + '">\n  <h1 class="post-header">\n    <button type="button" value="' + locals.no + '" class="hide">&times;</button>\n    <button type="submit" form="reportform" name="no" value="' + locals.no + '" class="report">!</button><a href="' + locals.url + '" class="subject">' + (locals.subject || '') + '</a>' + ((locals.email ? '<a href="' + ('mailto:' + locals.email) + '" class="name">' + (locals.name || '') + '</a>' : '<a class="name">' + (locals.name || '') + '</a>') || '') + '<span class="tripcode">' + (locals.tripcode || '') + '</span><span class="capcode">' + (locals.capcode || '') + '</span><span class="posteruid">' + (((that = locals.uid) ? '(ID: ' + that + ')' : void 8) || '') + '</span>\n    <time pubdate="pubdate" datetime="' + locals.time.toISOString() + '" title="' + locals.time + '">' + (relativeDate(locals.time) || '') + '</time><a href="' + locals.url + '" class="permalink">No.<span class="no">' + (locals.no || '') + '</span></a>\n  </h1>' + ((locals.image ? '<div class="fileinfo"><span class="filename">' + (locals.image.filename || '') + '</span><span class="dimensions">' + (locals.image.width + 'x' + locals.image.height || '') + '</span><span class="size">' + (locals.image.size || '') + '</span><a href="http://iqdb.org/?url=http:' + locals.image.url + '" target="_blank" class="saucelink">iqdb</a><a href="http://google.com/searchbyimage?image_url=http:' + locals.image.url + '" target="_blank" class="saucelink">google</a><a href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:' + locals.image.url + '" target="_blank" class="saucelink">exif</a><a href="http://archive.foolz.us/' + board.name + '/search/image/' + encodeURIComponent(locals.image.md5) + '" target="_blank" class="saucelink">foolz</a></div><a target="_blank" href="' + locals.image.url + '" data-width="' + locals.image.width + '" data-height="' + locals.image.height + '" class="file"><img src="' + (locals.image.spoiler ? board.spoilerUrl : locals.image.thumb.url) + '" width="' + (!locals.image.spoiler ? locals.image.thumb.width : '') + '" height="' + (!locals.image.spoiler ? locals.image.thumb.height : '') + '" class="thumb"/></a>' : locals.deletedImage ? '<img alt="File deleted." src="//static.4chan.org/image/filedeleted.gif" class="deleted-image"/>' : void 8) || '') + '\n  <div class="comment">' + (enhancer.enhance(locals.comment) || '') + '</div>\n  <div class="backlinks">' + (join(function () {
                 var i$, ref$, len$, results$ = [];
                 for (i$ = 0, len$ = (ref$ = locals.backlinks).length; i$ < len$; ++i$) {
                     b = ref$[i$];
@@ -961,7 +957,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }()) || '') + '</div>\n</' + extra.container + '>';
         };
     });
-    require.define('/src/enhancer.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/enhancer.co', function (module, exports, __dirname, __filename) {
         var enhancer;
         module.exports = enhancer = {
             replacements: [
@@ -1002,19 +998,19 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         };
     });
-    require.define('/src/parser/index.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/index.co', function (module, exports, __dirname, __filename) {
         var ref$, out$ = typeof exports != 'undefined' && exports || this;
         ref$ = out$;
-        ref$.dom = require('/src/parser/DOM.co');
-        ref$.api = require('/src/parser/API.co');
+        ref$.dom = require('/src/parser/DOM.co', module);
+        ref$.api = require('/src/parser/API.co', module);
     });
-    require.define('/src/parser/API.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/API.co', function (module, exports, __dirname, __filename) {
         var quotelinksOf, slice$ = [].slice;
-        quotelinksOf = require('/src/parser/quotelinks-of.co');
+        quotelinksOf = require('/src/parser/quotelinks-of.co', module);
         module.exports = function (data, board) {
             return new APIThread(data, board);
         };
-        APIThread.prototype = require('/src/parser/Thread.co').prototype;
+        APIThread.prototype = require('/src/parser/Thread.co', module).prototype;
         function APIThread(data, board) {
             var ref$, op, replies, thumbsBase, imagesBase, threadUrl, idx, res$, i$, x0$, len$;
             ref$ = data.posts, op = ref$[0], replies = slice$.call(ref$, 1);
@@ -1026,18 +1022,19 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             this.preview = !!op.omitted_posts;
             this.sticky = !!op.sticky;
             this.closed = !!op.closed;
-            this.op = new APIPost(this, op, 0, imagesBase, thumbsBase);
+            this.op = new APIPost(this, true, op, 0, imagesBase, thumbsBase);
             idx = 1 + (op.omitted_posts || 0);
             res$ = [];
             for (i$ = 0, len$ = replies.length; i$ < len$; ++i$) {
                 x0$ = replies[i$];
-                res$.push(new APIPost(this, x0$, idx++, imagesBase, thumbsBase));
+                res$.push(new APIPost(this, false, x0$, idx++, imagesBase, thumbsBase));
             }
             this.replies = res$;
             this.postprocess();
         }
-        APIPost.prototype = require('/src/parser/Post.co').prototype;
-        function APIPost(thread, data, idx, imagesBase, thumbsBase) {
+        APIPost.prototype = require('/src/parser/Post.co', module).prototype;
+        function APIPost(thread, op, data, idx, imagesBase, thumbsBase) {
+            this.op = op;
             this.idx = idx;
             this.no = data.no;
             this.subject = data.sub;
@@ -1046,6 +1043,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             this.uid = data.id;
             this.capcode = data.capcode;
             this.email = data.email;
+            this.threadNo = thread.no;
             this.url = thread.url + '#p' + data.no;
             this.time = new Date(data.time * 1000);
             this.sage = data.email === 'sage';
@@ -1055,7 +1053,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             this.quotelinks = quotelinksOf(this.comment);
             this.backlinks = [];
         }
-        APIImage.prototype = require('/src/parser/FImage.co').prototype;
+        APIImage.prototype = require('/src/parser/FImage.co', module).prototype;
         function APIImage(data, imagesBase, thumbsBase) {
             this.thumb = new APIThumb(data, thumbsBase);
             this.url = imagesBase + data.tim + data.ext;
@@ -1066,7 +1064,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             this.md5 = data.md5;
             this.spoiler = !!data.spoiler;
         }
-        APIThumb.prototype = require('/src/parser/Thumb.co').prototype;
+        APIThumb.prototype = require('/src/parser/Thumb.co', module).prototype;
         function APIThumb(data, thumbsBase) {
             this.url = thumbsBase + data.tim + 's.jpg';
             this.width = data.tn_w;
@@ -1083,7 +1081,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         }
     });
-    require.define('/src/parser/Thumb.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/Thumb.co', function (module, exports, __dirname, __filename) {
         var Thumb;
         module.exports = Thumb = function () {
             Thumb.displayName = 'Thumb';
@@ -1093,7 +1091,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return Thumb;
         }();
     });
-    require.define('/src/parser/FImage.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/FImage.co', function (module, exports, __dirname, __filename) {
         var FImage;
         module.exports = FImage = function () {
             FImage.displayName = 'FImage';
@@ -1103,7 +1101,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return FImage;
         }();
     });
-    require.define('/src/parser/Post.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/Post.co', function (module, exports, __dirname, __filename) {
         var Post;
         module.exports = Post = function () {
             Post.displayName = 'Post';
@@ -1113,7 +1111,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return Post;
         }();
     });
-    require.define('/src/parser/Thread.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/Thread.co', function (module, exports, __dirname, __filename) {
         var Thread, slice$ = [].slice;
         module.exports = Thread = function () {
             Thread.displayName = 'Thread';
@@ -1146,7 +1144,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return Thread;
         }();
     });
-    require.define('/src/parser/quotelinks-of.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/parser/quotelinks-of.co', function (module, exports, __dirname, __filename) {
         var regex;
         regex = /<a href="\d+#p(\d+)" class="quotelink">/g;
         module.exports = function (comment) {
@@ -1159,9 +1157,9 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return Object.keys(set);
         };
     });
-    require.define('/src/parser/DOM.co', function (module, exports, __dirname, __filename, process) {
-        var quotelinksOf, sageRegex, dimensionRegex, sizeRegex, filenameRegex, spoilerRegex, FImage;
-        quotelinksOf = require('/src/parser/quotelinks-of.co');
+    require.define('/src/parser/DOM.co', function (module, exports, __dirname, __filename) {
+        var quotelinksOf, sageRegex, dimensionRegex, sizeRegex, spoilerRegex, FImage;
+        quotelinksOf = require('/src/parser/quotelinks-of.co', module);
         module.exports = function (document, board) {
             var thumbsBase, imagesBase, threadUrl, times, comments, names, subjects, eIdx, bIdx, i$, x0$, ref$, len$, t, x1$, results$ = [];
             thumbsBase = '//thumbs.4chan.org/' + board + '/thumb/';
@@ -1183,7 +1181,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
             return results$;
         };
-        DOMThread.prototype = require('/src/parser/Thread.co').prototype;
+        DOMThread.prototype = require('/src/parser/Thread.co', module).prototype;
         function DOMThread(el, times, comments, names, subjects, eIdx, bIdx, thumbsBase, imagesBase, threadUrl) {
             var omitted, idx, ref$, res$, i$, x0$, ref1$, len$, p;
             this.no = el.id.substring(1);
@@ -1211,12 +1209,13 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             this.postprocess();
         }
         sageRegex = /^sage$/i;
-        DOMPost.prototype = require('/src/parser/Post.co').prototype;
+        DOMPost.prototype = require('/src/parser/Post.co', module).prototype;
         function DOMPost(thread, el, idx, op, timeEl, commentEl, nameEl, subjectEl, thumbsBase, imagesBase) {
             var ref$, ref1$, ref2$, that, ref3$, img;
             this.idx = idx;
             this.op = op;
             this.no = el.id.substring(1);
+            this.threadNo = thread.no;
             this.url = thread.url + '#p' + this.no;
             this.time = new Date(parseInt(timeEl.dataset.utc, 10) * 1000);
             this.subject = subjectEl.innerHTML;
@@ -1237,41 +1236,40 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
         }
         dimensionRegex = /(\d+)x(\d+)/;
         sizeRegex = /[\d\.]+ [KM]?B/;
-        filenameRegex = /title="([^"]+)"/;
         spoilerRegex = /^Spoiler Image/;
         FImage = function () {
             FImage.displayName = 'FImage';
             var prototype = FImage.prototype, constructor = FImage;
             function FImage(el, postel, thumbsBase, imagesBase) {
-                var info, dimensions, thumb, timestamp, ref$;
+                var info, dimensions, thumb, timestamp;
                 this.url = el.getAttribute('href');
-                info = postel.querySelector('.fileInfo').innerHTML;
-                dimensions = dimensionRegex.exec(info);
+                info = postel.querySelector('.fileText');
+                dimensions = dimensionRegex.exec(info.textContent);
                 thumb = el.firstElementChild;
                 timestamp = this.url.match(/\/(\d+)/)[1];
                 this.thumb = new DOMThumb(timestamp, thumb, thumbsBase);
                 this.width = parseInt(dimensions[1], 10);
                 this.height = parseInt(dimensions[2], 10);
                 this.size = sizeRegex.exec(thumb.alt)[0];
-                this.filename = (ref$ = filenameRegex.exec(info)) != null ? ref$[1] : void 8;
-                this.md5 = thumb.dataset.md5;
                 this.spoiler = spoilerRegex.test(thumb.alt);
+                this.filename = this.spoiler ? info.title : info.querySelector('span[title]').title;
+                this.md5 = thumb.dataset.md5;
             }
             return FImage;
         }();
-        DOMThumb.prototype = require('/src/parser/Thumb.co').prototype;
+        DOMThumb.prototype = require('/src/parser/Thumb.co', module).prototype;
         function DOMThumb(timestamp, el, thumbsBase) {
             this.url = thumbsBase + (timestamp + 's.jpg');
             this.width = parseInt(el.style.width, 10);
             this.height = parseInt(el.style.height, 10);
         }
     });
-    require.define('/src/features/inlinereplies.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/inlinereplies.co', function (module, exports, __dirname, __filename) {
         var ref$, onPosts, onbacklink, ref1$, DOM, $$, $, closest, classify, L, postTemplate, defer, ref2$, markScroll, scroll, toggleOff, onclick, follow, split$ = ''.split;
-        ref$ = require('/src/utils/features.co'), onPosts = ref$.onPosts, onbacklink = ref$.onbacklink;
-        ref1$ = require('/src/utils/dom.co'), DOM = ref1$.DOM, $$ = ref1$.$$, $ = ref1$.$, closest = ref1$.closest, classify = ref1$.classify, L = ref1$.L;
-        postTemplate = require('/templates/post.cojade');
-        defer = require('/src/utils/timing.co').defer;
+        ref$ = require('/src/utils/features.co', module), onPosts = ref$.onPosts, onbacklink = ref$.onbacklink;
+        ref1$ = require('/src/utils/dom.co', module), DOM = ref1$.DOM, $$ = ref1$.$$, $ = ref1$.$, closest = ref1$.closest, classify = ref1$.classify, L = ref1$.L;
+        postTemplate = require('/templates/post.cojade', module);
+        defer = require('/src/utils/timing.co', module).defer;
         ref2$ = function () {
             var last, el;
             return {
@@ -1336,7 +1334,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             } else {
                 isBacklink = this.classList.contains('backlink');
                 inlined = DOM(postTemplate(post, {
-                    thread: board.thread,
+                    thread: board.threadsById[post.threadNo],
                     container: 'article',
                     classes: 'inline hovered',
                     id: inlinedId
@@ -1413,10 +1411,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             x0$.addEventListener('dblclick', follow);
         });
     });
-    require.define('/src/features/image-previews.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/image-previews.co', function (module, exports, __dirname, __filename) {
         var onPosts, lightbox;
-        onPosts = require('/src/utils/features.co').onPosts;
-        lightbox = require('/src/utils/lightbox.co');
+        onPosts = require('/src/utils/features.co', module).onPosts;
+        lightbox = require('/src/utils/lightbox.co', module);
         onPosts({
             '.thumb': {
                 mouseover: lightbox(function (arg$) {
@@ -1431,11 +1429,11 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/utils/lightbox.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/lightbox.co', function (module, exports, __dirname, __filename) {
         var ref$, L, $, $$, defer, tooltip;
-        ref$ = require('/src/utils/dom.co'), L = ref$.L, $ = ref$.$, $$ = ref$.$$;
-        defer = require('/src/utils/timing.co').defer;
-        tooltip = require('/src/utils/tooltip.co').tooltip;
+        ref$ = require('/src/utils/dom.co', module), L = ref$.L, $ = ref$.$, $$ = ref$.$$;
+        defer = require('/src/utils/timing.co', module).defer;
+        tooltip = require('/src/utils/tooltip.co', module).tooltip;
         function objectFit(container, width, height) {
             var ratio;
             ratio = Math.min(1, container.height / height, container.width / width);
@@ -1484,11 +1482,11 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             });
         };
     });
-    require.define('/src/utils/tooltip.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/tooltip.co', function (module, exports, __dirname, __filename) {
         var delay, deadZone, listen, tooltip, out$ = typeof exports != 'undefined' && exports || this;
         delay = 200;
         deadZone = 10;
-        listen = require('/src/utils/listen.co');
+        listen = require('/src/utils/listen.co', module);
         out$.tooltip = tooltip = function (arg$) {
             var show, hide;
             show = arg$.show, hide = arg$.hide;
@@ -1524,10 +1522,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             };
         };
     });
-    require.define('/src/features/image-expansion.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/image-expansion.co', function (module, exports, __dirname, __filename) {
         var onPosts, L;
-        onPosts = require('/src/utils/features.co').onPosts;
-        L = require('/src/utils/dom.co').L;
+        onPosts = require('/src/utils/features.co', module).onPosts;
+        L = require('/src/utils/dom.co', module).L;
         onPosts({
             '.file': {
                 click: function (e) {
@@ -1555,10 +1553,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/features/highlight.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/highlight.co', function (module, exports, __dirname, __filename) {
         var ref$, onready, onupdate, onPosts, ref1$, sset, sget, highlighting, highlight, toggleHighlight;
-        ref$ = require('/src/utils/features.co'), onready = ref$.onready, onupdate = ref$.onupdate, onPosts = ref$.onPosts;
-        ref1$ = require('/src/utils/storage.co'), sset = ref1$.sset, sget = ref1$.sget;
+        ref$ = require('/src/utils/features.co', module), onready = ref$.onready, onupdate = ref$.onupdate, onPosts = ref$.onPosts;
+        ref1$ = require('/src/utils/storage.co', module), sset = ref1$.sset, sget = ref1$.sget;
         highlighting = sget('highlighting') || {
             admin: false,
             mod: false
@@ -1604,10 +1602,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/features/hide.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/hide.co', function (module, exports, __dirname, __filename) {
         var ref$, $, $$, ref1$, onready, onupdate, threshold, hidden, e, persist, toggle;
-        ref$ = require('/src/utils/dom.co'), $ = ref$.$, $$ = ref$.$$;
-        ref1$ = require('/src/utils/features.co'), onready = ref1$.onready, onupdate = ref1$.onupdate;
+        ref$ = require('/src/utils/dom.co', module), $ = ref$.$, $$ = ref$.$$;
+        ref1$ = require('/src/utils/features.co', module), onready = ref1$.onready, onupdate = ref1$.onupdate;
         threshold = 604800000;
         hidden = {
             threads: function () {
@@ -1711,12 +1709,12 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/features/hide-message.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/hide-message.co', function (module, exports, __dirname, __filename) {
         var onready, ref$, set, get, $, Bacon;
-        onready = require('/src/utils/features.co').onready;
-        ref$ = require('/src/utils/storage.co'), set = ref$.set, get = ref$.get;
-        $ = require('/src/utils/dom.co').$;
-        Bacon = require('/node_modules/baconjs/dist/Bacon.js');
+        onready = require('/src/utils/features.co', module).onready;
+        ref$ = require('/src/utils/storage.co', module), set = ref$.set, get = ref$.get;
+        $ = require('/src/utils/dom.co', module).$;
+        Bacon = require('/node_modules/baconjs/dist/Bacon.js', module);
         function hash(str) {
             var msg, i, to$;
             msg = 0;
@@ -1756,7 +1754,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/node_modules/baconjs/dist/Bacon.js', function (module, exports, __dirname, __filename, process) {
+    require.define('/node_modules/baconjs/dist/Bacon.js', function (module, exports, __dirname, __filename) {
         (function () {
             var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref, __slice = [].slice, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
                     for (var key in parent) {
@@ -3737,12 +3735,12 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             Bacon._ = _;
         }.call(this));
     });
-    require.define('/src/features/forcequotes.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/features/forcequotes.co', function (module, exports, __dirname, __filename) {
         var ref$, onpostinsert, onready, onprerender, L, truncate, lightbox, munge;
-        ref$ = require('/src/utils/features.co'), onpostinsert = ref$.onpostinsert, onready = ref$.onready, onprerender = ref$.onprerender;
-        L = require('/src/utils/dom.co').L;
-        truncate = require('/src/utils/string.co').truncate;
-        lightbox = require('/src/utils/lightbox.co')(function (it) {
+        ref$ = require('/src/utils/features.co', module), onpostinsert = ref$.onpostinsert, onready = ref$.onready, onprerender = ref$.onprerender;
+        L = require('/src/utils/dom.co', module).L;
+        truncate = require('/src/utils/string.co', module).truncate;
+        lightbox = require('/src/utils/lightbox.co', module)(function (it) {
             var ref$;
             return {
                 src: (ref$ = it.dataset).src,
@@ -3796,16 +3794,16 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             });
         }
     });
-    require.define('/src/onready.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/onready.co', function (module, exports, __dirname, __filename) {
         var ref$, L, $$, $, parser, onready, truncate, ref1$, get, set, sset, sget, boardTemplate, x0$, html, x1$, head, x2$, x3$, body, d, catalogTemplate;
-        ref$ = require('/src/utils/dom.co'), L = ref$.L, $$ = ref$.$$, $ = ref$.$;
-        parser = require('/src/parser/index.co');
-        onready = require('/src/utils/features.co').onready;
-        truncate = require('/src/utils/string.co').truncate;
-        ref1$ = require('/src/utils/storage.co'), get = ref1$.get, set = ref1$.set, sset = ref1$.sset, sget = ref1$.sget;
-        boardTemplate = require('/templates/board.cojade');
+        ref$ = require('/src/utils/dom.co', module), L = ref$.L, $$ = ref$.$$, $ = ref$.$;
+        parser = require('/src/parser/index.co', module);
+        onready = require('/src/utils/features.co', module).onready;
+        truncate = require('/src/utils/string.co', module).truncate;
+        ref1$ = require('/src/utils/storage.co', module), get = ref1$.get, set = ref1$.set, sset = ref1$.sset, sget = ref1$.sget;
+        boardTemplate = require('/templates/board.cojade', module);
         x0$ = html = L('html');
-        x0$.appendChild((x1$ = head = L('head'), x1$.appendChild(L('title')), x1$.appendChild((x2$ = L('style'), x2$.id = 'c4-style', x2$.textContent = require('/style/c4.styl'), x2$)), x1$.appendChild((x3$ = L('script'), x3$.src = '//www.google.com/recaptcha/api/challenge?k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', x3$.addEventListener('load', function () {
+        x0$.appendChild((x1$ = head = L('head'), x1$.appendChild(L('title')), x1$.appendChild((x2$ = L('style'), x2$.id = 'c4-style', x2$.textContent = require('/style/c4.styl', module), x2$)), x1$.appendChild((x3$ = L('script'), x3$.src = '//www.google.com/recaptcha/api/challenge?k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', x3$.addEventListener('load', function () {
             var x4$;
             head.appendChild((x4$ = L('script'), x4$.src = '//www.google.com/recaptcha/api/js/recaptcha.js', x4$.addEventListener('load', function () {
                 var x5$;
@@ -3841,7 +3839,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             x5$.id = board.name;
             x5$.className = board.type + ' ' + (board.isThread ? 'threadpage' : 'boardpage');
         }
-        catalogTemplate = require('/templates/catalog.cojade');
+        catalogTemplate = require('/templates/catalog.cojade', module);
         if (board.isCatalog) {
             document.addEventListener('DOMContentLoaded', function () {
                 var catalogText, catalog;
@@ -3858,7 +3856,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                 console.log(catalog);
                 body.innerHTML = catalogTemplate(catalog, { order: 'date' });
                 html.appendChild(body);
-                require('/src/catalog.co');
+                require('/src/catalog.co', module);
             });
         } else {
             document.addEventListener('DOMContentLoaded', function () {
@@ -3901,6 +3899,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                     x6$ = ref2$[k$];
                     board.threadsById[x6$.no] = x6$;
                 }
+                console.log(board.threads);
                 console.time('generate new HTML body');
                 bodyHtml = boardTemplate(board);
                 console.timeEnd('generate new HTML body');
@@ -3962,10 +3961,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             });
         }
     });
-    require.define('/src/catalog.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/catalog.co', function (module, exports, __dirname, __filename) {
         var ref$, L, $$, $, catalogThread, catalog, i$, x0$, ref1$, len$;
-        ref$ = require('/src/utils/dom.co'), L = ref$.L, $$ = ref$.$$, $ = ref$.$;
-        catalogThread = require('/templates/catalog-thread.cojade');
+        ref$ = require('/src/utils/dom.co', module), L = ref$.L, $$ = ref$.$$, $ = ref$.$;
+        catalogThread = require('/templates/catalog-thread.cojade', module);
         catalog = board.catalog;
         for (i$ = 0, len$ = (ref1$ = $$('.order')).length; i$ < len$; ++i$) {
             x0$ = ref1$[i$];
@@ -3984,7 +3983,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         }
     });
-    require.define('/templates/catalog-thread.cojade', function (module, exports, __dirname, __filename, process) {
+    require.define('/templates/catalog-thread.cojade', function (module, exports, __dirname, __filename) {
         var join;
         join = function (it) {
             if (it) {
@@ -3997,10 +3996,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return '  <a href="//boards.4chan.org/' + board.name + '/res/' + extra.no + '" class="catalog-link">\n<figure class="catalog-thread">' + ((locals.imgurl ? '<img src="//thumbs.4chan.org/' + board.name + '/thumb/' + locals.imgurl + 's.jpg" class="catalog-thumb"/>' : '<img src="//static.4chan.org/image/filedeleted.gif" class="catalog-thumb deleted-image"/>') || '') + '\n  <figcaption class="catalog-caption">\n    <div class="reply-count">' + ('R: ' + locals.r + ', I: ' + locals.i || '') + '</div>\n    <p class="teaser">' + (locals.teaser || '') + '</p>\n  </figcaption>\n</figure></a>';
         };
     });
-    require.define('/templates/catalog.cojade', function (module, exports, __dirname, __filename, process) {
+    require.define('/templates/catalog.cojade', function (module, exports, __dirname, __filename) {
         var catalogThread, header, join;
-        catalogThread = require('/templates/catalog-thread.cojade');
-        header = require('/templates/header.cojade');
+        catalogThread = require('/templates/catalog-thread.cojade', module);
+        header = require('/templates/header.cojade', module);
         join = function (it) {
             if (it) {
                 return it.join('');
@@ -4019,7 +4018,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }()) || '') + '\n</div>';
         };
     });
-    require.define('/templates/header.cojade', function (module, exports, __dirname, __filename, process) {
+    require.define('/templates/header.cojade', function (module, exports, __dirname, __filename) {
         var join;
         join = function (it) {
             if (it) {
@@ -4033,13 +4032,13 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             return '    \n<nav id="toplinks" class="boardlinks">' + (board.nav || '') + '</nav>\n<header id="header"><a id="banner" href="//boards.4chan.org/' + board.name + '/"><img src="' + board.banner + '" alt="4chan::"/></a>\n  <hgroup>\n    <h1 id="board-name"><a href="//boards.4chan.org/' + board.name + '/">' + (board.title || '') + '</a></h1>\n    <h2 id="board-subtitle">' + (board.subtitle || '') + '</h2>\n  </hgroup>\n</header>' + (((that = board.message) ? '<div id="message-container">\n  <button id="hide-message" type="button">Hide News</button>\n  <div id="message">' + (that || '') + '</div>\n</div>' : void 8) || '');
         };
     });
-    require.define('/style/c4.styl', function (module, exports, __dirname, __filename, process) {
+    require.define('/style/c4.styl', function (module, exports, __dirname, __filename) {
         module.exports = 'html {\n  min-height: 100%;\n  font-family: Droid Serif, serif;\n  font-size: 10pt;\n}\n::selection {\n  background: #29df75;\n  color: #000;\n}\n::-moz-selection {\n  background: #29df75;\n  color: #000;\n}\n[hidden] {\n  display: none !important;\n}\nbutton:enabled {\n  cursor: pointer;\n}\n.bold {\n  font-weight: bold;\n}\n.smaller {\n  font-size: smaller;\n}\na {\n  text-decoration: none;\n}\nbody.sfw {\n  background: url("data:image/png;base64,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") #dce0f4;\n}\nbody.sfw > header a,\nbody.sfw > footer a,\nbody.sfw .boardlinks a {\n  color: #34345c;\n}\nbody.sfw .boardlinks {\n  color: #89a;\n}\nbody.sfw .post:target {\n  background: #d6bad0 url("data:image/png;base64,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") !important;\n}\nbody.sfw .thread {\n  background: linear-gradient(0deg, rgba(255,255,255,0.09), rgba(255,255,255,0) 2em);\n}\nbody.sfw .reply {\n  background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent 2em, rgba(255,255,255,0) calc(98%), rgba(255,255,255,0.05));\n}\nbody.sfw #postpreview {\n  background: url("data:image/png;base64,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") #dce0f4;\n}\nbody.sfw .reply:before,\nbody.sfw .inlined-idx {\n  color: #9db0cb;\n}\nbody.sfw #postpreview.op {\n  background-color: #eef2ff;\n}\nbody.sfw .quotelink {\n  color: #d00;\n}\nbody.nsfw {\n  background: #ffe url("//static.4chan.org/image/fade.png") repeat-x;\n  color: #800000;\n}\nbody.nsfw > header a,\nbody.nsfw > footer a,\nbody.nsfw .boardlinks a {\n  color: #800;\n}\nbody.nsfw .boardlinks {\n  color: #b86;\n}\nbody.nsfw .thread {\n  border-color: #808080;\n}\nbody.nsfw .post:target {\n  background-color: #f0c0b0 !important;\n}\nbody.nsfw .reply,\nbody.nsfw #postpreview {\n  background-color: #d9bfb7;\n}\nbody.nsfw .reply {\n  border-color: #d9bfb7;\n}\nbody.nsfw .reply:before {\n  color: #d9bfb7;\n}\nbody.nsfw .inlined-idx {\n  color: #bd9083;\n}\nbody.nsfw #postpreview.op {\n  background-color: #ffe;\n}\nbody.nsfw .quotelink {\n  color: #000080;\n}\nhtml,\nbody {\n  margin: 0;\n  padding: 0;\n}\n#toplinks {\n  float: right;\n  width: 300px;\n  margin: 0 1em;\n}\n#header {\n  margin: 1em;\n  color: #af0a0f;\n}\n#board-name {\n  font-size: 24pt;\n  margin: 0;\n}\n#board-name a {\n  color: #af0a0f !important;\n}\n#board-name a:hover {\n  text-decoration: underline;\n}\n#board-subtitle {\n  font-size: 10px;\n  font-weight: normal;\n}\n#banner {\n  margin-right: 1em;\n  float: left;\n}\n#message-container {\n  margin: 1em;\n}\n#hide-message {\n  text-align: right;\n  font-size: 10pt;\n}\n#message {\n  clear: both;\n}\n.boardlinks {\n  font-size: 9pt;\n  text-align: center;\n}\n#threads {\n  clear: both;\n}\n#pages {\n  text-align: center;\n  margin: 0pt;\n  padding: 0pt;\n}\n#pages li {\n  display: inline;\n}\n#pages a {\n  border-color: #aaa;\n  border-style: solid;\n  border-width: 1px 0;\n  color: #000;\n  display: inline-block;\n  margin: 0.25em;\n  padding: 0.5em 1em;\n}\n#pages a#current,\n#pages a:hover {\n  background-color: rgba(200,200,200,0.7);\n}\n#updater {\n  float: right;\n  margin: 0.5em;\n}\n#postform {\n  display: table;\n  margin: 1em auto;\n}\n#postform #comment,\n#postform #recaptcha_response_field {\n  width: 100%;\n}\n#name,\n#email,\n#subject {\n  width: 31.3%;\n}\n#recaptcha_image {\n  display: block;\n  background: #fff;\n  width: 100% !important;\n}\n#recaptcha_image img {\n  display: block;\n  margin: auto;\n}\nbody.sfw {\n  background: url("data:image/png;base64,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") #dce0f4;\n}\nbody.sfw > header a,\nbody.sfw > footer a,\nbody.sfw .boardlinks a {\n  color: #34345c;\n}\nbody.sfw .boardlinks {\n  color: #89a;\n}\nbody.sfw .post:target {\n  background: #d6bad0 url("data:image/png;base64,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") !important;\n}\nbody.sfw .thread {\n  background: linear-gradient(0deg, rgba(255,255,255,0.09), rgba(255,255,255,0) 2em);\n}\nbody.sfw .reply {\n  background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent 2em, rgba(255,255,255,0) calc(98%), rgba(255,255,255,0.05));\n}\nbody.sfw #postpreview {\n  background: url("data:image/png;base64,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") #dce0f4;\n}\nbody.sfw .reply:before,\nbody.sfw .inlined-idx {\n  color: #9db0cb;\n}\nbody.sfw #postpreview.op {\n  background-color: #eef2ff;\n}\nbody.sfw .quotelink {\n  color: #d00;\n}\nbody.nsfw {\n  background: #ffe url("//static.4chan.org/image/fade.png") repeat-x;\n  color: #800000;\n}\nbody.nsfw > header a,\nbody.nsfw > footer a,\nbody.nsfw .boardlinks a {\n  color: #800;\n}\nbody.nsfw .boardlinks {\n  color: #b86;\n}\nbody.nsfw .thread {\n  border-color: #808080;\n}\nbody.nsfw .post:target {\n  background-color: #f0c0b0 !important;\n}\nbody.nsfw .reply,\nbody.nsfw #postpreview {\n  background-color: #d9bfb7;\n}\nbody.nsfw .reply {\n  border-color: #d9bfb7;\n}\nbody.nsfw .reply:before {\n  color: #d9bfb7;\n}\nbody.nsfw .inlined-idx {\n  color: #bd9083;\n}\nbody.nsfw #postpreview.op {\n  background-color: #ffe;\n}\nbody.nsfw .quotelink {\n  color: #000080;\n}\n.post {\n  margin: 0;\n  padding: 1em;\n  padding-right: 0;\n  border-radius: 0.3em;\n}\n.reply {\n  padding-left: 3em;\n  transition-property: background-color;\n  transition-duration: 3s;\n}\n.reply.new {\n  background: #feffbf url("data:image/png;base64,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") !important;\n}\n.sage > .post-header > .name:after {\n  content: " (sage)";\n}\n.reply:before,\n.inlined-idx {\n  content: attr(data-idx);\n  position: absolute;\n  text-align: right;\n  display: inline-block;\n  margin-left: -3em;\n  width: 2em;\n  font-size: 8pt;\n  font-family: sans-serif;\n}\n.reply:not(.imagepost):before,\n.inline:not(.imagepost) > .inlined-idx {\n  margin-top: 0.5em;\n}\n.inlined-idx {\n  cursor: pointer;\n}\n.inlined-idx:hover {\n  text-decoration: underline;\n}\n.post-header {\n  margin: 0 0.5em 0 0;\n  padding: 0;\n  font-size: 8pt;\n  font-family: sans-serif;\n  color: #9db0cb;\n  font-weight: normal;\n}\n.post:not(.op) > .post-header {\n  float: right;\n}\n.subject {\n  color: #0f0c5d;\n  font-weight: 700;\n  text-decoration: none;\n}\n.subject:hover {\n  text-decoration: underline;\n}\n.op > .post-header > .subject {\n  font-size: 140%;\n}\n.name {\n  color: #9db0cb;\n}\n.name:link {\n  text-decoration: underline;\n}\n.fileinfo {\n  display: table;\n  color: #839bbd;\n  font-size: 8pt;\n  font-family: sans-serif;\n}\n.fileinfo:not(:hover) > .saucelink,\n.fileinfo:not(:hover) > .dimensions,\n.fileinfo:not(:hover) > .size {\n  transition-delay: 0.5s;\n  opacity: 0;\n}\n.saucelink,\n.dimensions,\n.size {\n  transition-duration: 0.5s;\n}\n.file {\n  display: block;\n  float: left;\n  margin: 0.3em 1em 0.3em 0;\n  position: relative;\n}\n.full {\n  display: block;\n}\n.capcode {\n  font-weight: 800;\n}\n.mod .capcode:hover,\n.admin .capcode:hover {\n  cursor: pointer;\n}\n.admin .name,\n.admin .capcode,\n.admin .tripcode {\n  color: #f00;\n}\n.admin .capcode:after {\n  content: url("https://static.4chan.org/image/adminicon.gif");\n}\n.mod .name,\n.mod .capcode {\n  color: #800080;\n}\n.mod .capcode:after {\n  content: url("https://static.4chan.org/image/modicon.gif");\n}\n.name:after,\n.tripcode:after,\n.capcode:after,\n.posteruid:after,\ntime:after,\n.permalink:after,\n.filename:after,\n.dimensions:after,\n.size:after,\n.saucelink:after,\n.subject:after {\n  content: " ";\n}\n.hide,\n.report {\n  float: right;\n  padding: 0 1px;\n  background: transparent;\n  border: 0;\n  line-height: 100%;\n  font-size: 9pt;\n  color: #9db0cb;\n}\n.post.hidden {\n  opacity: 0.6;\n}\n.post.hidden .file,\n.post.hidden .comment,\n.post.hidden .backlinks,\n.post.hidden .fileinfo {\n  display: none;\n}\n.post.inlined {\n  display: none;\n}\n.post.inlined:target {\n  display: block;\n}\n.post.highlighted {\n  background-color: #d6bad0 !important;\n}\n.unread {\n  border-left: 5px solid #3f0;\n}\n.hiddenlink {\n  text-decoration: line-through;\n}\n.deadlink {\n  color: #808080;\n}\n.permalink {\n  color: inherit;\n}\n.permalink .no:hover {\n  text-decoration: underline;\n}\n.recursivelink {\n  font-weight: bold;\n  color: #000 !important;\n}\n.comment {\n  margin: 0;\n  word-wrap: break-word;\n  line-height: 1.8em;\n  width: 40em;\n}\n.op .comment {\n  width: 50em;\n}\n.quote {\n  font-weight: normal;\n  color: #789922;\n}\n.prettyprint {\n  background-color: #fff;\n  padding: 0.5em;\n  display: inline-block;\n  max-width: 40em;\n  overflow: auto;\n}\ns {\n  text-decoration: none;\n  transition-duration: 1s;\n}\ns:not(:hover) > *,\ns:not(:hover) {\n  color: transparent !important;\n  text-shadow: 0 0 7px #000;\n}\n.backlinks {\n  clear: both;\n  word-wrap: break-word;\n}\n.backlink {\n  display: inline-block;\n}\n.backlink,\n.backlinks > .recursivelink {\n  margin-right: 1em;\n}\na.quotelink.inlinedlink,\nstrong.quotelink.inlinedlink {\n  font-weight: bold;\n  color: #000;\n}\n#postpreview {\n  outline: none;\n  padding: 0.5em;\n  box-shadow: 5px 5px 10px rgba(0,0,0,0.5);\n  margin: 0;\n}\n.inline {\n  margin-right: 0;\n  padding-right: 0;\n}\n.comment .inline {\n  display: table;\n}\n.backlink + .inline {\n  margin-left: 2em;\n  margin-bottom: 0;\n  padding-bottom: 0;\n  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.05) 0.5em, rgba(0,0,0,0.02) 10px, transparent 2em, transparent);\n}\n.inline .backlinks > .recursivelink {\n  display: none;\n}\n.backlink.inlinedlink {\n  display: table;\n}\n.hovered {\n  outline: 3px dashed #00f;\n}\n.forcedimage {\n  margin-left: 0.5em;\n}\n.thread {\n  padding-bottom: 5px;\n  clear: both;\n}\n.thread-info {\n  clear: left;\n  text-align: right;\n  padding: 0 1em;\n}\n.thread.hidden {\n  opacity: 0.6;\n}\n.thread.hidden .replies,\n.thread.hidden .thread-info {\n  display: none;\n}\n.thread.hidden .op .file,\n.thread.hidden .op .comment,\n.thread.hidden .op .backlinks,\n.thread.hidden .op .fileinfo {\n  display: none;\n}\n.sticky > .op > .post-header:before {\n  content: url("//static.4chan.org/image/sticky.gif");\n}\n.closed > .op > .post-header:before {\n  content: url("//static.4chan.org/image/closed.gif");\n}\n.sticky.closed > .op > .post-header:before {\n  content: url("//static.4chan.org/image/closed.gif") url("//static.4chan.org/image/sticky.gif");\n}\n.youtube {\n  position: relative;\n  text-decoration: none;\n  border: 3px solid;\n  border-color: #c6312b;\n  border-radius: 10px;\n  transition: 0.5s;\n  overflow: hidden;\n  display: inline-block;\n  vertical-align: top;\n  margin: 0.25em;\n  width: 120px;\n  height: 90px;\n}\n.youtube:hover {\n  border-color: #ffa200;\n}\n.youtube:after {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 115px;\n  font-size: smaller;\n  font-family: sans-serif;\n  color: #fff;\n  background: rgba(0,0,0,0.5);\n  padding: 0 0.5em;\n  content: attr(data-title);\n}\n.youtube:not(:hover):after {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n#catalog-controls {\n  clear: both;\n}\n#catalog {\n  clear: both;\n  -moz-columns: auto 170px;\n  -moz-column-gap: 0;\n}\n.catalog-link {\n  display: block;\n  color: inherit;\n  padding: 1em;\n  margin: 0;\n  background: linear-gradient(0deg, rgba(255,255,255,0.1), rgba(255,255,255,0) 1em, transparent 2em), linear-gradient(270deg, rgba(255,255,255,0.1), rgba(255,255,255,0) 1em, transparent 2em), linear-gradient(180deg, rgba(0,0,0,0.03), transparent 1em, transparent), linear-gradient(90deg, rgba(0,0,0,0.03), transparent 1em, transparent);\n}\n.catalog-link:hover {\n  box-shadow: 0 0 15px rgba(0,0,0,0.3) inset;\n}\n.catalog-thread {\n  display: inline-block;\n  padding: 0;\n  margin: 0;\n}\n.catalog-caption {\n  font-size: 8pt;\n  font-family: sans-serif;\n  max-width: 150px;\n}\n.reply-count {\n  text-align: center;\n}\n.teaser {\n  max-height: 150px;\n  overflow: hidden;\n}\n.catalog-thumb {\n  max-width: 150px;\n}\n';
     });
-    require.define('/templates/board.cojade', function (module, exports, __dirname, __filename, process) {
+    require.define('/templates/board.cojade', function (module, exports, __dirname, __filename) {
         var threadTemplate, header, join;
-        threadTemplate = require('/templates/thread.cojade');
-        header = require('/templates/header.cojade');
+        threadTemplate = require('/templates/thread.cojade', module);
+        header = require('/templates/header.cojade', module);
         join = function (it) {
             if (it) {
                 return it.join('');
@@ -4059,9 +4058,9 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }()) || '') + '\n</div>' + ((board.isBoard ? '<ul id="pages">' + ((board.page ? '<li><a href="' + (board.page - 1) + '">previous</a></li>' : void 8) || '') + '\n  <li><a href="' + board.url + '">0</a></li>\n  <li><a href="1">1</a></li>\n  <li><a href="2">2</a></li>\n  <li><a href="3">3</a></li>\n  <li><a href="4">4</a></li>\n  <li><a href="5">5</a></li>\n  <li><a href="6">6</a></li>\n  <li><a href="7">7</a></li>\n  <li><a href="8">8</a></li>\n  <li><a href="9">9</a></li>\n  <li><a href="10">10</a></li>' + ((board.page < 10 ? '<li><a href="' + (board.page + 1) + '">next</a></li>' : void 8) || '') + '\n  <li><a href="catalog">Catalog</a></li>\n</ul>' : void 8) || '') + '\n' + ((!((ref$ = board.thread) != null && ref$.closed) ? '<div id="postform-wrapper">\n  <form id="postform" enctype="multipart/form-data" method="POST" action="https://sys.4chan.org/' + board.name + '/post">\n    <input type="hidden" value="3145728" name="MAX_FILE_SIZE"/>' + (((that = board.threadId) ? '<input type="hidden" value="' + that + '" name="resto"/>' : void 8) || '') + '\n    <input type="hidden" value="regist" name="mode"/>\n    <input id="password" type="hidden" name="pwd" value="' + board.password + '"/>\n    <div id="fields">\n      <input type="text" name="name" id="name" tabindex="10" placeholder="name#tripcode"/>\n      <input type="text" id="email" name="email" tabindex="10" placeholder="email"/>\n      <input type="text" id="subject" name="sub" tabindex="10" placeholder="subject"/>\n      <div id="comment-field">\n        <textarea id="comment" name="com" rows="4" tabindex="10" placeholder="comment"></textarea>\n      </div>\n      <div id="captcha" style="display:none"><a id="recaptcha_image" href="javascript:Recaptcha.reload()" title="Click for new captcha"></a>\n        <input id="recaptcha_response_field" type="text" name="recaptcha_response_field" tabindex="10" placeholder="captcha"/>\n      </div>\n      <div id="file-field">\n        <input id="file" type="file" name="upfile" tabindex="10"/>\n        <label id="spoiler-field">\n          <input type="checkbox" value="on" name="spoiler" tabindex="10"/>\n        </label>\n      </div>\n      <div id="buttons">\n        <button id="post" type="submit" tabindex="10" value="Submit">Post ' + (board.isThread ? 'Reply' : 'New Thread') + '</button>' + ((board.isThread ? '<button id="sage" type="submit" name="email" value="sage" tabindex="10">Sage Reply</button>' : void 8) || '') + '<span id="post-status"></span>\n        <progress id="progress" max="100" value="0" hidden=""></progress>\n      </div>\n    </div>\n  </form>\n</div>' : void 8) || '') + '<span id="updater"><span id="update-status"></span>\n  <button id="update-now">Update now</button></span>';
         };
     });
-    require.define('/templates/thread.cojade', function (module, exports, __dirname, __filename, process) {
+    require.define('/templates/thread.cojade', function (module, exports, __dirname, __filename) {
         var postTemplate, join;
-        postTemplate = require('/templates/post.cojade');
+        postTemplate = require('/templates/post.cojade', module);
         join = function (it) {
             if (it) {
                 return it.join('');
@@ -4089,15 +4088,15 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }()) || '') + '\n  </div>\n</article>';
         };
     });
-    require.define('/src/updater.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/updater.co', function (module, exports, __dirname, __filename) {
         var listen, onready, ref$, defer, repeat, ref1$, $, $$, L, postTemplate, parser, drawFavicon, updater, delays, maxDelay, currentDelay, lastUpdate, unread, fade, fadeWhenVisible, out$ = typeof exports != 'undefined' && exports || this;
-        listen = require('/src/utils/listen.co');
-        onready = require('/src/utils/features.co').onready;
-        ref$ = require('/src/utils/timing.co'), defer = ref$.defer, repeat = ref$.repeat;
-        ref1$ = require('/src/utils/dom.co'), $ = ref1$.$, $$ = ref1$.$$, L = ref1$.L;
-        postTemplate = require('/templates/post.cojade');
-        parser = require('/src/parser/index.co');
-        drawFavicon = require('/src/utils/favicon.co');
+        listen = require('/src/utils/listen.co', module);
+        onready = require('/src/utils/features.co', module).onready;
+        ref$ = require('/src/utils/timing.co', module), defer = ref$.defer, repeat = ref$.repeat;
+        ref1$ = require('/src/utils/dom.co', module), $ = ref1$.$, $$ = ref1$.$$, L = ref1$.L;
+        postTemplate = require('/templates/post.cojade', module);
+        parser = require('/src/parser/index.co', module);
+        drawFavicon = require('/src/utils/favicon.co', module);
         out$.updater = updater = {};
         delays = [
             10,
@@ -4302,10 +4301,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/utils/favicon.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/utils/favicon.co', function (module, exports, __dirname, __filename) {
         var ref$, $, L, debounce, drawFavicon;
-        ref$ = require('/src/utils/dom.co'), $ = ref$.$, L = ref$.L;
-        debounce = require('/src/utils/timing.co').debounce;
+        ref$ = require('/src/utils/dom.co', module), $ = ref$.$, L = ref$.L;
+        debounce = require('/src/utils/timing.co', module).debounce;
         module.exports = drawFavicon = debounce(1000, function (image, text) {
             var ref$, x0$, link, x1$, x2$;
             if ((ref$ = $('favicon')) != null) {
@@ -4334,12 +4333,12 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             document.head.appendChild(link);
         });
     });
-    require.define('/src/poster.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/poster.co', function (module, exports, __dirname, __filename) {
         var listen, onready, ref$, L, $, $$, ref1$, get, set, postStatus;
-        listen = require('/src/utils/listen.co');
-        onready = require('/src/utils/features.co').onready;
-        ref$ = require('/src/utils/dom.co'), L = ref$.L, $ = ref$.$, $$ = ref$.$$;
-        ref1$ = require('/src/utils/storage.co'), get = ref1$.get, set = ref1$.set;
+        listen = require('/src/utils/listen.co', module);
+        onready = require('/src/utils/features.co', module).onready;
+        ref$ = require('/src/utils/dom.co', module), L = ref$.L, $ = ref$.$, $$ = ref$.$$;
+        ref1$ = require('/src/utils/storage.co', module), get = ref1$.get, set = ref1$.set;
         postStatus = function (it) {
             return $('post-status').textContent = it;
         };
@@ -4451,10 +4450,10 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/backlinks.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/backlinks.co', function (module, exports, __dirname, __filename) {
         var onupdate, ref$, L, $$;
-        onupdate = require('/src/utils/features.co').onupdate;
-        ref$ = require('/src/utils/dom.co'), L = ref$.L, $$ = ref$.$$;
+        onupdate = require('/src/utils/features.co', module).onupdate;
+        ref$ = require('/src/utils/dom.co', module), L = ref$.L, $$ = ref$.$$;
         onupdate(function () {
             var i$, ref$, len$, quoter, j$, ref1$, len1$, quoted, k$, x0$, ref2$, len2$, x1$, backlink;
             for (i$ = 0, len$ = (ref$ = this.newPosts).length; i$ < len$; ++i$) {
@@ -4472,7 +4471,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/archives.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/archives.co', function (module, exports, __dirname, __filename) {
         var archiveOf, that, enhancer;
         archiveOf = function (name) {
             var that;
@@ -4503,7 +4502,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
                 window.location = board.archive + '/' + that[0];
             }
         }
-        enhancer = require('/src/enhancer.co');
+        enhancer = require('/src/enhancer.co', module);
         if (board.archive) {
             enhancer.addReplacement(/<span class="deadlink">(&gt;&gt;(\d+))<\/span>/g, '<a href="' + board.archive + '/$2" class="deadlink">$1</a>');
         }
@@ -4516,7 +4515,7 @@ var c4_COMPILATION_VERSION = 0.7506437399424613;
             }
         });
     });
-    require.define('/src/favicon-data.co', function (module, exports, __dirname, __filename, process) {
+    require.define('/src/favicon-data.co', function (module, exports, __dirname, __filename) {
         var x0$, x1$;
         module.exports = {
             sfw: (x0$ = document.createElement('img'), x0$.src = 'data:image/vnd.microsoft.icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAABMLAAATCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv8AAAD/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/AAAA/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAD/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv/Dly7/AAAA/wAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAP/Dly7/w5cu/8OXLv8AAAD/AAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAA/8OXLv/Dly7/w5cu/wAAAP8AAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAOvXAADBgwAAwYMAAMGDAADhhwAA888AAP//AAD//wAAw8MAAIGBAADBgwAAg8EAAMfj/////////////w==', x0$),
