@@ -22,14 +22,15 @@ APIThread:: = require(\./Thread)::
   @sticky  = !!op.sticky
   @closed  = !!op.closed
 
-  @op      = new APIPost this, op, 0, images-base, thumbs-base
+  @op      = new APIPost this, true, op, 0, images-base, thumbs-base
   idx = 1 + (op.omitted_posts || 0)
-  @replies = for replies => new APIPost this, &, idx++, images-base, thumbs-base
+  @replies = for replies
+    new APIPost this, false, &, idx++, images-base, thumbs-base
 
   @postprocess!
 
 APIPost:: = require(\./Post)::
-!function APIPost thread, data, @idx, images-base, thumbs-base
+!function APIPost thread, @op, data, @idx, images-base, thumbs-base
   @<<< data{
     no
     subject: sub
@@ -39,6 +40,8 @@ APIPost:: = require(\./Post)::
     capcode
     email
   }
+
+  @thread-no     = thread.no
 
   @url           = "#{thread.url}\#p#{data.no}"
   @time          = new Date data.time * 1000

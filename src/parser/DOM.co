@@ -99,6 +99,8 @@ DOMPost:: = require(\./Post)::
                   thumbs-base, images-base
   @no  = el.id.substring 1
 
+  @thread-no = thread.no
+
   @url = "#{thread.url}\#p#{@no}"
 
   @time = new Date parseInt(time-el.dataset.utc, 10) * 1000ms

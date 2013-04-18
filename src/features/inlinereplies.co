@@ -63,8 +63,13 @@ onclick = !(e) ->
     toggle-off this, inlined
   else # create
     is-backlink = @classList.contains \backlink
-    # FIXME broken on board pages
-    inlined = DOM post-template post, thread: board.thread, container: \article classes: "inline hovered" id: inlined-id
+
+    inlined = DOM post-template post,
+      thread: board.threads-by-id[post.thread-no]
+      container: \article
+      classes: "inline hovered"
+      id: inlined-id
+
     # walk outside of inline elements like spoilers and greentext
     wrapper = this
     while wrapper.parentElement.matchesSelector 'a,span'

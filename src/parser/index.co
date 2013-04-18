@@ -28,6 +28,10 @@
 #   no: unique post number within a board
 #   url: URL to specific post, with hash to its ID (#p{no})
 #
+#   threadNo: number of this post's containing thread.
+#
+#   op: boolean, whether this post is op
+#
 #   time: Date object when the post was made, accurate to seconds on most
 #   boards.
 #

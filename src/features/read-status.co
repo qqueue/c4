@@ -79,9 +79,10 @@ onpostinsert !->
   else
     # find original post and mark as read
     $ "p#{@post.dataset.no}"
-      &classList.remove \unread
-      if (idx = unread.indexOf(&)) >= 0
-        unread.splice idx, 1
-      unless read[&dataset.no]
-        read[&dataset.no] = Date.now!
+      if &?
+        &classList.remove \unread
+        if (idx = unread.indexOf(&)) >= 0
+          unread.splice idx, 1
+        unless read[&dataset.no]
+          read[&dataset.no] = Date.now!
 
