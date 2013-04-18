@@ -22,7 +22,5 @@ module.exports = class Thread
       for quoted of post.quotelinks
         if @post[quoted]
           that.backlinks.push post.no
-        else
-          console.log "can't find post[#quoted]"
 
     Thread[@no] = this
