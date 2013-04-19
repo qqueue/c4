@@ -7,7 +7,7 @@
                       , "commonjs-everywhere" : "0.6.1"
                       , "esprima"             : "1.0.2"
                       , "escodegen"           : "0.0.17"
-                      , "nephrite"            : "2.0.0"
+                      , "nephrite"            : "2.2.0"
                       , "baconjs"             : "0.3.0"
                       }
 , "devDependencies" : { "MD5"  : "1.0.3"
