@@ -6,7 +6,7 @@
                       , "nib"                 : "0.9.x"
                       , "commonjs-everywhere" : "0.6.1"
                       , "esprima"             : "1.0.2"
-                      , "escodegen"           : "0.0.17"
+                      , "escodegen"           : "0.0.21"
                       , "nephrite"            : "2.2.0"
                       , "baconjs"             : "0.3.10"
                       }
