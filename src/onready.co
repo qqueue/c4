@@ -5,6 +5,12 @@ parser = require \./parser
 {get, set, sset, sget} = require \./utils/storage
 board-template = require \templates/board
 
+function date-reviver k, v
+  if k is \time
+    new Date v
+  else
+    v
+
 # pre-create new DOM
 html = L \html
   &appendChild with head = L \head
@@ -49,184 +55,178 @@ body = L \body
 # CHROME, negating the need to handle 'beforescriptexeute' or whatever. crazy.
 d = document.replaceChild html, document.documentElement
 
-!function parse-header
-  console.time "parse page"
-  # get other useful information
-  board
-    &title    = d.querySelector \.boardTitle      ?.textContent or ''
-    &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
-    &nav      = d.querySelector \#boardNavDesktop  .innerHTML
-    &banner   = d.querySelector \.title            .src
-    &message  = d.querySelector \.globalMessage   ?.innerHTML
-
-    # detect based on favicon href
-    &sfw =
-      d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
-
-    &type = if &sfw then \sfw else \nsfw
-    &favicon = board.favicons[&type]
-
-    # for post deletion
-    &password = get \password or Math.random!toString!substr -8
-
-  console.timeEnd "parse page"
-
-  console.log board
-
-  # XXX needs to go somewhere else
-  body
-    &id = board.name
-    &className = "#{board.type} \
-                 #{if board.isThread then \threadpage else \boardpage}"
-
 catalog-template = require \templates/catalog
 
 # init
+<-! document.addEventListener \DOMContentLoaded
+
+console.time "initial render"
+
+console.time "parse page"
+
+# get other useful information
+board
+  &title    = d.querySelector \.boardTitle      ?.textContent or ''
+  &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
+  &nav      = d.querySelector \#boardNavDesktop  .innerHTML
+  &banner   = d.querySelector \.title            .src
+  &message  = d.querySelector \.globalMessage   ?.innerHTML
+
+  # detect based on favicon href
+  &sfw =
+    d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
+
+  &type = if &sfw then \sfw else \nsfw
+  &favicon = board.favicons[&type]
+
+  # for post deletion
+  &password = get \password or Math.random!toString!substr -8
+
+console.timeEnd "parse page"
+
+console.log board
+
+# XXX needs to go somewhere else
+body
+  &id = board.name
+  &className = "#{board.type} \
+               #{if board.isThread then \threadpage else \boardpage}"
+
 if board.is-catalog
-  document.addEventListener \DOMContentLoaded !->
-    parse-header!
+  # find script tag that defines `catalog`
+  [catalog-text] = Array::filter.call d.querySelectorAll(\script), ->
+    /var catalog/.test it.textContent
+  throw new Error "what is happening" unless catalog-text
 
-    # find script tag that defines `catalog`
-    [catalog-text] = Array::filter.call d.querySelectorAll(\script), ->
-      /var catalog/.test it.textContent
-    throw new Error "what is happening" unless catalog-text
+  # strip off useless JS
+  # var catalog = {...}
+  catalog-text.=textContent.toString!trim!
+  # XXX I sure hope the code doesn't change...
+  catalog = JSON.parse catalog-text.substring 14, catalog-text.length - 72
 
-    # strip off useless JS
-    # var catalog = {...}
-    catalog-text.=textContent.toString!trim!
-    # XXX I sure hope the code doesn't change...
-    catalog = JSON.parse catalog-text.substring 14, catalog-text.length - 72
+  board.catalog = catalog
 
-    board.catalog = catalog
+  console.log catalog
 
-    console.log catalog
+  console.time "generate new HTML body"
+  body-html = catalog-template catalog, order: \date
+  console.timeEnd "generate new HTML body"
 
-    body.innerHTML = catalog-template catalog, order: \date
+  console.time "parse new body HTML"
+  body.innerHTML = body-html
+  console.timeEnd "parse new body HTML"
 
-    html.appendChild body
-
-    # XXX need to think a lot harder about how to structure this code. hiding the
-    # two types of pages behind if-statements isn't that great of an architecture
-    require \./catalog
+  # XXX need to think a lot harder about how to structure this code. hiding the
+  # two types of pages behind if-statements isn't that great of an architecture
+  require \./catalog
 else
-  document.addEventListener \DOMContentLoaded !->
-    #console.profile!
+  #console.profile!
 
-    console.time "initial render"
+  # if I click a link off of a threadpage that has been updated, then click the
+  # back button, the updated posts won't appear until the updater hits the
+  # new version again, i.e. the browser back state is using the old version
+  # of the page. Thus, check the session storage cache for threads and use
+  # that instead of reparsing the page, which can't possibly be newer
+  # information.
+  # XXX kinda messy compilation version hack
+  version = c4_COMPILATION_VERSION
+  data = sget "cache-#{board.thread-no}" date-reviver if board.is-thread
 
-    parse-header!
+  if board.is-thread and data?version is version
+    console.log "using cached thread data"
+    board.thread = data.thread
+    board.threads = [data.thread]
+  else
+    console.time "parse board"
+    board.threads = parser.dom d, board.name
+    console.timeEnd "parse board"
+    board.thread = board.threads.0 if board.isThread
 
-    # if I click a link off of a threadpage that has been updated, then click the
-    # back button, the updated posts won't appear until the updater hits the
-    # new version again, i.e. the browser back state is using the old version
-    # of the page. Thus, check the session storage cache for threads and use
-    # that instead of reparsing the page, which can't possibly be newer
-    # information.
-    function date-reviver k, v
-      if k is \time
-        new Date v
-      else
-        v
+  # global lookup post by hash
+  # XXX cross-board still conflicts
+  board.posts = {}
+  for board.threads
+    for &posts
+      board.posts[&no] = &
 
-    # XXX kinda messy compilation version hack
-    version = c4_COMPILATION_VERSION
-    data = sget "cache-#{board.thread-no}" date-reviver if board.is-thread
+  # XXX used in hide.co, really want IDB/minimongo/'real man's db'
+  board.threads-by-id = {}
+  for board.threads
+    board.threads-by-id[&no] = &
 
-    if board.is-thread and data?version is version
-      console.log "using cached thread data"
-      board.thread = data.thread
-      board.threads = [data.thread]
-    else
-      console.time "parse board"
-      board.threads = parser.dom d, board.name
-      console.timeEnd "parse board"
-      board.thread = board.threads.0 if board.isThread
+  console.log board.threads
 
-    # global lookup post by hash
-    # XXX cross-board still conflicts
-    board.posts = {}
-    for board.threads
-      for &posts
-        board.posts[&no] = &
+  console.time "generate new HTML body"
+  body-html = board-template board
+  console.timeEnd "generate new HTML body"
 
-    # XXX used in hide.co, really want IDB/minimongo/'real man's db'
-    board.threads-by-id = {}
-    for board.threads
-      board.threads-by-id[&no] = &
+  console.time "parse new body HTML"
+  body.innerHTML = body-html
+  console.timeEnd "parse new body HTML"
 
-    console.log board.threads
+console.time "prerender handlers"
+document.dispatchEvent new CustomEvent do
+  \c4-prerender
+  detail: {body}
+console.timeEnd "prerender handlers"
 
-    console.time "generate new HTML body"
-    body-html = board-template board
-    console.timeEnd "generate new HTML body"
+console.time "render new body"
+html.appendChild body
+console.timeEnd "render new body"
 
-    console.time "parse new body HTML"
-    body.innerHTML = body-html
-    console.timeEnd "parse new body HTML"
+if board.isBoard
+  console.time "highlight current page"
+  body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]"
+    .id = \current
+  console.timeEnd "highlight current page"
 
-    console.time "prerender handlers"
-    document.dispatchEvent new CustomEvent do
-      \c4-prerender
-      detail: {body}
-    console.timeEnd "prerender handlers"
+function text
+  L \div |>
+    &innerHTML = it
+    &textContent
 
-    console.time "render new body"
-    html.appendChild body
-    console.timeEnd "render new body"
+console.time "set new page title"
+document.title =
+  if board.isThread
+    board.thread.op |>
+      "#{truncate do
+           &subject or text &comment or &image?filename or &time.relative-date!}
+       \ - /#{board.name}/"
+  else
+    board.title
+console.timeEnd "set new page title"
 
-    if board.isBoard
-      console.time "highlight current page"
-      body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]"
-        .id = \current
-      console.timeEnd "highlight current page"
+console.time "set correct favicon"
+document.head.append with L \link
+  &id   = \favicon
+  &rel  = \icon
+  &type = \image/x-icon # required for chrome, I guess
+  &href = board.favicon.src
+console.timeEnd "set correct favicon"
 
-    function text
-      L \div |>
-        &innerHTML = it
-        &textContent
+console.timeEnd "initial render"
 
-    console.time "set new page title"
-    document.title =
-      if board.isThread
-        board.thread.op |>
-          "#{truncate do
-               &subject or text &comment or &image?filename or &time.relative-date!}
-           \ - /#{board.name}/"
-      else
-        board.title
-    console.timeEnd "set new page title"
+# rescroll to target element if this page hasn't been scrolled before
+# this retains the browser's natural scroll position memory
+# while still scrolling to the new hash target's position
+# the first time the page loads (or if window hasn't been scrolled)
+if window.location.hash and not sget document.URL
+  window.location.hash = window.location.hash
+  window.addEventListener \scroll function registerPage
+    sset {+(document.URL)}
+    window.removeEventListener \scroll registerPage
 
-    console.time "set correct favicon"
-    document.head.append with L \link
-      &id   = \favicon
-      &rel  = \icon
-      &type = \image/x-icon # required for chrome, I guess
-      &href = board.favicon.src
-    console.timeEnd "set correct favicon"
+board.ready = true
 
-    console.timeEnd "initial render"
+# cache current thread hash (which is updated by updater)
+if board.is-thread
+  window.addEventListener \unload !->
+    sset "cache-#{board.thread-no}" {version, board.thread}
 
-    # rescroll to target element if this page hasn't been scrolled before
-    # this retains the browser's natural scroll position memory
-    # while still scrolling to the new hash target's position
-    # the first time the page loads (or if window hasn't been scrolled)
-    if window.location.hash and not sget document.URL
-      window.location.hash = window.location.hash
-      window.addEventListener \scroll function registerPage
-        sset {+(document.URL)}
-        window.removeEventListener \scroll registerPage
+console.time "onready handlers"
+document.dispatchEvent new CustomEvent do
+  \c4-ready
+  detail: {board.threads, el: $ \threads}
+console.timeEnd "onready handlers"
 
-    board.ready = true
-
-    # cache current thread hash (which is updated by updater)
-    if board.is-thread
-      window.addEventListener \unload !->
-        sset "cache-#{board.thread-no}" {version, board.thread}
-
-    console.time "onready handlers"
-    document.dispatchEvent new CustomEvent do
-      \c4-ready
-      detail: {board.threads, el: $ \threads}
-    console.timeEnd "onready handlers"
-
-    #console.profileEnd!
+#console.profileEnd!
