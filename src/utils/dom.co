@@ -11,7 +11,8 @@ export DOM = -> L \div |>
   &innerHTML = it
   &firstElementChild
 
-Element::matchesSelector ?= Element::mozMatchesSelector
+Element::matchesSelector ?= Element::mozMatchesSelector ?
+  Element::webkitMatchesSelector
 
 # DOM4 mutation methods
 mutation-macro = (nodes) ->

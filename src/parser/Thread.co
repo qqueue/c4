@@ -10,7 +10,7 @@ module.exports = class Thread
     @imageReplies = []
 
     # build post by number hash and image replies array
-    @post = {(@no): @op}
+    @post = (@no): @op
     for reply of @replies
       @imageReplies.push reply if reply.image
       @post[reply.no] = reply
@@ -23,6 +23,7 @@ module.exports = class Thread
         # quotelinks can contain cross-thread/board links, so guard against those.
         # TODO is it useful that quotelinks contains cross links while
         # backlinks doesn't?
-        @post[quoted]?backlinks.push post.no
+        if @post[quoted]
+          that.backlinks.push post.no
 
     Thread[@no] = this
