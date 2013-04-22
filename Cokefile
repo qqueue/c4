@@ -108,14 +108,6 @@ task \build 'build userscript' time.as \Total !->
     console.error e
     console.error e.stack
 
-const times = 50 # XXX figure out Cokefile's batty options parsing
-
-task \profile 'build project over and over for profile tick collection' !->
-  say "Running build #times times..."
-  for i til times
-    say "run #i"
-    invoke \build
-
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
 
