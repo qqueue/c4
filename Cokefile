@@ -1,33 +1,10 @@
 stylus       = require \stylus
 {cjsifySync} = require \commonjs-everywhere
 md5          = require \MD5
+time         = require \./lib/sand
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
-
-# sexy (arguably) AOP/traditional-style time metrics
-time = let names = {}, last = {}
-  of: (it, pad = it.length) -> "#{it + ' ' * (pad - it.length)} : #{names[it] or 0}ms"
-  end: !->
-    if @@length > 1
-      pad = Math.max.apply Math, (for @@ => &length)
-      for @@
-        time.stop &; say @of &, pad
-    else
-      time.stop it; say @of it
-  start: !->
-    names[it] ?= 0
-    last[it] = Date.now!
-  stop: !->
-    if last[it]
-      names[it] += Date.now! - last[it]
-      delete last[it]
-  as: (name, fn) -> ->
-    time.start name
-    ret = fn ...
-    time.stop name
-    ret
-  restart-all: !-> names := {}
 
 # for watch task, keep the AST of files not changed in memory for faster
 # recompilation.

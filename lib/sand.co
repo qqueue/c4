@@ -1,0 +1,53 @@
+# sexy (arguably) AOP/traditional-style time metrics
+times = {}
+last = {}
+
+# nested timings that should be subtracted out of reporting
+# e.g. a timing a function's 'own time' even when it calls other timed functions
+minus = {}
+
+module.exports = sand =
+  of: (it, pad = it.length) ->
+    time = times[it]
+    if minus[it]
+      for that => time -= times[&] or 0
+
+    "#{it + ' ' * (pad - it.length)} : #{time or 0}ms"
+  end: !->
+    if @@length > 1
+      pad = Math.max.apply Math, (for @@ => &length)
+      for @@
+        sand.stop &; console.log sand.of &, pad
+    else
+      sand.stop it; console.log sand.of it
+  start: !->
+    last[it] = Date.now!
+  stop: !->
+    if last[it]
+      times[it] = (times[it] or 0) + Date.now! - last[it]
+      delete last[it]
+  as: (name, options, fn) ->
+    if fn!?
+      fn = options
+      options = {}
+
+    if options.minus
+      minus[name] = for that
+        if typeof & is \function
+          &_sand-name
+        else
+          &
+
+    timed =->
+      sand.start name
+      ret = fn ...
+      sand[if options.log then \end else \stop] name
+      ret
+
+    # used to make `minus` option easier to write when times are long like
+    # 'CommonJSification' or 'Coco compilation' and fn times are shorter
+    timed._sand-name = name
+
+    return timed
+
+  restart-all: !-> times := {}
