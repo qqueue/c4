@@ -1,5 +1,5 @@
 stylus       = require \stylus
-{cjsifySync} = require \commonjs-everywhere
+nib          = do require \nib
 md5          = require \MD5
 time         = require \./lib/sand
 
@@ -17,20 +17,13 @@ contents-hash = {}
 # XXX kinda gross global state, oh well
 var changed
 
-nib = time.as 'Stylus compilation' (it, filename) ->
-  stylus it, {filename, paths: ["#{__dirname}/style"]} .use require(\nib)! .render!
-
-compile-coco = time.as 'Coco compilation' require(\coco)~compile
-parse-js = time.as 'Reparse JS' require(\esprima)~parse
-nephrite = time.as 'Nephrite compilation' require(\nephrite)
-
 # if file hasn't actually changed from last compilation (by hash), use cached
 # compiled JS. Unfortunately the hash check has to be done for every required
 # file since cjsify will run `readFile` on every required file. It'd be better
 # if we could skip the hash check for all but the file `fs.watch` tells us has
 # changed, but hashing is pretty fast anyway.
 #
-# XXX would cache the ast to avoid reparsing JS, but cjsify mangles the ast 
+# XXX would cache the ast to avoid reparsing JS, but cjsify mangles the ast
 # object, so compilation fails the second time around.
 cached-compilation = (compile) ->
   (it, filename) ->
@@ -44,44 +37,44 @@ cached-compilation = (compile) ->
 
     contents-hash[filename] = hash
 
-    parse-js js-cache[filename] ?= compile it, filename
+    js-to-ast js-cache[filename] ?= compile it, filename
 
-coco-to-js = cached-compilation (it, filename) ->
-  compile-coco it.toString!, {+bare, filename}
+coco     = time.as \Coco     require(\coco)~compile
+nephrite = time.as \Nephrite require(\nephrite)
+styl     = time.as \Stylus   (it, filename) ->
+  stylus it, {filename, paths: ["#{__dirname}/style"]} .use nib .render!
 
-nephrite-to-js = cached-compilation (it, filename) ->
-  src = nephrite it.toString!, filename
-  src = compile-coco src, {+bare, filename}
-
-stylus-to-module = cached-compilation (it, filename) ->
-  "module.exports = '#{nib it.toString!, filename
-                         .replace /'/g "\/'" .replace /\n/g '\\n'}'"
-
+js-to-ast = time.as 'JS->AST' require(\esprima)~parse
 ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
+
+cjsifySync = time.as \CommonJSification,
+  minus: [coco, nephrite, styl, js-to-ast],
+  require(\commonjs-everywhere)~cjsifySync
+
+handlers =
+  \.co   : cached-compilation (it, filename) ->
+    coco it.toString!, {+bare, filename}
+
+  \.ne   : cached-compilation (it, filename) ->
+    src = nephrite it.toString!, filename
+    coco src, {+bare, filename}
+
+  \.styl : cached-compilation (it, filename) ->
+    "module.exports = '#{styl it.toString!, filename
+                           .replace /'/g "\/'" .replace /\n/g '\\n'}'"
 
 outfile = \c4.user.js
 
-task \build 'build userscript' ->
+task \build 'build userscript' time.as \Total !->
   try
     changed := false
-
     time.restart-all!
-
-    time.start "Total build time"
 
     metadata = slurp \metadata.txt
 
-    time.start "Commonjsification"
-
     ast = cjsifySync \src/c4.co __dirname,
       node: false
-      export: \c4
-      handlers:
-        \.co   : coco-to-js
-        \.ne   : nephrite-to-js
-        \.styl : stylus-to-module
-
-    time.stop "Commonjsification"
+      handlers: handlers
 
     if changed
       # TODO something with sourcemap, when fire(fox|bug) gets support
@@ -98,18 +91,19 @@ task \build 'build userscript' ->
           gen
           "}).call(this)"
 
+    time.end do
+      "JS->AST"
+      "Coco"
+      "Nephrite"
+      "Stylus"
+      "CommonJSification"
+      "AST->JS"
+      "Total"
+
+    if changed
       say "#{new Date}: compiled script to #{outfile}"
     else
       say "#{new Date}: no actual changes detected."
-
-    time.end do
-      "Commonjsification"
-      "Reparse JS"
-      "Coco compilation"
-      "Nephrite compilation"
-      "Stylus compilation"
-      "AST->JS"
-      "Total build time"
   catch
     console.error e
     console.error e.stack
