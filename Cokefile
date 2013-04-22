@@ -1,43 +1,16 @@
-stylus       = require \stylus
-nib          = do require \nib
-md5          = require \MD5
-time         = require \./lib/sand
+stylus = require \stylus
+nib    = do require \nib
+time   = require \./lib/sand
+fs     = require \fs
+cjs    = require \commonjs-everywhere
 
 flatten = -> Array::concat.apply [], it # shallow flatten
 join = -> flatten @@ .join \\n
 
-# for watch task, keep the AST of files not changed in memory for faster
-# recompilation.
-js-cache = {}
-
-# map from filename to md5sum, to determine if files really changed
-contents-hash = {}
-
-# flag whether something changed during compilation at all
-# XXX kinda gross global state, oh well
-var changed
-
-# if file hasn't actually changed from last compilation (by hash), use cached
-# compiled JS. Unfortunately the hash check has to be done for every required
-# file since cjsify will run `readFile` on every required file. It'd be better
-# if we could skip the hash check for all but the file `fs.watch` tells us has
-# changed, but hashing is pretty fast anyway.
-#
-# XXX would cache the ast to avoid reparsing JS, but cjsify mangles the ast
-# object, so compilation fails the second time around.
-cached-compilation = (compile) ->
-  (it, filename) ->
-    hash = md5 it
-
-    if hash is not contents-hash[filename]
-      # invalidate
-      delete js-cache[filename]
-      # invalidate entire last compilation
-      changed := true
-
-    contents-hash[filename] = hash
-
-    js-to-ast js-cache[filename] ?= compile it, filename
+cache = {}
+processed = {}
+entry-point = \src/c4.co
+last-changed = entry-point
 
 coco     = time.as \Coco     require(\coco)~compile
 nephrite = time.as \Nephrite require(\nephrite)
@@ -47,83 +20,103 @@ styl     = time.as \Stylus   (it, filename) ->
 js-to-ast = time.as 'JS->AST' require(\esprima)~parse
 ast-to-js = time.as 'AST->JS' require(\escodegen)~generate
 
-cjsifySync = time.as \CommonJSification,
+traverseDependenciesSync = time.as 'CJSify compile',
   minus: [coco, nephrite, styl, js-to-ast],
-  require(\commonjs-everywhere)~cjsifySync
+  cjs~traverseDependenciesSync
 
-handlers =
-  \.co   : cached-compilation (it, filename) ->
-    coco it.toString!, {+bare, filename}
+bundle = time.as 'CJSify bundle' cjs~bundle
 
-  \.ne   : cached-compilation (it, filename) ->
-    src = nephrite it.toString!, filename
-    coco src, {+bare, filename}
+handler = (compile) -> -> js-to-ast compile ...
 
-  \.styl : cached-compilation (it, filename) ->
-    "module.exports = '#{styl it.toString!, filename
-                           .replace /'/g "\/'" .replace /\n/g '\\n'}'"
+cjs-options =
+  node: false
+  cache: cache
+  handlers:
+    \.co   : handler (it, filename) ->
+      coco it.toString!, {+bare, filename}
+
+    \.ne   : handler (it, filename) ->
+      src = nephrite it.toString!, filename
+      coco src, {+bare, filename}
+
+    \.styl : handler (it, filename) ->
+      "module.exports = '#{styl it.toString!, filename
+                             .replace /'/g "\/'" .replace /\n/g '\\n'}'"
 
 outfile = \c4.user.js
 
 task \build 'build userscript' time.as \Total !->
   try
-    changed := false
     time.restart-all!
 
     metadata = slurp \metadata.txt
 
-    ast = cjsifySync \src/c4.co __dirname,
-      node: false
-      handlers: handlers
+    new-deps = traverseDependenciesSync last-changed, __dirname, cjs-options
+    processed[file] = new-deps[file] for file in new-deps
 
-    if changed
-      # TODO something with sourcemap, when fire(fox|bug) gets support
-      gen = ast-to-js ast
+    ast = bundle processed, entry-point, __dirname, cjs-options
 
-      spit do
-        outfile
-        join do
-          metadata
-          "(function(){"
-          '"use strict";'
-          # XXX hack to invalidate cached data in html5 storage when code changes
-          "var c4_COMPILATION_VERSION = #{Math.random!};"
-          gen
-          "}).call(this)"
+    # TODO something with sourcemap, when fire(fox|bug) gets support
+    gen = ast-to-js ast
+
+    spit do
+      outfile
+      join do
+        metadata
+        "(function(){"
+        '"use strict";'
+        # XXX hack to invalidate cached data in html5 storage when code changes
+        "var c4_COMPILATION_VERSION = #{Math.random!};"
+        gen
+        "}).call(this)"
 
     time.end do
       "JS->AST"
       "Coco"
       "Nephrite"
       "Stylus"
-      "CommonJSification"
+      "CJSify compile"
+      "CJSify bundle"
       "AST->JS"
       "Total"
 
-    if changed
-      say "#{new Date}: compiled script to #{outfile}"
-    else
-      say "#{new Date}: no actual changes detected."
+    say "#{new Date}: compiled script to #{outfile}"
   catch
     console.error e
     console.error e.stack
+
+debounce-leading = (delay, fn) ->
+  var timeout
+  reset = !-> timeout := null
+  -> unless timeout
+    fn ...
+    timeout := setTimeout reset, delay
 
 task \watch 'watch for changes and rebuild automatically' ->
   invoke \build
 
   require(\gaze) do
     <[ metadata.txt src/**/* style/**/* templates/**/* ]>
-    debounce-delay: 2000ms
+    debounce-delay: 2000ms # yeah, this doesn't work
     !->
       say "watching for changes..."
 
-      @on \all !(event, filepath) ->
+      @on \all debounce-leading 1000ms !(event, filepath) ->
+        # XXX for some reason I'm getting extraneous 'added' events on 
+        # directories, so guard against those
+        if fs.statSync filepath .isFile!
+          last-changed := filepath
+        else
+          # no actual changes we can use with the caching system
+          return
+
         say "#event event detected on #filepath. rebuilding..."
 
         # XXX styl's internal @include mechanism means only c4.styl is
         # invalidated if it changes, so hack around this
         if /styl/.test filepath
-          Object.keys contents-hash .filter /styl/~test .forEach !->
-            delete contents-hash[it]
+          last-changed := "#__dirname/style/c4.styl"
+          Object.keys cache .filter /styl/~test .forEach !->
+            delete cache[it]
 
         invoke \build
