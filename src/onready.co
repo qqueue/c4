@@ -108,8 +108,9 @@ if board.is-catalog
 
   console.log catalog
 
+  order = get \catalog-order or \date
   console.time "generate new HTML body"
-  body-html = catalog-template catalog, order: \date
+  body-html = catalog-template catalog, {order}
   console.timeEnd "generate new HTML body"
 
   console.time "parse new body HTML"

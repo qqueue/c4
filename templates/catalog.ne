@@ -4,16 +4,16 @@
 = header!
 #catalog-controls
   label
-    input.order(type="radio", name="order", value="absdate")
+    input#absdate.order(type="radio", name="order", value="absdate")
     | Last Reply
   label
-    input.order(type="radio", name="order", value="alt")
+    input#alt.order(type="radio", name="order", value="alt")
     | Bump Order
   label
-    input.order(type="radio", name="order", value="r")
+    input#r.order(type="radio", name="order", value="r")
     | Reply Count
   label
-    input.order(type="radio", name="order", value="date")
+    input#date.order(type="radio", name="order", value="date")
     | Creation Date
 #catalog
   for @order[@@order]

@@ -1,14 +1,21 @@
 {L, $$, $} = require \./utils/dom
+{get, set, sset, sget} = require \./utils/storage
 catalog-thread = require \templates/catalog-thread
-
+{onready} = require \./utils/features
 {catalog} = board
 
+<-! onready
 # 4chan catalog features, since I'm clobbering desuwa's version
 for $$ \.order
   &addEventListener \change !->
     if @checked
+      set \catalog-order @value
       # rerender
       $ \catalog .innerHTML = (for catalog.order[@value]
         catalog-thread catalog.threads[&], no: &
       )join ''
+
+set \catalog-order (order = get \catalog-order or \date)
+console.log order
+$ order .checked = true
 
