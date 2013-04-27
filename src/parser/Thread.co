@@ -16,13 +16,8 @@ module.exports = class Thread
       @post[reply.no] = reply
 
     # build backlinks arrays of posts
-    # XXX I'm not totally happy how this works, but it should be correct at
-    # least
     for post of @posts
       for quoted of post.quotelinks
-        # quotelinks can contain cross-thread/board links, so guard against those.
-        # TODO is it useful that quotelinks contains cross links while
-        # backlinks doesn't?
-        @post[quoted]?backlinks.push post.no
+        @post[quoted].backlinks.push post.no
 
     Thread[@no] = this

@@ -124,7 +124,7 @@ DOMPost:: = require(\./Post)::
   @image = if img and not @deleted-image
     new FImage img, el, thumbs-base, images-base
 
-  @quotelinks    = quotelinks-of @comment
+  @quotelinks    = quotelinks-of @comment, @thread-no
   @backlinks     = []
 
 dimension-regex = /(\d+)x(\d+)/

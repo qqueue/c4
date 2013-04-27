@@ -52,7 +52,7 @@ APIPost:: = require(\./Post)::
   @deleted-image = !!data.filedeleted
   @image         = if data.fsize then new APIImage data, images-base, thumbs-base
 
-  @quotelinks    = quotelinks-of @comment
+  @quotelinks    = quotelinks-of @comment, @thread-no
   @backlinks     = []
 
 APIImage:: = require(\./FImage)::
