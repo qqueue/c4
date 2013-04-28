@@ -7,21 +7,13 @@
 # - Persist message display state between sessions
 # - Show _new_ messages regardless of previous message display state
 #
-# Uses 4chan-JS's localStorage location so catalog page's global message will
-# also be hidden
-
 {onready} = require \../utils/features
 {set, get} = require \../utils/storage
 {$} = require \../utils/dom
 Bacon = require \baconjs
 
-# 4chanJS's hash function, line 80-86
-function hash str
-  msg = 0
-  for i til str.length
-    msg = ((msg << 5) - msg) + str.charCodeAt i
-
-  return msg
+# probably not two messages with the same length
+hash = -> it.length
 
 <-! onready
 
@@ -29,14 +21,9 @@ if $ \message-container
   button  = $ \hide-message
   message = $ \message
 
-  # per 4chan-JS, the old hash only exists when the message is hidden
-  # toString! since localStorage only stores strings, which makes coco's strict
-  # equality fail
-  new-hash = hash message.textContent .toString!
-  if new-hash is not localStorage\4chan-msg
-    localStorage.removeItem \4chan-msg
+  new-hash = hash message.textContent
 
-  message.hidden = localStorage[\4chan-msg]?
+  message.hidden = new-hash is get \hide-mesage
 
   # toggle concern
   message-hidden = Bacon.from-event-target button, \click
@@ -44,10 +31,7 @@ if $ \message-container
 
   message-hidden.on-value !-> message.hidden = it
   message-hidden.on-value !->
-    if it
-      localStorage\4chan-msg = new-hash
-    else
-      localStorage.removeItem \4chan-msg
+    set \hide-message if it then new-hash else ''
 
   # button text concern
   message-hidden
