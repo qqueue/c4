@@ -19,8 +19,6 @@
                data-idx="#{@idx}",
                id="#{@@id or 'p' + @no}")
   h1.post-header
-    button.report(type="submit", form="reportform",
-      name="no", value="#{@no}") !
     a.subject(href="#{@url}")= @subject
     if @email
       a.name(href="#{'mailto:'+@email}")= @name
