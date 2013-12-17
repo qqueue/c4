@@ -1,12 +1,12 @@
 # This picks up all in-thread and in-board links.
-regex = /<a href="\d+#p(\d+)" class="quotelink">/g
+regex = /<a href="(\d+)#p(\d+)" class="quotelink">/g
 
 # a list of post numbers that are quoted by the comment (HTML)
 module.exports = (comment, thread-no) ->
   # use a hash in order to dedupe quotelinks to the same post
   set = {}
   regex.lastIndex = 0
-  while regex.exec comment
-    set[that.1] = true if that.2 == thread-no
-
+  while (match = regex.exec comment)?
+    set[match.2] = true if match.1 == thread-no
+  
   Object.keys set
