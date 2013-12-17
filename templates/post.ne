@@ -19,7 +19,6 @@
                data-idx="#{@idx}",
                id="#{@@id or 'p' + @no}")
   h1.post-header
-    button.hide(type="button", value="#{@no}") &times;
     button.report(type="submit", form="reportform",
       name="no", value="#{@no}") !
     a.subject(href="#{@url}")= @subject

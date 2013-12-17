@@ -44,7 +44,6 @@ require \./onready
 # but such is the nature of node modules as opposed to concatenation, I guess.
 require \./features/forcequotes
 require \./features/hide-message
-require \./features/hide
 require \./features/highlight
 require \./features/image-expansion
 require \./features/image-previews

@@ -116,7 +116,7 @@
   &:after
     content " "
 
-.hide, .report
+.report
   float right
   padding 0 1px
   background transparent
@@ -124,14 +124,6 @@
   line-height 100%
   font-size 9pt
   color sfw-border - 10%
-
-// functional css
-// bad idea? maybe
-.post.hidden
-  opacity 0.6
-
-  .file, .comment, .backlinks, .fileinfo
-    display none
 
 // hidden to prevent repeats
 .post.inlined
@@ -142,9 +134,6 @@
 
 .post.highlighted
   background-color #D6BAD0 !important
-
-.hiddenlink
-  text-decoration line-through
 
 .deadlink
   color gray
