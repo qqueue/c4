@@ -7,7 +7,7 @@ Currently, development focus is on reader usability. Reading threads and
 viewing images is far improved from the vanilla 4chan experience.
 
 However, c4 currently doesn't offer much else, so if you're looking for a
-similar but much more feature-complete and mature project, try[4chan
+similar but much more feature-complete and mature project, try [4chan
 X][mayhem].
 
 [gm]: https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
