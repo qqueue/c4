@@ -33,7 +33,6 @@ global.board = {}
 
 require \./archives
 require \./backlinks
-require \./poster
 require \./updater
 require \./onready
 
@@ -51,7 +50,6 @@ require \./features/image-expansion
 require \./features/image-previews
 require \./features/inlinereplies
 require \./features/postpreviews
-require \./features/quote
 require \./utils/relative-dates
 require \./features/relative-dates
 require \./features/youtube

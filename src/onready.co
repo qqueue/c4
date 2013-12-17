@@ -18,32 +18,6 @@ html = L \html
     &appendChild with L \style
       &id = \c4-style
       &textContent = require \style/c4
-    &appendChild with L \script
-      &src = '//www.google.com/recaptcha/api/challenge?
-              k=6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc'
-      &addEventListener \load !->
-        head.appendChild with L \script
-          &src = \//www.google.com/recaptcha/api/js/recaptcha.js
-          &addEventListener \load !->
-            L \script
-              &textContent =
-                # secret secrets, gained from digging around in the recaptcha js
-                "(function() {
-                  var c;
-                  if (c = document.getElementById('captcha')) {
-                    Recaptcha._init_options({
-                      theme: 'custom',
-                      custom_theme_widget: c
-                    });
-                    Recaptcha.theme = 'custom';
-                    Recaptcha.widget = c;
-                    Recaptcha._finish_widget();
-                  }
-                 }())"
-              if board.ready
-                head.appendChild &
-              else
-                onready !-> head.appendChild &
 
 body = L \body
 
