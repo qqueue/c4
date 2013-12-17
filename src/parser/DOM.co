@@ -158,7 +158,8 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   @filename  = if @spoiler
     info.title
   else
-    info.querySelector 'span[title]' .title
+    span = info.querySelector 'span'
+    span.title or span.text-content
 
   @md5       = thumb.dataset.md5
 

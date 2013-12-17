@@ -98,11 +98,10 @@ if board.is-catalog
     /var catalog/.test it.textContent
   throw new Error "what is happening" unless catalog-text
 
-  # strip off useless JS
-  # var catalog = {...}
-  catalog-text.=textContent.toString!trim!
-  # XXX I sure hope the code doesn't change...
-  catalog = JSON.parse catalog-text.substring 14, catalog-text.length - 72
+  # eval the script tag, which needs `new FC().applyCSS()` in scope...
+  class FC then applyCSS: ->
+
+  catalog = eval catalog-text.text-content + "; catalog"
 
   board.catalog = catalog
 
