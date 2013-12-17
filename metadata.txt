@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        c4
 // @namespace   https://github.com/qqueue/c4
-// @description The Higgs Boson of 4chan userscripts
+// @description the little 4chan userscript that could.
 // @author      queue <queue@lavabit.com>
 //
 // @license     none (public domain)

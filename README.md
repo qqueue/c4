@@ -1,46 +1,37 @@
-# c4: A brave new 4chan
+# c4: a man, a plan, 4chan, Panama!
 
-c4 (formerly html5chan) is a Greasemonkey userscript for Firefox 20+ that
-aims to be the most seamless 4chan interface possible.
+c4 is a Greasemonkey userscript for Firefox 26+ that transforms [4chan][] pages
+in your web browser into a user interface that is a whole lot more usable.
 
-**c4 is currently in heavy development, so features and bugs will appear
-and disappear without notice. Watch the [Github repository][repo] and
-the [TODO list][] for updates.**
+Currently, development focus is on reader usability. Reading threads and
+viewing images is far improved from the vanilla 4chan experience.
 
-[TODO list]: https://github.com/qqueue/c4/wiki/TODO
-
-## What does c4 do?
-
-c4 breaks down technological barriers to participating
-in the [4chan online community][4chan]. The c4 github wiki has
-[more on the philosophy of c4][1], if you're curious.
-
-Practically, c4 transforms 4chan pages in your web browser
-into a user interface that is a whole lot more usable,
-using [Greasemonkey][gm], javascript, and other web technologies.
-
-A similar, much more mature project is [4chan X][mayhem]. If you want
-a better 4chan user interface _today_, I recommend it.
+However, c4 currently doesn't offer much else, so if you're looking for a
+similar but much more feature-complete and mature project, try[4chan
+X][mayhem].
 
 [gm]: https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
 [mayhem]: https://github.com/MayhemYDG/4chan-x
 [4chan]: https://www.4chan.org
-[1]: https://github.com/qqueue/c4/wiki/Philosophy
 
-## Will c4 be any good?
+## What *will* c4 do?
 
-Yes.
+Future development focus will be on board-level usability improvements.
+The official 4chan catalog pages are step up from refreshing page 0,
+but I still think there's a lot more that can be done. If you're
+interested and/or have ideas about this, feel free to discuss them
+on the [github issues tracker][tracker].
 
 ## Installation
 
 While keeping in mind that c4 is still **alpha** software, you
-can try out the latest compiled version at:
+can try out a recent compiled version at:
 
 http://qqueue.github.io/c4/c4.user.js
 
-You'll need [Firefox 20+][ff] and [Greasemonkey][gm] installed.
-Please don't use Scriptish, it's deprecated. Chrome/Chromium users
-hang tight, support is coming soon.
+You'll need [Firefox 26+][ff] and [Greasemonkey][gm] installed. Chrome(ium)
+might work, but my current compatibility target is just firefox, to keep
+development overhead low.
 
 Please [report issues][tracker] if/when you come across them.
 
