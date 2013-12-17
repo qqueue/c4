@@ -27,11 +27,14 @@ on the [github issues tracker][tracker].
 While keeping in mind that c4 is still **alpha** software, you
 can try out a recent compiled version at:
 
-http://qqueue.github.io/c4/c4.user.js
+https://github.com/qqueue/c4/releases
 
 You'll need [Firefox 26+][ff] and [Greasemonkey][gm] installed. Chrome(ium)
-might work, but my current compatibility target is just firefox, to keep
+might work, but my current compatibility target is just Firefox, to keep
 development overhead low.
+
+Opening the `c4.user.js` file for a given release in your browser should prompt
+for installation.
 
 Please [report issues][tracker] if/when you come across them.
 
