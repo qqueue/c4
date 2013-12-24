@@ -6,4 +6,7 @@ a.catalog-link(href="//boards.4chan.org/#{board.name}/res/#{@@no}")
       img.catalog-thumb.deleted-image(src="//static.4chan.org/image/filedeleted.gif")
     figcaption.catalog-caption
       .reply-count= "R: #{@r}, I: #{@i}"
-      p.teaser= @teaser
+      p.teaser
+        if @sub
+          span.subject= @sub
+        = @teaser
