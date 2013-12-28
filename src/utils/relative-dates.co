@@ -8,8 +8,7 @@ const YEAR   = 3.156e10_ms , HALFYEAR   = YEAR   / 2
       MINUTE = 60_000ms    , HALFMINUTE = MINUTE / 2
       SECOND = 1000ms      , HALFSECOND = SECOND / 2
 
-pluralize = (number, unit) ->
-  "#{Math.round number} #unit#{if number >= 1.5 then \s else ''} ago"
+const MONTHS = <[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec]>
 
 # each time element adds a function to update itself to the stale list once it
 # becomes inaccurate.  the stale list is flushed and stale times are updated
@@ -59,34 +58,35 @@ export keep-up-to-date = !(el) ->
 
   make-timeout Date.now! - time.getTime!
 
+pad = -> if it < 10 then "0#it" else it
+
+# twitter-style relative dates +
+# stackoverflow-style absolute dates, for a good balance
+# of relative placement and screenshotability.
 export relative-date = (date, relative-to = Date.now!) ->
   diff = relative-to - date.getTime!
   absdiff = Math.abs diff
   if
     absdiff < MINUTE
       number = absdiff / SECOND
-      unit = \second
+      unit = \s
     absdiff < HOUR
       number = absdiff / MINUTE
-      unit = \minute
+      unit = \m
     absdiff < DAY
       number = absdiff / HOUR
-      unit = \hour
+      unit = \h
     absdiff < MONTH
       number = absdiff / DAY
-      unit = \day
+      unit = \d
     absdiff < YEAR
       number = absdiff / MONTH
-      unit = \month
+      unit = \mo
     else
       number = absdiff / YEAR
-      unit = \year
+      unit = \y
 
-  number = Math.round number
-  unit += \s unless number is 1
-
-  if diff > 0
-    "#number #unit ago"
-  else
-    "in #number #unit"
+  "#{Math.round number}#unit \
+   (#{pad date.getHours!}:#{pad date.getMinutes!} \
+   #{MONTHS[date.getMonth!]} #{date.getDay!} '#{date.getFullYear! - 2000})"
 
