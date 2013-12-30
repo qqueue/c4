@@ -88,5 +88,5 @@ export relative-date = (date, relative-to = Date.now!) ->
 
   "#{Math.round number}#unit \
    (#{pad date.getHours!}:#{pad date.getMinutes!} \
-   #{MONTHS[date.getMonth!]} #{date.getDay!} '#{date.getFullYear! - 2000})"
+   #{MONTHS[date.getMonth!]} #{date.getDate!} '#{date.getFullYear! - 2000})"
 
