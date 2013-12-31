@@ -23,7 +23,7 @@ if $ \message-container
 
   new-hash = hash message.textContent
 
-  message.hidden = new-hash is get \hide-mesage
+  message.hidden = new-hash is get \hide-message
 
   # toggle concern
   message-hidden = Bacon.from-event-target button, \click
