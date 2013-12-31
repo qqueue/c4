@@ -35,6 +35,10 @@ export on-posts = !(listener-spec) ->
     for event, listener in listeners
       let
         onready !->
+          # XXX @el and @post are null in catalog pages for some reason
+          # for now, just prevent the error message
+          return unless @el? and @post?
+
           # initially, run one query
           for @el.querySelectorAll selector
             &addEventListener event, listener

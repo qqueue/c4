@@ -198,5 +198,5 @@ onready !->
         &tminus = delays[current-delay]
         &update!
   else
-    $ \updater .hidden = true
+    $ \updater ?.hidden = true
 
