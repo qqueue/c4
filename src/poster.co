@@ -1,0 +1,133 @@
+# ajax posting
+# FIXME something is broken with with POST attributes, since posts erroneously
+# result in new threads. Good thing I rarely post ( ._.)
+
+listen = require \./utils/listen
+{onready} = require \./utils/features
+{L, $, $$} = require \./utils/dom
+{get, set} = require \./utils/storage
+
+postStatus = -> $ \post-status .textContent = it
+
+<-! onready
+
+checkValidity = (e) ->
+  e.preventDefault!
+
+  form = $ \postform
+  captcha = $ \recaptcha_response_field
+  file = $ \file
+  comment = $ \comment
+  email = $ \email
+
+  # noko would load the thread into the iframe and break
+  # sys.4chan.org posting a message back here
+  email.value = '' if /^noko$/i.test email.value
+
+  captcha.setCustomValidity unless captcha.value
+    "You forgot the captcha!"
+  else ''
+
+  file.setCustomValidity if !file.value and board.isBoard
+    "You forgot your image!"
+  else ''
+
+  comment.setCustomValidity if !file.value and !comment.value
+    "You didn't enter a comment or select a file!"
+  else ''
+
+  if form.checkValidity!
+    $ \post .disabled = true
+    $ \sage ?.disabled = true
+
+    postStatus "Posting..."
+    $ \progress
+      &hidden = false # show progress bar
+      &value = 0
+
+    data = new FormData form
+    # since we're ajaxing this, need to replace email with sage
+    # if that was used to submit
+    if this is $ \sage # sage button clicked
+      data.append \email \sage
+
+    #ajax time!
+    new XMLHttpRequest
+      &open \POST form.action
+      listen &
+        .on \load ->
+          html = L \div
+            &innerHTML = @response
+          console.log html
+
+          captcha = $ \recaptcha_response_field
+          file = $ \file
+          comment = $ \comment
+
+          $ \post .disabled = false
+          $ \sage ?.disabled = false
+
+          if /Post successful!|uploaded!/.test html.textContent
+            postStatus 'Post successful!'
+            cooldown!
+
+            $ \postform .reset!
+            $ \name .value = get \name or '' # persist name
+            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+
+            # update and show new post, giving some time for 4chan to process it
+            updater.countdown.restart 3sec
+            # reset last_parse to force an update, since 4chan's timestamp
+            # often lies
+            parser.last-parse = 0
+
+          # TODO check for other errors
+          else if /mistyped the verification/.test html.textContent
+            postStatus 'You mistyped the verification!'
+            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+            captcha
+              &value = ''
+              &focus!
+          else if /duplicate file entry detected/
+            # TODO select for link to duplicate file
+            $ \postform .reset!
+            $ \name .value = get \name or '' # persist name
+            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+        .on \loadend ->
+          $ \progress .hidden = true # hide progress bar
+
+      listen &upload .on \progress (e) ->
+        $ \progress .value = 100 * e.loaded / e.total
+
+      &send data
+
+  return false # prevent normal submission
+
+listen $ \post .click checkValidity
+listen $ \sage .click checkValidity
+
+cooldown = ->
+  post = $ \post
+  sage = $ \sage
+  post.disabled = true
+  sage?disabled = true
+
+  message = post.textContent
+
+  tminus = 30sec
+  post.textContent = tminus
+  setTimeout do
+    function tick
+      if tminus-- is 0
+        post.textContent = message
+        post.disabled = false
+        sage?disabled = false
+      else
+        post.textContent = tminus
+        setTimeout tick, 1000ms
+    1000ms
+
+# persist entered name and tripcode
+listen $ \name .on \input -> set name: @value
+$ \name ?.value = get \name or ''
+
