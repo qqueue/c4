@@ -22,7 +22,7 @@ unless board.thread?closed
   #postform-wrapper
     form#postform(enctype="multipart/form-data", method="POST", action="https://sys.4chan.org/#{board.name}/post")
       input(type="hidden", value="3145728", name="MAX_FILE_SIZE")
-      if board.threadId
+      if board.thread-no
         input(type="hidden", value="#{that}", name="resto")
       input(type="hidden", value="regist", name="mode")
       input(id="password", type="hidden", name="pwd", value="#{board.password}")

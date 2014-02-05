@@ -1,6 +1,7 @@
 # ajax posting
-# FIXME something is broken with with POST attributes, since posts erroneously
-# result in new threads. Good thing I rarely post ( ._.)
+# Pretty bare bones, but it should work at least.
+# TODO I think I'm using an old recaptcha api or key, cause I'm getting
+# the stupid-hard captchas instead of the easier ones.
 
 listen = require \./utils/listen
 {onready} = require \./utils/features
