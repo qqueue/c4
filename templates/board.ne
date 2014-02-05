@@ -38,7 +38,8 @@ unless board.thread?closed
         #file-field
           input#file(type="file", name="upfile", tabindex="10")
           label#spoiler-field
-            input(type="checkbox", value="on", name="spoiler", tabindex="10") Spoiler?
+            input(type="checkbox", value="on", name="spoiler", tabindex="10")
+            | Spoiler?
         #buttons
           button#post(type="submit", tabindex="10", value="Submit")
             | Post #{if board.isThread then 'Reply' else 'New Thread'}
