@@ -29,12 +29,12 @@ can try out a recent compiled version at:
 
 https://github.com/qqueue/c4/releases
 
+Click on the green `c4.user.js` on the latest release to prompt for
+installation.
+
 You'll need [Firefox 26+][ff] and [Greasemonkey][gm] installed. Chrome(ium)
 might work, but my current compatibility target is just Firefox, to keep
 development overhead low.
-
-Opening the `c4.user.js` file for a given release in your browser should prompt
-for installation.
 
 Please [report issues][tracker] if/when you come across them.
 
