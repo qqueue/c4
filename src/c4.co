@@ -29,7 +29,7 @@ global.board = {}
   &favicons = require \./favicon-data
 
   # TODO moot's crazy spoiler number bullshit
-  &spoiler-url = "https://static.4chan.org/image/spoiler-#{&name}1.png"
+  &spoiler-url = "//s.4cdn.org/image/spoiler-#{&name}1.png"
 
 require \./archives
 require \./backlinks

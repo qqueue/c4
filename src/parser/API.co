@@ -12,8 +12,8 @@ module.exports = (data, board) -> new APIThread data, board
 
 APIThread:: = require(\./Thread)::
 !function APIThread {posts: [op, ...replies]}: data, board
-  thumbs-base = "//thumbs.4chan.org/#board/thumb/"
-  images-base = "//images.4chan.org/#board/src/"
+  thumbs-base = "//t.4cdn.org/#board/thumb/"
+  images-base = "//i.4cdn.org/#board/src/"
   thread-url  = "//boards.4chan.org/#board/res/"
   @no  = op.no
   @url = thread-url + op.no

@@ -5,8 +5,8 @@ quotelinks-of = require \./quotelinks-of
 #
 # `board` is a string for the name of the board, e.g. 'a'.
 module.exports = (document, board) ->
-  thumbs-base = "//thumbs.4chan.org/#board/thumb/"
-  images-base = "//images.4chan.org/#board/src/"
+  thumbs-base = "//t.4cdn.org/#board/thumb/"
+  images-base = "//i.4cdn.org/#board/src/"
   thread-url  = "//boards.4chan.org/#board/res/"
 
   # pre-query always-existant post elements, which should be faster than
@@ -144,7 +144,7 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   dimensions = dimension-regex.exec info.textContent
 
   thumb      = el.firstElementChild
-  timestamp  = @url.match /\/(\d+)/ .1
+  timestamp  = @url.match /\/(\d+)\./ .1
 
   @thumb     = new DOMThumb timestamp, thumb, thumbs-base
 
