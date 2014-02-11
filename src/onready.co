@@ -5,12 +5,6 @@ parser = require \./parser
 {get, set, sset, sget} = require \./utils/storage
 board-template = require \templates/board
 
-function date-reviver k, v
-  if k is \time
-    new Date v
-  else
-    v
-
 # pre-create new DOM
 html = L \html
   &appendChild with head = L \head
@@ -122,25 +116,10 @@ if board.is-catalog
 else
   #console.profile!
 
-  # if I click a link off of a threadpage that has been updated, then click the
-  # back button, the updated posts won't appear until the updater hits the
-  # new version again, i.e. the browser back state is using the old version
-  # of the page. Thus, check the session storage cache for threads and use
-  # that instead of reparsing the page, which can't possibly be newer
-  # information.
-  # XXX kinda messy compilation version hack
-  version = c4_COMPILATION_VERSION
-  data = sget "cache-#{board.thread-no}" date-reviver if board.is-thread
-
-  if board.is-thread and data?version is version
-    console.log "using cached thread data"
-    board.thread = data.thread
-    board.threads = [data.thread]
-  else
-    console.time "parse board"
-    board.threads = parser.dom d, board.name
-    console.timeEnd "parse board"
-    board.thread = board.threads.0 if board.isThread
+  console.time "parse board"
+  board.threads = parser.dom d, board.name
+  console.timeEnd "parse board"
+  board.thread = board.threads.0 if board.isThread
 
   # global lookup post by hash
   # XXX cross-board still conflicts
