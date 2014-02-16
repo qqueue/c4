@@ -1,6 +1,6 @@
 { "name"            : "html5chan"
 , "version"         : "0.0.1"
-, "author"          : "queue <queue@lavabit.com"
+, "author"          : "queue <queue@hakase.org>"
 , "dependencies"    : { "coco"                : "0.9.1"
                       , "stylus"              : "0.32.x"
                       , "nib"                 : "0.9.x"
