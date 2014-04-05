@@ -9,23 +9,56 @@ on-posts \.file : click: !(e)->
 
     a = this
     @hidden = true
-    @before with L \img
+    el = if /.webm$/.test @href then \video else \img
+    @before with L el
       &src =  @href
       &className = \full
+
+      if el is \video
+        &loop = true
+        &muted = true
+        &set-attribute \controls \controls
+        &play!
+
       &style <<<
         display: \block
         max-width: \100%
-      &onclick = !->
-        # if the image is scaled down, first cycle to full size, then remove.
-        # This is a good comprimize to having a selector between "fit-width" and
-        # "100%" globally.
-        if @width is not @naturalWidth
-          @style.removeProperty \max-width
-        else
-          a.hidden = false
-          a.previousSibling?remove! # the full image
 
-          # top of thumb is above scroll
-          if scroll and (top = a.getBoundingClientRect!.top) < 0
-            window.scrollBy 0, top # scroll so it is visible
+      remove = !->
+        a.hidden = false
+        a.previousSibling?remove! # the full image
+
+        # top of thumb is above scroll
+        if scroll and (top = a.getBoundingClientRect!.top) < 0
+          window.scrollBy 0, top # scroll so it is visible
+
+      if el is \video
+        # containerchan-style closing by clicking and dragging
+        # out of video
+        &add-event-listener \mousedown !->
+          over = true
+          &add-event-listener \mouseover !function out
+            over := true
+          &add-event-listener \mouseout !function out
+            over := false
+          document.add-event-listener \mouseup !function cancel
+            if not over
+              remove!
+            &remove-event-listener \mouseout out
+            &remove-event-listener \mouseup cancel
+      else
+        &onclick = !->
+          # if the image is scaled down, first cycle to full size, then remove.
+          # This is a good comprimize to having a selector between "fit-width" and
+          # "100%" globally.
+          if @width is not @naturalWidth
+            @style.removeProperty \max-width
+          else
+            remove!
+
+
+
+
+
+
 

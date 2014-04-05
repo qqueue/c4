@@ -25,10 +25,16 @@ module.exports = (image-of) ->
       # size of viewport excluding scrollbars.
       viewport = document.documentElement{width: clientWidth, height: clientHeight}
 
-      document.body.append with L \img
+      el = if /.webm$/.test src then \video else \img
+      document.body.append with L el
         &id = \imgpreview
         &alt = "Loading..."
         &src = src
+
+        if el is \video
+          &loop = true
+          &muted = true
+          &play!
 
         &{width, height} = object-fit viewport, width, height
 
