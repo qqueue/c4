@@ -37,15 +37,12 @@ on-posts \.file : click: !(e)->
         # out of video
         &add-event-listener \mousedown !->
           over = true
-          &add-event-listener \mouseover !function out
-            over := true
-          &add-event-listener \mouseout !function out
-            over := false
+          &add-event-listener \mouseover !-> over := true
+          &add-event-listener \mouseout !-> over := false
           document.add-event-listener \mouseup !function cancel
             if not over
               remove!
-            &remove-event-listener \mouseout out
-            &remove-event-listener \mouseup cancel
+            document.remove-event-listener \mouseup cancel
       else
         &onclick = !->
           # if the image is scaled down, first cycle to full size, then remove.
