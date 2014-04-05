@@ -83,17 +83,20 @@ checkValidity = (e) ->
             parser.last-parse = 0
 
           # TODO check for other errors
-          else if /mistyped the verification/.test html.textContent
-            postStatus 'You mistyped the verification!'
+          else
+            if /mistyped/.test html.textContent
+              postStatus 'You mistyped the CAPTCHA!'
+            else if /Duplicate file/.test html.textContent
+              postStatus 'Duplicate file!'
+            else
+              console.log html.textContent
+              postStatus 'something broke, sorry. try again.'
+
             $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
             captcha
               &value = ''
               &focus!
-          else if /duplicate file entry detected/
-            # TODO select for link to duplicate file
-            $ \postform .reset!
-            $ \name .value = get \name or '' # persist name
-            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
+
         .on \loadend ->
           $ \progress .hidden = true # hide progress bar
 
