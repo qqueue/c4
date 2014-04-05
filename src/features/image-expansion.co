@@ -52,10 +52,3 @@ on-posts \.file : click: !(e)->
             @style.removeProperty \max-width
           else
             remove!
-
-
-
-
-
-
-
