@@ -5,7 +5,7 @@
 const delay       = 200ms
 const dead-zone   = 10px
 
-const leave-delay = 25ms
+const leave-delay = 10ms
 
 listen = require \./listen
 
