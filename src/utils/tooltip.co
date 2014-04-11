@@ -15,57 +15,98 @@ listen = require \./listen
 #
 # the `hide` fn is called with the same context and arguments when the
 # tooltip content should be removed from view.
-export tooltip = ({show, hide}) -> !({clientX: x, clientY: y}: e) ->
-  var timeout
-  last-event = e
+export tooltip = ({show, hide}) ->
+  # XXX the unclutter program on linux will trigger a
+  # mouseout event immediately followed by a mouseover when
+  # the cursor disappears, causing the tooltip to destroy itself.
+  # Thus, don't immediately hide tooltip on mouseleave, and
+  # prevent the subsequent mouseover from duplicating the timeout
+  # by keeping track of tooltipped elements and
+  # a timeout reference until `delay` after mouseout.
+  active-elements = new WeakMap # Element -> Timeout
 
-  # called when user hasn't moved mouse for 'delay' seconds
-  create-tooltip = !~>
-    show.call this, last-event
+  !({clientX: x, clientY: y}: e) ->
+    #console.debug 'mouseover!'
+    var timeout
+    last-event = e
+    el = this
+    #console.debug el
+    li = listen el
 
-    # swap creation for destruction
-    listen this
-      .off \mousemove reset-timeout
-      .on \mousemove remove-tooltip
+    # called when user hasn't moved mouse for 'delay' seconds
+    create-tooltip = !->
+      #console.debug 'creating tooltip!'
+      show.call el, last-event
 
-  # mousemove handler when tooltip is hidden but mouse is over element, to
-  # ensure tooltip is only shown after 'delay' seconds of no movement
-  reset-timeout = !(e) ->
-    clearTimeout timeout
-    timeout := setTimeout create-tooltip, delay
+      # swap creation for destruction
+      li
+        .off \mousemove reset-timeout
+        .on \mousemove remove-tooltip
 
-    # store the new current mouse position
-    {clientX: x, clientY: y} := e
-
-    last-event := e
-
-  # mousemove handler when tooltip is shown, to remove tooltip when mouse is
-  # moved outside the deadzone. The deadzone ensures the tooltip doesn't get
-  # removed by accidental small mouse movements, only intentional movements.
-  remove-tooltip = !({clientX: cx, clientY: cy}) ->
-    if Math.abs(x - cx) > dead-zone or Math.abs(y - cy) > dead-zone
-      hide ...
-
-      # restart tooltip timeout, just in case user doesn't move mouse after
-      # reaching the deadzone, which would trigger reset-timeout.
+    # mousemove handler when tooltip is hidden but mouse is over element, to
+    # ensure tooltip is only shown after 'delay' seconds of no movement
+    reset-timeout = !(e) ->
+      #console.debug 'reset timeout'
+      clearTimeout timeout
       timeout := setTimeout create-tooltip, delay
 
-      # swap destruction for creation
-      listen this
-        .on \mousemove reset-timeout
-        .off \mousemove remove-tooltip
+      # store the new current mouse position
+      {clientX: x, clientY: y} := e
 
-  # start initial timeout
-  timeout = setTimeout create-tooltip, delay
+      last-event := e
 
-  listen this
-    .on \mousemove reset-timeout
-    .once \mouseout !->
+    # mousemove handler when tooltip is shown, to remove tooltip when mouse is
+    # moved outside the deadzone. The deadzone ensures the tooltip doesn't get
+    # removed by accidental small mouse movements, only intentional movements.
+    remove-tooltip = !({clientX: cx, clientY: cy}) ->
+      #console.debug 'remove tooltip, maybe'
+      if Math.abs(x - cx) > dead-zone or Math.abs(y - cy) > dead-zone
+        #console.debug 'removing tooltip!'
+        hide ...
+
+        # restart tooltip timeout, just in case user doesn't move mouse after
+        # reaching the deadzone, which would trigger reset-timeout.
+        timeout := setTimeout create-tooltip, delay
+
+        # swap destruction for creation
+        li
+          .on \mousemove reset-timeout
+          .off \mousemove remove-tooltip
+
+    cleanup = !->
+      #console.debug 'cleaning up!'
       # clean up tooltip and handlers
       hide ...
 
       clearTimeout timeout
-      listen this
+      li
         .off \mousemove reset-timeout
         .off \mousemove remove-tooltip
+        .off \mouseout maybe-cleanup
 
+      # we're finally out, clear active
+      active-elements.delete el
+
+    maybe-cleanup = !(e) ->
+      #console.debug 'mouseout, maybe cleaning up...'
+      # cancel any other leave timeout and count down
+      # to actual cleanup
+      clearTimeout active-elements.get el
+      active-elements.set el, setTimeout do
+        !->
+          #console.debug 'leave timeout done!'
+          cleanup.call el, e
+        delay
+
+    if active-elements.has el
+      #console.debug 'we\'re still active, clearing leave timeout...'
+      # we're back, don't go away
+      clearTimeout active-elements.get el
+    else # register handlers
+      #console.debug 'not currently active, registering'
+      active-elements.set el, void
+      timeout = setTimeout create-tooltip, delay
+
+      listen this
+        .on \mousemove reset-timeout
+        .on \mouseout maybe-cleanup
