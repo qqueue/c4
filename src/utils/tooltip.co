@@ -2,8 +2,10 @@
 # the mouse still for a short delay. remove the tooltip if the mouse moves
 # outside a small deadzone. This is similar to how title tooltips interact in
 # firefox, but for arbitrary content.
-const delay     = 200ms
-const dead-zone = 10px
+const delay       = 200ms
+const dead-zone   = 10px
+
+const leave-delay = 25ms
 
 listen = require \./listen
 
@@ -96,7 +98,7 @@ export tooltip = ({show, hide}) ->
         !->
           #console.debug 'leave timeout done!'
           cleanup.call el, e
-        delay
+        leave-delay
 
     if active-elements.has el
       #console.debug 'we\'re still active, clearing leave timeout...'
