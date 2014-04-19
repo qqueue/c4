@@ -135,3 +135,12 @@ cooldown = ->
 listen $ \name .on \input -> set name: @value
 $ \name ?.value = get \name or ''
 
+# load captcha on demand
+listen $ \comment .once \input !->
+  document.head.appendChild with L \script
+    &textContent = """
+    Recaptcha.create('6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', 'captcha', {
+      theme: 'custom',
+      custom_theme_widget: 'captcha'
+    })
+    """
