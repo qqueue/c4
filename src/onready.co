@@ -39,7 +39,7 @@ board
   &title    = d.querySelector \.boardTitle      ?.textContent or ''
   &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
   &nav      = d.querySelector \#boardNavDesktop  .innerHTML
-  &banner   = d.querySelector \.title            .src
+  &banner   = d.querySelector \#bannerCnt        .dataset.src
   &message  = d.querySelector \.globalMessage   ?.innerHTML
 
   # detect based on favicon href

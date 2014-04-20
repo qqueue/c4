@@ -51,7 +51,7 @@
         width="#{unless @image.spoiler then @image.thumb.width else ''}",
         height="#{unless @image.spoiler then @image.thumb.height else ''}")
   else if @deletedImage
-    img.deleted-image(alt="File deleted.", src="//static.4chan.org/image/filedeleted.gif")
+    img.deleted-image(alt="File deleted.", src="//s.4cdn.org/image/filedeleted.gif")
 
   div.comment= enhancer.enhance @comment
   .backlinks

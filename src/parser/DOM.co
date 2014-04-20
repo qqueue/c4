@@ -5,9 +5,9 @@ quotelinks-of = require \./quotelinks-of
 #
 # `board` is a string for the name of the board, e.g. 'a'.
 module.exports = (document, board) ->
-  thumbs-base = "//t.4cdn.org/#board/thumb/"
-  images-base = "//i.4cdn.org/#board/src/"
-  thread-url  = "//boards.4chan.org/#board/res/"
+  thumbs-base = "//t.4cdn.org/#board/"
+  images-base = "//i.4cdn.org/#board/"
+  thread-url  = "//boards.4chan.org/#board/thread/"
 
   # pre-query always-existant post elements, which should be faster than
   # individual querySelector calls
@@ -139,9 +139,13 @@ class FImage then (el, postel, thumbs-base, images-base) ->
 
   info       = postel.querySelector \.fileText
 
-  # the dimensions appear before the original filename, so it will be matched
-  # before any (\d+)x(\d+) patterns in the original filename
-  dimensions = dimension-regex.exec info.textContent
+  # the dimensions appear after the original filename, so we
+  # need to match after any (\d+)x(\d+) patterns in the original filename
+  #
+  # The .fileText element has 'File: ' as a TextNode before the
+  # link to the file, and a TextNode after with the size and dimensions,
+  # so use the last child's content.
+  dimensions = dimension-regex.exec info.lastChild.textContent
 
   thumb      = el.firstElementChild
   timestamp  = @url.match /\/(\d+)\./ .1
@@ -158,8 +162,8 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   @filename  = if @spoiler
     info.title
   else
-    span = info.querySelector 'span'
-    span.title or span.text-content
+    a = info.querySelector 'a'
+    a.title or a.text-content
 
   @md5       = thumb.dataset.md5
 

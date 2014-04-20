@@ -11,7 +11,7 @@ listen = require \../utils/listen
 # similar post numbers.  IDs will start to be overwritten since there are only
 # unique within a board.
 fetch-new-post = !(no) ->
-  [, board-name, , thread] = @pathname.split \/ # /<board>/res/<thread>
+  [, board-name, , thread] = @pathname.split \/ # /<board>/thread/<thread>
 
   return unless thread
 
@@ -20,7 +20,7 @@ fetch-new-post = !(no) ->
 
   # TODO guard against multiple requests in short time period
   xhr = new XMLHttpRequest
-    &open \GET "//api.4chan.org/#board-name/res/#thread.json"
+    &open \GET "//api.4chan.org/#board-name/thread/#thread.json"
     &onload = !->
       # TODO handle 404 -> archive
       if @status is 200

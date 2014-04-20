@@ -12,7 +12,7 @@ console.time "interactive"
 # `board` holds global state about the current page, like `document` for the
 # 4chan domain.
 global.board = {}
-  # boards.4chan.org/<name>/'res' or <page>/<threadid>, or catalog/<searchterm>
+  # boards.4chan.org/<name>/'thread' or <page>/<threadid>, or catalog/<searchterm>
   [ , &name, page, &thread-no] = window.location.pathname / \/
 
   &is-catalog = page is \catalog

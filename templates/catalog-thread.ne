@@ -1,9 +1,9 @@
-a.catalog-link(href="//boards.4chan.org/#{board.name}/res/#{@@no}")
+a.catalog-link(href="//boards.4chan.org/#{board.name}/thread/#{@@no}")
   figure.catalog-thread
     if @imgurl
-      img.catalog-thumb(src="//thumbs.4chan.org/#{board.name}/thumb/#{@imgurl}s.jpg")
+      img.catalog-thumb(src="//t.4cdn.org/#{board.name}/#{@imgurl}s.jpg")
     else
-      img.catalog-thumb.deleted-image(src="//static.4chan.org/image/filedeleted.gif")
+      img.catalog-thumb.deleted-image(src="//s.4cdn.org/image/filedeleted.gif")
     figcaption.catalog-caption
       .reply-count= "R: #{@r}, I: #{@i}"
       p.teaser

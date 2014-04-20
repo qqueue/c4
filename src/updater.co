@@ -107,7 +107,7 @@ updater.update = !->
   updater.button.disabled = true
 
   new XMLHttpRequest
-    &open \GET "//api.4chan.org/#{board.name}/res/#{board.thread.no}.json"
+    &open \GET "//api.4chan.org/#{board.name}/thread/#{board.thread.no}.json"
     &setRequestHeader \If-Modified-Since last-update.toUTCString!
     &onload = !->
       if @status is 404
