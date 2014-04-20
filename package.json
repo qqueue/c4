@@ -1,5 +1,5 @@
 { "name"            : "html5chan"
-, "version"         : "0.3.1"
+, "version"         : "0.3.2"
 , "author"          : "queue <queue@hakase.org>"
 , "dependencies"    : { "coco"                : "0.9.1"
                       , "stylus"              : "0.32.x"

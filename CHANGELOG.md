@@ -1,3 +1,7 @@
+# 0.3.2: Mala Tempora Currunt
+
+- Fix backlinking within threads.
+
 # 0.3.1: Inter Mutanda Constantia
 
 - Adapt to new HTML/URL changes
