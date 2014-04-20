@@ -4,7 +4,7 @@
 // @description the little 4chan userscript that could.
 // @author      queue <queue@hakase.org>
 //
-// @version     0.3
+// @version     0.3.1
 //
 // @license     none (public domain)
 // @copyright   none

@@ -1,3 +1,11 @@
+# 0.3.1: Inter Mutanda Constantia
+
+- Adapt to new HTML/URL changes
+- Lazy-load captcha on posting, like vanilla 4chan.
+- Handle unclutter's weird behavior with tooltip-style image hover.
+  - If you don't use unclutter to hide your mouse pointer, this
+    doesn't affect you.
+
 # 0.3: A Bene Placito
 
 - Fix pages not updating after refresh sometimes
