@@ -122,22 +122,21 @@ DOMPost:: = require(\./Post)::
 
   @deleted-image = img?firstElementChild.alt is "File deleted."
   @image = if img and not @deleted-image
-    new FImage img, el, thumbs-base, images-base
+    new FImage img, thumbs-base, images-base
 
   @quotelinks    = quotelinks-of @comment, @thread-no
   @backlinks     = []
 
 dimension-regex = /(\d+)x(\d+)/
 size-regex      = /[\d\.]+ [KM]?B/
-spoiler-regex   = /^Spoiler Image/
 
-class FImage then (el, postel, thumbs-base, images-base) ->
+class FImage then (thumb-el, thumbs-base, images-base) ->
   # use getAttribute because `href` property adds the protocol, while
   # getAttribute returns the protocolless //version (the text of the
   # actual html attribute)
-  @url        = el.getAttribute \href
+  @url       = thumb-el.getAttribute \href
 
-  info       = postel.querySelector \.fileText
+  info       = thumb-el.parentNode.firstElementChild
 
   # the dimensions appear after the original filename, so we
   # need to match after any (\d+)x(\d+) patterns in the original filename
@@ -147,7 +146,7 @@ class FImage then (el, postel, thumbs-base, images-base) ->
   # so use the last child's content.
   dimensions = dimension-regex.exec info.lastChild.textContent
 
-  thumb      = el.firstElementChild
+  thumb      = thumb-el.firstElementChild
   timestamp  = @url.match /\/(\d+)\./ .1
 
   @thumb     = new DOMThumb timestamp, thumb, thumbs-base
@@ -157,7 +156,7 @@ class FImage then (el, postel, thumbs-base, images-base) ->
 
   @size      = size-regex.exec thumb.alt .0
 
-  @spoiler  = spoiler-regex.test thumb.alt
+  @spoiler  = thumb-el.classList.contains \imgspoiler
 
   @filename  = if @spoiler
     info.title
