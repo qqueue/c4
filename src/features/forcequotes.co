@@ -47,7 +47,7 @@ munge = !(ctx) ->
           &addEventListener \mouseover lightbox
 
       # compact post number
-      quote.textContent = "»#{post.idx}"
+      quote.textContent = "#{post.idx}"
       quote.classList.add \forcequoted
 
 if board.isThread

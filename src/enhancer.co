@@ -42,21 +42,21 @@ module.exports = enhancer =
 
     # specialcase linkify urls without internal parenthesis surrounded by
     # parenthesis like (http://google.com)
-    * * /\((https?:\/\/)([^<\s\)]+)\)/g
+    * * /\((https?:\/\/[^<\s\)]+)\)/g
       * '(<a class="external" \
              rel="noreferrer" \
-             href="$1$2" \
-             title="$1$2" \
-             target="_blank">$2</a>)'
+             href="$1" \
+             title="$1" \
+             target="_blank">$1</a>)'
 
     # linkify links not preceded by a quote or double-quote (should avoid
     # relinkifying href= urls)
-    * * /([^"']|^)(https?:\/\/)([^<\s]+)/g
+    * * /([^"']|^)(https?:\/\/[^<\s]+)/g
       * '$1<a class="external" \
               rel="noreferrer" \
-              href="$2$3" \
-              title="$2$3" \
-              target="_blank">$3</a>'
+              href="$2" \
+              title="$2" \
+              target="_blank">$2</a>'
 
     # specialcase linkify urls without a protocol but with a common tld
     * * //

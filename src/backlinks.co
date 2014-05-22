@@ -13,7 +13,7 @@ onupdate !->
           &appendChild with backlink = L \a
             &href = "\#p#{quoter.no}"
             &className = 'backlink quotelink'
-            &textContent = "«#{quoter.idx}"
+            &textContent = "#{quoter.idx}"
           document.dispatchEvent new CustomEvent do
             \c4-backlink
             detail: {backlink}

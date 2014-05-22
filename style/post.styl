@@ -5,7 +5,6 @@
   margin 0
   padding 1em
   padding-right 0
-  border-radius 0.3em
 
 .reply
   padding-left 3em
@@ -14,7 +13,7 @@
   transition-duration 3s
 
 .reply.new
-  background #feffbf noise !important
+  background #feffbf !important
 
 .sage > .post-header > .name:after
   content " (sage)"
@@ -32,7 +31,7 @@
 // the smaller font size of the index doesn't line up with the comment text
 // if there's no .imageinfo, so increase the margin on non-imageposts
 .reply:not(.imagepost):before, .inline:not(.imagepost) > .inlined-idx
-  margin-top 0.5em
+  margin-top 2px
 
 .inlined-idx
   cursor pointer
@@ -151,7 +150,6 @@
 .comment
   margin 0
   word-wrap break-word
-  line-height 1.8em
   // pleasant reading width
   width 40em
   .op &
@@ -187,7 +185,7 @@ s
   display inline-block
 
 .backlink, .backlinks > .recursivelink
-  margin-right 1em
+  padding-right 1em
 
 a,strong
   &.quotelink.inlinedlink
@@ -197,7 +195,7 @@ a,strong
 #postpreview
   outline none
   padding .5em
-  box-shadow 5px 5px 10px rgba(0,0,0,.5)
+  border 1px solid rgba(0,0,0,.2)
   margin 0
 
 .inline
@@ -215,9 +213,6 @@ a,strong
   margin-bottom  0
   padding-bottom 0
 
-  // paperfold effect from the left, to indicate threading without full border
-  background linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.05) 0.5em, rgba(0, 0, 0, 0.02) 10px, transparent 2em, transparent)
-
 .inline .backlinks > .recursivelink
   display none
 
@@ -225,7 +220,7 @@ a,strong
   display table // block without expansion
 
 .hovered
-  outline 3px dashed #00f
+  outline 1px solid rgba(0,0,0,.2)
 
 // fix missing textNode space
 .forcedimage

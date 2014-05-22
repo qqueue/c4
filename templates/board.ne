@@ -48,6 +48,6 @@ unless board.thread?closed
           span#post-status
           progress#progress(max="100", value=0, hidden="")
 
-span#updater
-  span#update-status
+#updater
   button#update-now Update now
+  span#update-status

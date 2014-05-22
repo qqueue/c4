@@ -56,4 +56,4 @@
   div.comment= enhancer.enhance @comment
   .backlinks
     for b of @backlinks
-      a.backlink.quotelink(href="#{'#'}p#{b}")= "«#{@@thread.post[b]idx}"
+      a.backlink.quotelink(href="#{'#'}p#{b}")= "#{@@thread.post[b]idx}"
