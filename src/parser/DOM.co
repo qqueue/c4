@@ -14,7 +14,6 @@ module.exports = (document, board) ->
   times    =  document.querySelectorAll \.dateTime
   comments =  document.querySelectorAll \.postMessage
   names    =  document.querySelectorAll \.name
-  subjects =  document.querySelectorAll \.subject
 
   # some elements exist on both .mobile info and .desktop info, because moot,
   # so bicrement past .mobile versions
@@ -27,7 +26,6 @@ module.exports = (document, board) ->
       times
       comments
       names
-      subjects
       e-idx
       b-idx
       thumbs-base
@@ -41,7 +39,7 @@ module.exports = (document, board) ->
     t
 
 DOMThread:: = require(\./Thread)::
-!function DOMThread el, times, comments, names, subjects, e-idx, b-idx, \
+!function DOMThread el, times, comments, names, e-idx, b-idx, \
                    thumbs-base, images-base, thread-url
   @no        = el.id.substring 1 # t12345
   @url       = thread-url + @no
@@ -65,7 +63,6 @@ DOMThread:: = require(\./Thread)::
     times[b-idx]
     comments[e-idx]
     names[b-idx]
-    subjects[b-idx]
     thumbs-base
     images-base
   ++e-idx
@@ -81,7 +78,6 @@ DOMThread:: = require(\./Thread)::
       times[b-idx]
       comments[e-idx]
       names[b-idx]
-      subjects[b-idx]
       thumbs-base
       images-base
 
@@ -95,7 +91,7 @@ DOMThread:: = require(\./Thread)::
 sage-regex = /^sage$/i
 
 DOMPost:: = require(\./Post)::
-!function DOMPost thread, el, @idx, @op, time-el, comment-el, name-el, subject-el, \
+!function DOMPost thread, el, @idx, @op, time-el, comment-el, name-el, \
                   thumbs-base, images-base
   @no  = el.id.substring 1
 
@@ -105,11 +101,10 @@ DOMPost:: = require(\./Post)::
 
   @time = new Date parseInt(time-el.dataset.utc, 10) * 1000ms
 
-  @subject  = subject-el.innerHTML
-
   @name     = name-el.innerHTML
-  @tripcode = el.querySelector \.postertrip                ?.innerHTML
-  @capcode  = el.querySelector \.capcode                   ?.innerHTML
+  @subject  = el.querySelector \.subject    ?.innerHTML
+  @tripcode = el.querySelector \.postertrip ?.innerHTML
+  @capcode  = el.querySelector \.capcode    ?.innerHTML
 
   @email    = el.querySelector \.useremail ?.href.substring(7) # strip mailto=
   @sage     = sage-regex.test that if @email
