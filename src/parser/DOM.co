@@ -102,7 +102,17 @@ DOMPost:: = require(\./Post)::
   @time = new Date parseInt(time-el.dataset.utc, 10) * 1000ms
 
   @name     = name-el.innerHTML
-  @subject  = el.querySelector \.subject    ?.innerHTML
+
+  # 4chan does this weird ellipsis wrapping thing:
+  # <span class=subject>
+  #   <span title="full title">full t(...)</span>
+  # </span>
+  @subject  = if el.querySelector \.subject
+    if title = that.firstElementChild?title
+      title
+    else
+      that.textContent
+
   @tripcode = el.querySelector \.postertrip ?.innerHTML
   @capcode  = el.querySelector \.capcode    ?.innerHTML
 
