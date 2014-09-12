@@ -1,3 +1,10 @@
+# 0.3.3: Not Dead, I Swear
+
+- Simplify style
+  - no more noise texture or gradients, all flat.
+  - "We hackernews now"
+- Fix DOM parser with new HTML
+
 # 0.3.2: Mala Tempora Currunt
 
 - Fix backlinking within threads.
