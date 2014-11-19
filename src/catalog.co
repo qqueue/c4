@@ -16,6 +16,86 @@ for $$ \.order
       )join ''
 
 set \catalog-order (order = get \catalog-order or \date)
-console.log order
 $ order .checked = true
+
+# inbox concept:
+# when opening the catalog, you're most interested in what changed since you
+# last looked at the catalog, rather than the full state of the board,
+# similar to email inboxes that highlight unread messages. Unlike email, however,
+# 4chan threads aren't direct correspondence, so marking every thread
+# as "read" would be laborious. When you close the catalog page,
+# you've probably glanced over everything and opened tabs for any
+# threads actually interesting. Thus, assume that catalog loads
+# are basically "mark everything as read", and calculate diffs from there.
+#
+# We can implement this simply by storing the last loaded state of the
+# catalog, and showing the diff between that and current whenever the
+# page is loaded. However, accidental reloads would then cause everything
+# to be marked as read, with the only recovery being to reset read state
+# to everything. To mitigate this, keep _every_ page load over time
+# (truncated eventually) and allow the user to select the diff range
+# over a timeline. If you accidentally reload, then you can just
+# move the diff base back in time a bit to get a useful unread count.
+# Plus, you can then see how much procrastination you've done on 4chan
+# throughout the day.
+
+indexedDB.open \catalogs 2
+  &onerror = console.error
+  &onupgradeneeded = ({target: {result: db}}: it) ->
+    console.log "upgrade needed" it
+    db.createObjectStore \catalogs keyPath: \mtime
+  &onsuccess = ({target: {result: db}}: it) ->
+    console.log "opened" it
+    logs = []
+    db.transaction [\catalogs] .objectStore \catalogs
+      &openCursor! # everything
+        &onerror = console.error
+        &onsuccess = ({target: {result: cursor}}) ->
+          if cursor
+            logs.push cursor.value
+            cursor.continue!
+          else
+            catalogs-loaded db, logs
+
+!function catalogs-loaded db, catalogs
+  [..., last] = catalogs
+  if not last? or (catalog.mtime - last.mtime) > 30s # debounce slightly
+    db.transaction [\catalogs] \readwrite .objectStore \catalogs
+      .add catalog
+        &onerror = console.error
+        &onsuccess = !->
+          console.log "saved current state in db at mtime #{catalog.mtime}"
+
+  console.log catalogs
+
+  # TODO truncate old data
+
+  updated = []
+
+  # simple display for now, just show reply diff
+  for id, thread in catalog.threads
+    if last.threads[id]
+      lt = that
+      diffr = thread.r - lt.r
+      diffi = thread.i - lt.i
+      if diffr > 0 or diffi > 0
+        $ "c#id"
+          &querySelector '.reply-count' .innerHTML =
+            "R: #{thread.r} (<span class=diff>+#diffr</span>),
+             I: #{thread.i} (<span class=diff>+#diffi</span>)"
+          &classList.add \updated
+        updated.push {diffr, id}
+
+  # move updated threads to the top, sorted by number of updates
+
+  updated.sort (a, b) -> a.diffr - b.diffr
+
+  console.log updated
+
+  container = $ \catalog
+  for thread of updated
+    container.insertBefore do
+      $ "c#{thread.id}"
+      container.firstChild
+
 

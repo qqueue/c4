@@ -1,4 +1,5 @@
-a.catalog-link(href="//boards.4chan.org/#{board.name}/thread/#{@@no}")
+a.catalog-link(href="//boards.4chan.org/#{board.name}/thread/#{@@no}",
+               id="c#{@@no}")
   figure.catalog-thread
     if @imgurl
       img.catalog-thumb(src="//t.4cdn.org/#{board.name}/#{@imgurl}s.jpg")

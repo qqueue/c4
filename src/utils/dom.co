@@ -1,6 +1,7 @@
 # Everybody loves the DOM
 
 export $ = -> document.getElementById it
+export $q = -> document.querySelector it
 export $$ = -> document.querySelectorAll it
 
 # get it, 'L'ement?
