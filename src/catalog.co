@@ -39,16 +39,24 @@ $ order .checked = true
 # Plus, you can then see how much procrastination you've done on 4chan
 # throughout the day.
 
-indexedDB.open \catalogs 2
+indexedDB.open \catalogs 3
   &onerror = console.error
-  &onupgradeneeded = ({target: {result: db}}: it) ->
+  &onupgradeneeded = ({target: {result: db}, oldVersion}: it) ->
     console.log "upgrade needed" it
-    db.createObjectStore \catalogs keyPath: \mtime
+    # nuke old store, it's not that important
+    try
+      db.deleteObjectStore \catalogs
+    catch # NotFoundError
+      console.error e
+    db.createObjectStore \catalogs keyPath: [\board \mtime]
   &onsuccess = ({target: {result: db}}: it) ->
     console.log "opened" it
     logs = []
     db.transaction [\catalogs] .objectStore \catalogs
-      &openCursor! # everything
+      # all for this board
+      # annoying that you can't partially specify the key
+      # e.g. IDBKeyRange.only [board.name]
+      &openCursor IDBKeyRange.bound [board.name, 0], [board.name, Infinity]
         &onerror = console.error
         &onsuccess = ({target: {result: cursor}}) ->
           if cursor
@@ -61,12 +69,12 @@ indexedDB.open \catalogs 2
   [..., last] = catalogs
   if not last? or (catalog.mtime - last.mtime) > 30s # debounce slightly
     db.transaction [\catalogs] \readwrite .objectStore \catalogs
-      .add catalog
+      .add catalog <<< {board: board.name}
         &onerror = console.error
         &onsuccess = !->
           console.log "saved current state in db at mtime #{catalog.mtime}"
 
-  console.log catalogs
+  console.log 'catalogs' catalogs
 
   # TODO truncate old data
 
@@ -74,7 +82,7 @@ indexedDB.open \catalogs 2
 
   # simple display for now, just show reply diff
   for id, thread in catalog.threads
-    if last.threads[id]
+    if last?threads[id]
       lt = that
       diffr = thread.r - lt.r
       diffi = thread.i - lt.i
