@@ -93,6 +93,13 @@ indexedDB.open \catalogs 3
              I: #{thread.i} (<span class=diff>+#diffi</span>)"
           &classList.add \updated
         updated.push {diffr, id}
+    else # new, count everything as "updated"
+      $ "c#id"
+        &querySelector '.reply-count' .innerHTML =
+          "R: #{thread.r} (<span class=diff>+#{thread.r}</span>),
+           I: #{thread.i} (<span class=diff>+#{thread.i}</span>)"
+        &classList.add \updated
+      updated.push {diffr, id}
 
   # move updated threads to the top, sorted by number of updates
 
