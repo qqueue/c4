@@ -92,20 +92,24 @@ indexedDB.open \catalogs 3
             "R: #{thread.r} (<span class=diff>+#diffr</span>),
              I: #{thread.i} (<span class=diff>+#diffi</span>)"
           &classList.add \updated
-        updated.push {diffr, id}
+        updated.push {thread.r, diffr, id}
     else # new, count everything as "updated"
       $ "c#id"
         &querySelector '.reply-count' .innerHTML =
           "R: #{thread.r} (<span class=diff>+#{thread.r}</span>),
            I: #{thread.i} (<span class=diff>+#{thread.i}</span>)"
         &classList.add \updated
-      updated.push {diffr, id}
+      updated.push {thread.r, diffr: thread.r, id}
 
   # move updated threads to the top, sorted by number of updates
-
-  updated.sort (a, b) -> a.diffr - b.diffr
-
-  console.log updated
+  # since we're doing insertBefore, this sort is actually reversed
+  updated.sort chain-cmp do
+    # number of updated threads, weighted by how big the thread
+    # is already, e.g. a 20-reply thread with 10 new replies is
+    # hotter than a 450-reply thread with 15 new replies.
+    on-fn -> it.diffr / it.r
+    # then by modification time
+    on-fn -> it.mtime
 
   container = $ \catalog
   for thread of updated
@@ -113,4 +117,20 @@ indexedDB.open \catalogs 3
       $ "c#{thread.id}"
       container.firstChild
 
+# comparator sugar
+on-fn = (fn) ->
+  cmp = (a, b) ->
+    fa = fn a; fb = fn b
+    if fa > fb
+      1
+    else if fa < fb
+      -1
+    else
+      0
 
+# chain comparison functions, short-circuiting if not equal
+chain-cmp = (...cmps) -> (a, b) ->
+  for cmps
+    res = & a, b
+    return res if res is not 0
+  return 0
