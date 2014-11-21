@@ -4,20 +4,6 @@ catalog-thread = require \templates/catalog-thread
 {onready} = require \./utils/features
 {catalog} = board
 
-<-! onready
-# 4chan catalog features, since I'm clobbering desuwa's version
-for $$ \.order
-  &addEventListener \change !->
-    if @checked
-      set \catalog-order @value
-      # rerender
-      $ \catalog .innerHTML = (for catalog.order[@value]
-        catalog-thread catalog.threads[&], no: &
-      )join ''
-
-set \catalog-order (order = get \catalog-order or \date)
-$ order .checked = true
-
 # inbox concept:
 # when opening the catalog, you're most interested in what changed since you
 # last looked at the catalog, rather than the full state of the board,
@@ -51,12 +37,13 @@ indexedDB.open \catalogs 3
     db.createObjectStore \catalogs keyPath: [\board \mtime]
   &onsuccess = ({target: {result: db}}: it) ->
     console.log "opened" it
-    logs = []
+    called = false
     db.transaction [\catalogs] .objectStore \catalogs
       # all for this board
       # annoying that you can't partially specify the key
       # e.g. IDBKeyRange.only [board.name]
-      &openCursor IDBKeyRange.bound [board.name, 0], [board.name, Infinity]
+      # start latest first
+      &openCursor IDBKeyRange.bound([board.name, 0], [board.name, Infinity]), \prev
         &onerror = console.error
         &onsuccess = ({target: {result: cursor}}) ->
           if cursor
@@ -68,14 +55,17 @@ indexedDB.open \catalogs 3
                 &onerror = console.error
                 &onsuccess = !->
                   console.log "truncated catalog" old
-            else
-              logs.push cursor.value
-            cursor.continue!
-          else
-            catalogs-loaded db, logs
 
-!function catalogs-loaded db, catalogs
-  [..., last] = catalogs
+          unless called
+            called := true
+            catalogs-loaded db, cursor?value
+
+          cursor?continue!
+
+# run db fetch and onready in parallel
+readyp = new Promise onready
+
+!function catalogs-loaded db, last
   if not last? or (catalog.mtime - last.mtime) > 30s # debounce slightly
     db.transaction [\catalogs] \readwrite .objectStore \catalogs
       .add catalog <<< {board: board.name}
@@ -83,11 +73,24 @@ indexedDB.open \catalogs 3
         &onsuccess = !->
           console.log "saved current state in db at mtime #{catalog.mtime}"
 
-  console.log 'catalogs' catalogs
+  <-! readyp.then
 
-  # TODO truncate old data
+  # 4chan catalog features, since I'm clobbering desuwa's version
+  for $$ \.order
+    &addEventListener \change !->
+      if @checked
+        set \catalog-order @value
+        # rerender
+        $ \catalog .innerHTML = (for catalog.order[@value]
+          catalog-thread catalog.threads[&], no: &
+        )join ''
+
+  set \catalog-order (order = get \catalog-order or \date)
+  $ order .checked = true
 
   updated = []
+
+  console.log \updating
 
   # simple display for now, just show reply diff
   for id, thread in catalog.threads
