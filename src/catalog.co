@@ -60,7 +60,16 @@ indexedDB.open \catalogs 3
         &onerror = console.error
         &onsuccess = ({target: {result: cursor}}) ->
           if cursor
-            logs.push cursor.value
+            # if old catalog is completely disjoint, remove (no longer useful)
+            old = cursor.value
+            if disjoint-catalogs old, catalog
+              db.transction [\catalogs] .objectStore \catalogs \
+                .delete [old.board, old.mtime]
+                &onerror = console.error
+                &onsuccess = !->
+                  console.log "truncated catalog" old
+            else
+              logs.push cursor.value
             cursor.continue!
           else
             catalogs-loaded db, logs
@@ -134,3 +143,9 @@ chain-cmp = (...cmps) -> (a, b) ->
     res = & a, b
     return res if res is not 0
   return 0
+
+function disjoint-catalogs a, b
+  for id, thread in a.threads
+    if b.threads[id]? and not b.threads[id].sticky
+      return false
+  return true
