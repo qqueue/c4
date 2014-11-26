@@ -50,7 +50,7 @@ indexedDB.open \catalogs 3
             # if old catalog is completely disjoint, remove (no longer useful)
             old = cursor.value
             if disjoint-catalogs old, catalog
-              db.transction [\catalogs] .objectStore \catalogs \
+              db.transaction [\catalogs] \readwrite .objectStore \catalogs \
                 .delete [old.board, old.mtime]
                 &onerror = console.error
                 &onsuccess = !->
