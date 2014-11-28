@@ -4,22 +4,16 @@
 {$$} = require \./dom
 
 # shortcuts for custom events
-# XXX really annoying firefox bug hides errors, so catch and log
-# https://bugzilla.mozilla.org/show_bug.cgi?id=851765
-function catch-event evt
+function custom-handle evt
   return (handler) ->
     document.addEventListener evt, !->
-      try
-        # since the rest of the CustomEvent object isn't that useful, use the
-        # details hash for both `this` and the first argument, whatever's more
-        # convenient
-        handler.call it.detail, it.detail
-      catch
-        console.error e
-        throw e
+      # since the rest of the CustomEvent object isn't that useful, use the
+      # details hash for both `this` and the first argument, whatever's more
+      # convenient
+      handler.call it.detail, it.detail
 
 for <[ prerender ready update postinsert backlink ]>
-  exports"on#&" = catch-event "c4-#&"
+  exports"on#&" = custom-handle "c4-#&"
 
 # define listeners that are attached to every post. e.g.
 #
