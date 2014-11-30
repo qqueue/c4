@@ -55,7 +55,9 @@ APIPost:: = require(\./Post)::
 
 APIImage:: = require(\./FImage)::
 !function APIImage data, images-base, thumbs-base
-  @thumb = new APIThumb data, thumbs-base
+  @thumb-url    = thumbs-base + data.tim + \s.jpg
+  @thumb-width  = data.tn_w
+  @thumb-height = data.tn_h
 
   @url      = images-base + data.tim + data.ext
 
@@ -67,12 +69,6 @@ APIImage:: = require(\./FImage)::
   @md5      = data.md5
 
   @spoiler  = !!data.spoiler
-
-APIThumb:: = require(\./Thumb)::
-!function APIThumb data, thumbs-base
-  @url    = thumbs-base + data.tim + \s.jpg
-  @width  = data.tn_w
-  @height = data.tn_h
 
 # 4chan format image sizes like this on its HTML pages.
 # TODO this might be better to do during templating actually.

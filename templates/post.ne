@@ -44,9 +44,9 @@
       a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}",
         target="_blank") foolz
     a.file(target="_blank", href="#{@image.url}", data-width="#{@image.width}", data-height="#{@image.height}")
-      img.thumb(src="#{if @image.spoiler then board.spoiler-url else @image.thumb.url}",
-        width="#{unless @image.spoiler then @image.thumb.width else ''}",
-        height="#{unless @image.spoiler then @image.thumb.height else ''}")
+      img.thumb(src="#{if @image.spoiler then board.spoiler-url else @image.thumb-url}",
+        width="#{unless @image.spoiler then @image.thumb-width else ''}",
+        height="#{unless @image.spoiler then @image.thumb-height else ''}")
   else if @deletedImage
     img.deleted-image(alt="File deleted.", src="//s.4cdn.org/image/filedeleted.gif")
 

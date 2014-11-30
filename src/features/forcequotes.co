@@ -42,7 +42,7 @@ munge = !(ctx) ->
           &src = if post.image.spoiler
             board.spoiler-url
           else
-            post.image.thumb.url
+            post.image.thumb-url
 
           &addEventListener \mouseover lightbox
 

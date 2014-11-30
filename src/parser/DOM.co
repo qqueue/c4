@@ -151,7 +151,12 @@ class FImage then (thumb-el, thumbs-base, images-base) ->
   thumb      = thumb-el.firstElementChild
   timestamp  = @url.match /\/(\d+)\./ .1
 
-  @thumb     = new DOMThumb timestamp, thumb, thumbs-base
+  @thumb-url    = thumbs-base + "#{timestamp}s.jpg"
+  # FIXME when image is spoiled, these are the spoiler image size.
+  # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+  # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
+  @thumb-width  = parseInt el.style.width, 10
+  @thumb-height = parseInt el.style.height, 10
 
   @width     = parseInt dimensions.1, 10
   @height    = parseInt dimensions.2, 10
@@ -167,12 +172,3 @@ class FImage then (thumb-el, thumbs-base, images-base) ->
     a.title or a.text-content
 
   @md5       = thumb.dataset.md5
-
-DOMThumb:: = require(\./Thumb)::
-!function DOMThumb timestamp, el, thumbs-base
-  @url    = thumbs-base + "#{timestamp}s.jpg"
-  # FIXME when image is spoiled, these are the spoiler image size.
-  # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
-  # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
-  @width  = parseInt el.style.width, 10
-  @height = parseInt el.style.height, 10

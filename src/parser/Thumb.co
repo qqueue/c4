@@ -1,3 +1,0 @@
-# file thumbnail subobjects share a prototype for marginal speed gains. Am 
-# I crazy? probably.
-module.exports = class Thumb
