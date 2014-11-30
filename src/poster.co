@@ -19,11 +19,7 @@ checkValidity = (e) ->
   captcha = $ \recaptcha_response_field
   file = $ \file
   comment = $ \comment
-  email = $ \email
-
-  # noko would load the thread into the iframe and break
-  # sys.4chan.org posting a message back here
-  email.value = '' if /^noko$/i.test email.value
+  options = $ \options
 
   captcha.setCustomValidity unless captcha.value
     "You forgot the captcha!"
@@ -47,7 +43,7 @@ checkValidity = (e) ->
       &value = 0
 
     data = new FormData form
-    # since we're ajaxing this, need to replace email with sage
+    # since we're ajaxing this, need to replace `email` (options) with sage
     # if that was used to submit
     if this is $ \sage # sage button clicked
       data.append \email \sage

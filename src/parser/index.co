@@ -44,9 +44,6 @@
 #
 #   uid: the posterID string or `undefined`
 #
-#   email: email or `undefined`
-#   sage: boolean, if post didn't bump the thread
-#
 #   comment: HTML string of post's text.
 #
 #   deletedImage: boolean, whether post had an image but it was removed.

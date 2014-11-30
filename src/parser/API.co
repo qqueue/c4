@@ -38,7 +38,6 @@ APIPost:: = require(\./Post)::
     tripcode: trip
     uid: id
     capcode
-    email
   }
 
   @thread-no     = thread.no
@@ -46,7 +45,6 @@ APIPost:: = require(\./Post)::
   @url           = "#{thread.url}\#p#{data.no}"
   @time          = new Date data.time * 1000
 
-  @sage          = data.email is \sage
   @comment       = data.com or ''
 
   @deleted-image = !!data.filedeleted

@@ -20,10 +20,7 @@
                id="#{@@id or 'p' + @no}")
   h1.post-header
     a.subject(href="#{@url}")= @subject
-    if @email
-      a.name(href="#{'mailto:'+@email}")= @name
-    else
-      a.name= @name
+    span.name= @name
 
     span.tripcode= @tripcode
     span.capcode= @capcode

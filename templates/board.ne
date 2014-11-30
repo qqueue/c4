@@ -28,7 +28,7 @@ unless board.thread?closed
       input(id="password", type="hidden", name="pwd", value="#{board.password}")
       #fields
         input(type="text", name="name", id="name", tabindex="10", placeholder="name\\\\#tripcode")
-        input(type="text", id="email", name="email", tabindex="10", placeholder="email")
+        input(type="text", id="options", name="email", tabindex="10", placeholder="options")
         input(type="text", id="subject", name="sub", tabindex="10", placeholder="subject")
         #comment-field
           textarea#comment(name="com", rows="4", tabindex="10", placeholder="comment")
