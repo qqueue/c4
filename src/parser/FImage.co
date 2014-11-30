@@ -1,3 +1,0 @@
-# the FImage sub objects share prototypes for marginal speed benefit.
-# `FImage` so as to not collide with DOM Images.
-module.exports = class FImage

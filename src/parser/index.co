@@ -59,24 +59,21 @@
 #              in-thread backlinks are listed, which is usually good enough,
 #              but you should query your own backlinks if you want
 #              cross-thread/board ones.
-# }
 #
-# Image: {
-#   url: URL to full size image.
+#   image-url: URL to full size image.
 #
-#   width, height: Numbers
+#   image-width, image-height: Numbers
 #
-#   size: string of human readable image size, e.g. '1.8MB'
+#   image-size: string of human readable image size, e.g. '1.8MB'
 #
-#   filename: original filename.
-#   md5: hash of original image.
+#   image-filename: original filename.
+#   image-md5: hash of original image.
 #
-#   spoiler: boolean, whether image is marked as a spoiler
+#   image-spoiler: boolean, whether image is marked as a spoiler
 #
-#   thumb:
-#     url: thumbnail image url
+#   thumb-url: thumbnail image url
 #
-#     width, height: Numbers
+#   thumb-width, thumb-height: Numbers
 # }
 export
   dom : require \./DOM

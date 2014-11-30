@@ -88,7 +88,8 @@ DOMThread:: = require(\./Thread)::
 
   @postprocess!
 
-sage-regex = /^sage$/i
+dimension-regex = /(\d+)x(\d+)/
+size-regex      = /[\d\.]+ [KM]?B/
 
 DOMPost:: = require(\./Post)::
 !function DOMPost thread, el, @idx, @op, time-el, comment-el, name-el, \
@@ -120,55 +121,48 @@ DOMPost:: = require(\./Post)::
 
   @uid = el.querySelector \.hand ?.textContent # hand?
 
-  img = el.querySelector \.fileThumb
-
-  @deleted-image = img?firstElementChild.alt is "File deleted."
-  @image = if img and not @deleted-image
-    new FImage img, thumbs-base, images-base
-
   @quotelinks    = quotelinks-of @comment, @thread-no
   @backlinks     = []
 
-dimension-regex = /(\d+)x(\d+)/
-size-regex      = /[\d\.]+ [KM]?B/
+  thumb-el = el.querySelector \.fileThumb
+  @deleted-image = thumb-el?firstElementChild.alt is "File deleted."
+  if thumb-el and not @deleted-image
+    # use getAttribute because `href` property adds the protocol, while
+    # getAttribute returns the protocolless //version (the text of the
+    # actual html attribute)
+    @image-url       = thumb-el.getAttribute \href
 
-class FImage then (thumb-el, thumbs-base, images-base) ->
-  # use getAttribute because `href` property adds the protocol, while
-  # getAttribute returns the protocolless //version (the text of the
-  # actual html attribute)
-  @url       = thumb-el.getAttribute \href
+    info       = thumb-el.parentNode.firstElementChild
 
-  info       = thumb-el.parentNode.firstElementChild
+    # the dimensions appear after the original filename, so we
+    # need to match after any (\d+)x(\d+) patterns in the original filename
+    #
+    # The .fileText element has 'File: ' as a TextNode before the
+    # link to the file, and a TextNode after with the size and dimensions,
+    # so use the last child's content.
+    dimensions = dimension-regex.exec info.lastChild.textContent
 
-  # the dimensions appear after the original filename, so we
-  # need to match after any (\d+)x(\d+) patterns in the original filename
-  #
-  # The .fileText element has 'File: ' as a TextNode before the
-  # link to the file, and a TextNode after with the size and dimensions,
-  # so use the last child's content.
-  dimensions = dimension-regex.exec info.lastChild.textContent
+    thumb      = thumb-el.firstElementChild
+    timestamp  = @image-url.match /\/(\d+)\./ .1
 
-  thumb      = thumb-el.firstElementChild
-  timestamp  = @url.match /\/(\d+)\./ .1
+    @thumb-url    = thumbs-base + "#{timestamp}s.jpg"
+    # FIXME when image is spoiled, these are the spoiler image size.
+    # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+    # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
+    @thumb-width  = parseInt el.style.width, 10
+    @thumb-height = parseInt el.style.height, 10
 
-  @thumb-url    = thumbs-base + "#{timestamp}s.jpg"
-  # FIXME when image is spoiled, these are the spoiler image size.
-  # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
-  # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
-  @thumb-width  = parseInt el.style.width, 10
-  @thumb-height = parseInt el.style.height, 10
+    @image-width     = parseInt dimensions.1, 10
+    @image-height    = parseInt dimensions.2, 10
 
-  @width     = parseInt dimensions.1, 10
-  @height    = parseInt dimensions.2, 10
+    @image-size      = size-regex.exec thumb.alt .0
 
-  @size      = size-regex.exec thumb.alt .0
+    @image-spoiler  = thumb-el.classList.contains \imgspoiler
 
-  @spoiler  = thumb-el.classList.contains \imgspoiler
+    @image-filename  = if @spoiler
+      info.title
+    else
+      a = info.querySelector 'a'
+      a.title or a.text-content
 
-  @filename  = if @spoiler
-    info.title
-  else
-    a = info.querySelector 'a'
-    a.title or a.text-content
-
-  @md5       = thumb.dataset.md5
+    @image-md5       = thumb.dataset.md5

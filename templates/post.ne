@@ -1,7 +1,7 @@
 :prelude
   classes = ->
     c = 'post '
-    c += 'imagepost ' if it.image
+    c += 'imagepost ' if it.image-url
     c += 'sage '      if it.sage
     c += 'tripcoded ' if it.tripcode
     if it.capcode
@@ -30,23 +30,23 @@
     a.permalink(href="#{@url}") No.
       span.no= @no
 
-  if @image
+  if @image-url
     .fileinfo
-      span.filename= @image.filename
-      span.dimensions= "#{@image.width}x#{@image.height}"
-      span.size= @image.size
-      a.saucelink(href="http://iqdb.org/?url=http:#{@image.url}",
+      span.filename= @image-filename
+      span.dimensions= "#{@image-width}x#{@image-height}"
+      span.size= @image-size
+      a.saucelink(href="http://iqdb.org/?url=http:#{@image-url}",
         target="_blank") iqdb
-      a.saucelink(href="http://google.com/searchbyimage?image_url=http:#{@image.url}",
+      a.saucelink(href="http://google.com/searchbyimage?image_url=http:#{@image-url}",
         target="_blank") google
-      a.saucelink(href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{@image.url}",
+      a.saucelink(href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{@image-url}",
         target="_blank") exif
-      a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image.md5}",
+      a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image-md5}",
         target="_blank") foolz
-    a.file(target="_blank", href="#{@image.url}", data-width="#{@image.width}", data-height="#{@image.height}")
-      img.thumb(src="#{if @image.spoiler then board.spoiler-url else @image.thumb-url}",
-        width="#{unless @image.spoiler then @image.thumb-width else ''}",
-        height="#{unless @image.spoiler then @image.thumb-height else ''}")
+    a.file(target="_blank", href="#{@image-url}", data-width="#{@image-width}", data-height="#{@image-height}")
+      img.thumb(src="#{if @image-spoiler then board.spoiler-url else @thumb-url}",
+        width="#{unless @image-spoiler then @thumb-width else ''}",
+        height="#{unless @image-spoiler then @thumb-height else ''}")
   else if @deletedImage
     img.deleted-image(alt="File deleted.", src="//s.4cdn.org/image/filedeleted.gif")
 

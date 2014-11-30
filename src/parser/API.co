@@ -48,27 +48,25 @@ APIPost:: = require(\./Post)::
   @comment       = data.com or ''
 
   @deleted-image = !!data.filedeleted
-  @image         = if data.fsize then new APIImage data, images-base, thumbs-base
 
   @quotelinks    = quotelinks-of @comment, @thread-no
   @backlinks     = []
 
-APIImage:: = require(\./FImage)::
-!function APIImage data, images-base, thumbs-base
-  @thumb-url    = thumbs-base + data.tim + \s.jpg
-  @thumb-width  = data.tn_w
-  @thumb-height = data.tn_h
+  if data.fsize
+    @thumb-url    = thumbs-base + data.tim + \s.jpg
+    @thumb-width  = data.tn_w
+    @thumb-height = data.tn_h
 
-  @url      = images-base + data.tim + data.ext
+    @image-url      = images-base + data.tim + data.ext
 
-  @width    = data.w
-  @height   = data.h
+    @image-width    = data.w
+    @image-height   = data.h
 
-  @size     = humanized data.fsize
-  @filename = data.filename + data.ext
-  @md5      = data.md5
+    @image-size     = humanized data.fsize
+    @image-filename = data.filename + data.ext
+    @image-md5      = data.md5
 
-  @spoiler  = !!data.spoiler
+    @spoiler  = !!data.spoiler
 
 # 4chan format image sizes like this on its HTML pages.
 # TODO this might be better to do during templating actually.

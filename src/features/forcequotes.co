@@ -28,21 +28,21 @@ munge = !(ctx) ->
           &textContent = ' ' + truncate text, 70 .replace /^\s+/ ''
           &className = 'quote forcedquote'
 
-      if post.image
+      if post.image-url
         quote.after with L \img
           &className = \forcedimage
-          &setAttribute \data-width  post.image.width
-          &setAttribute \data-height post.image.height
-          &setAttribute \data-src    post.image.url
+          &setAttribute \data-width  post.image-width
+          &setAttribute \data-height post.image-height
+          &setAttribute \data-src    post.image-url
           &style <<<
             max-height: \15px
             display: \inline-block
             vertical-align: \middle
 
-          &src = if post.image.spoiler
+          &src = if post.image-spoiler
             board.spoiler-url
           else
-            post.image.thumb-url
+            post.thumb-url
 
           &addEventListener \mouseover lightbox
 
