@@ -46,9 +46,9 @@ DOMThread:: = require(\./Thread)::
 
   @omitted = if omitted = el.querySelector \.summary
     replies:
-      parseInt omitted.textContent.match(/\d+(?= posts?)/), 10 or 0
+      parseInt omitted.textContent.match(/\d+(?= replies?)/), 10 or 0
     imageReplies:
-      parseInt omitted.textContent.match(/\d+(?= image (?:replies|reply))/), 10 or 0
+      parseInt omitted.textContent.match(/\d+(?= images??)/), 10 or 0
 
   @preview = !!omitted
 
