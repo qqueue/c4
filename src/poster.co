@@ -1,8 +1,5 @@
 # ajax posting
 # Pretty bare bones, but it should work at least.
-# TODO I think I'm using an old recaptcha api or key, cause I'm getting
-# the stupid-hard captchas instead of the easier ones.
-
 listen = require \./utils/listen
 {onready} = require \./utils/features
 {L, $, $$} = require \./utils/dom
@@ -16,14 +13,9 @@ checkValidity = (e) ->
   e.preventDefault!
 
   form = $ \postform
-  captcha = $ \recaptcha_response_field
   file = $ \file
   comment = $ \comment
   options = $ \options
-
-  captcha.setCustomValidity unless captcha.value
-    "You forgot the captcha!"
-  else ''
 
   file.setCustomValidity if !file.value and board.isBoard
     "You forgot your image!"
@@ -57,7 +49,6 @@ checkValidity = (e) ->
             &innerHTML = @response
           console.log html
 
-          captcha = $ \recaptcha_response_field
           file = $ \file
           comment = $ \comment
 
@@ -70,7 +61,6 @@ checkValidity = (e) ->
 
             $ \postform .reset!
             $ \name .value = get \name or '' # persist name
-            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
 
             # update and show new post, giving some time for 4chan to process it
             updater.countdown.restart 3sec
@@ -88,10 +78,12 @@ checkValidity = (e) ->
               console.log html.textContent
               postStatus 'something broke, sorry. try again.'
 
-            $ \recaptcha_image .click! # refresh captcha ( can't call Recaptcha directly )
-            captcha
-              &value = ''
-              &focus!
+          document.head.appendChild with L \script
+            # XXX reset('captcha') complains that it's an invalid id
+            # as does reset(document.getElementById('captcha'). dunno why.
+            # the default behavior is to reset the first captcha which seems to work.
+            &textContent = """grecaptcha.reset()"""
+            &onload = !-> @parentNode.removeChild this
 
         .on \loadend ->
           $ \progress .hidden = true # hide progress bar
@@ -130,13 +122,13 @@ cooldown = ->
 # persist entered name and tripcode
 listen $ \name .on \input -> set name: @value
 $ \name ?.value = get \name or ''
-
 # load captcha on demand
+# https://developers.google.com/recaptcha/docs/display#explicit_render
 listen $ \comment .once \input !->
   document.head.appendChild with L \script
     &textContent = """
-    Recaptcha.create('6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', 'captcha', {
-      theme: 'custom',
-      custom_theme_widget: 'captcha'
-    })
+    grecaptcha.render(
+      'captcha',
+      {'sitekey': '6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', theme: 'dark'}
+    )
     """

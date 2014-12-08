@@ -13,7 +13,7 @@ html = L \html
       &id = \c4-style
       &textContent = require \style/c4
     &appendChild with L \script
-      &src = \//www.google.com/recaptcha/api/js/recaptcha_ajax.js
+      &src = \//www.google.com/recaptcha/api.js?render=explicit
 
 body = L \body
 

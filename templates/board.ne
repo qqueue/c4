@@ -32,9 +32,7 @@ unless board.thread?closed
         input(type="text", id="subject", name="sub", tabindex="10", placeholder="subject")
         #comment-field
           textarea#comment(name="com", rows="4", tabindex="10", placeholder="comment")
-        #captcha(style="display:none")
-          a#recaptcha_image(href="javascript:Recaptcha.reload()", title="Click for new captcha")
-          input#recaptcha_response_field(type="text", name="recaptcha_response_field", tabindex="10", placeholder="captcha")
+        #captcha
         #file-field
           input#file(type="file", name="upfile", tabindex="10")
           label#spoiler-field
