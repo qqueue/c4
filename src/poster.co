@@ -129,6 +129,6 @@ listen $ \comment .once \input !->
     &textContent = """
     grecaptcha.render(
       'captcha',
-      {'sitekey': '6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', theme: 'dark'}
+      {'sitekey': '6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', theme: 'light'}
     )
     """
