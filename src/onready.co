@@ -107,9 +107,9 @@ else
   # XXX used in hide.co, really want IDB/minimongo/'real man's db'
   board.threads-by-id = {}
   for board.threads
-    board.threads-by-id[&no] = &
+    board.threads-by-id[&op.no] = &
 
-  console.log board.threads
+  console.log board
 
   console.time "generate new HTML body"
   body-html = board-template board
@@ -145,7 +145,7 @@ document.title =
   if board.isThread
     board.thread.op |>
       "#{truncate do
-           &subject or text &comment or &image?filename or &time.relative-date!}
+           &sub or text &com or &filename or &time.relative-date!}
        \ - /#{board.name}/"
   else
     board.title

@@ -30,6 +30,8 @@ global.board = {}
 
   # TODO moot's crazy spoiler number bullshit
   &spoiler-url = "//s.4cdn.org/image/spoiler-#{&name}1.png"
+  &thumbs-base = "//t.4cdn.org/#{&name}/"
+  &images-base = "//i.4cdn.org/#{&name}/"
 
 require \./archives
 require \./backlinks

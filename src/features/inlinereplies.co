@@ -65,7 +65,7 @@ onclick = !(e) ->
     is-backlink = @classList.contains \backlink
 
     inlined = DOM post-template post,
-      thread: board.threads-by-id[post.thread-no]
+      thread: board.threads-by-id[post.resto or post.no]
       container: \article
       classes: "inline hovered"
       id: inlined-id

@@ -13,10 +13,10 @@ munge = !(ctx) ->
 
     no = quote.hash.substring 2
     if (post = board.posts[no])
-      if post.comment.length > 0
+      if post.com?length > 0
         L \div
           # <br>s don't show in textContent for some reason
-          &innerHTML = post.comment.replace /<br>/g ' '
+          &innerHTML = post.com.replace /<br>/g ' '
 
           for &querySelectorAll \.quotelink => &remove!
           # manually splitting spoiler elements is tiring, so just remove
@@ -28,12 +28,13 @@ munge = !(ctx) ->
           &textContent = ' ' + truncate text, 70 .replace /^\s+/ ''
           &className = 'quote forcedquote'
 
-      if post.image-url
+      if post.filename
         quote.after with L \img
           &className = \forcedimage
-          &setAttribute \data-width  post.image-width
-          &setAttribute \data-height post.image-height
-          &setAttribute \data-src    post.image-url
+          &setAttribute \data-width  post.w
+          &setAttribute \data-height post.h
+          &setAttribute \data-src    board.images-base + post.tim + post.ext
+
           &style <<<
             max-height: \15px
             display: \inline-block
@@ -42,7 +43,7 @@ munge = !(ctx) ->
           &src = if post.image-spoiler
             board.spoiler-url
           else
-            post.thumb-url
+            board.thumbs-base + post.tim + \s.jpg
 
           &addEventListener \mouseover lightbox
 

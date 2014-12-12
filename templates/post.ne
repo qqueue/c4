@@ -1,16 +1,4 @@
-:prelude
-  classes = ->
-    c = 'post '
-    c += 'imagepost ' if it.image-url
-    c += 'sage '      if it.sage
-    c += 'tripcoded ' if it.tripcode
-    if it.capcode
-      c += if it.capcode is '## Admin'
-        'admin '
-      else 'mod '
-    c += 'uid ' if it.uid
-    c
-
+~ {classes, humanized, thumb-url, image-url, permalink} = require(\src/parser).template-fns
 ~ enhancer = require \src/enhancer
 ~ {relative-date} = require \src/utils/relative-dates
 
@@ -19,38 +7,38 @@
                data-idx="#{@idx}",
                id="#{@@id or 'p' + @no}")
   h1.post-header
-    a.subject(href="#{@url}")= @subject
+    a.subject(href="#{permalink(locals)}")= @sub
     span.name= @name
 
-    span.tripcode= @tripcode
+    span.tripcode= @trip
     span.capcode= @capcode
-    span.posteruid= "(ID: #that)" if @uid
-    time(pubdate, datetime="#{@time.toISOString!}", title="#{@time}")
-      = relative-date @time
-    a.permalink(href="#{@url}") No.
+    span.posteruid= "(ID: #that)" if @id
+    time(pubdate, datetime="#{new Date @time * 1000 .toISOString!}")
+      = relative-date new Date @time * 1000
+    a.permalink(href="#{permalink locals}") No.
       span.no= @no
 
-  if @image-url
+  if @filename
     .fileinfo
-      span.filename= @image-filename
-      span.dimensions= "#{@image-width}x#{@image-height}"
-      span.size= @image-size
-      a.saucelink(href="http://iqdb.org/?url=http:#{@image-url}",
+      span.filename= "#{@filename}#{@ext}"
+      span.dimensions= "#{@w}x#{@h}"
+      span.size= humanized @fsize
+      a.saucelink(href="http://iqdb.org/?url=http:#{image-url(locals)}",
         target="_blank") iqdb
-      a.saucelink(href="http://google.com/searchbyimage?image_url=http:#{@image-url}",
+      a.saucelink(href="http://google.com/searchbyimage?image_url=http:#{image-url(locals)}",
         target="_blank") google
-      a.saucelink(href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{@image-url}",
+      a.saucelink(href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{image-url(locals)}",
         target="_blank") exif
-      a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @image-md5}",
+      a.saucelink(href="http://archive.foolz.us/#{board.name}/search/image/#{encodeURIComponent @md5}",
         target="_blank") foolz
-    a.file(target="_blank", href="#{@image-url}", data-width="#{@image-width}", data-height="#{@image-height}")
-      img.thumb(src="#{if @image-spoiler then board.spoiler-url else @thumb-url}",
-        width="#{unless @image-spoiler then @thumb-width else ''}",
-        height="#{unless @image-spoiler then @thumb-height else ''}")
-  else if @deletedImage
+    a.file(target="_blank", href="#{image-url(locals)}", data-width="#{@w}", data-height="#{@h}")
+      img.thumb(src="#{if @spoiler then board.spoiler-url else thumb-url(locals)}",
+        width="#{unless @image-spoiler then @tn_w else ''}",
+        height="#{unless @image-spoiler then @tn_h else ''}")
+  else if @filedeleted
     img.deleted-image(alt="File deleted.", src="//s.4cdn.org/image/filedeleted.gif")
 
-  div.comment= enhancer.enhance @comment
+  div.comment= enhancer.enhance @com
   .backlinks
     for b of @backlinks
       a.backlink.quotelink(href="#{'#'}p#{b}")= "#{@@thread.post[b]idx}"

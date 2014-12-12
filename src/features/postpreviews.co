@@ -33,7 +33,7 @@ fetch-new-post = !(no) ->
           for thread.posts
             board.posts[&no] = &
 
-          board.threads-by-id[thread.no] = thread
+          board.threads-by-id[thread.op.no] = thread
 
           # then use that to look up our post
           create-preview.call link, no, board.posts[no], thread
@@ -67,7 +67,7 @@ create-preview = !(no, post) ->
   {width, height, left, top} = @getBoundingClientRect!
 
   preview = DOM post-template post,
-    thread: board.threads-by-id[post.thread-no]
+    thread: board.threads-by-id[post.resto or post.no]
     container: \article
     id: \postpreview
 

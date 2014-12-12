@@ -1,0 +1,296 @@
+# Parse 4chan's DOM into the API format, and the API format into
+# a slightly more friendly struct.
+#
+# Rough documentation (most of it is the same as the API):
+#
+# Thread = {
+#   op: the first Post of the thread.
+#     no  : unique post number of the OP.
+#
+#     omitted_posts: number
+#     omitted_images: number
+#
+#     sticky: boolean, whether thread is stuck on top of the board pages.
+#     closed: boolean, whether thread is open to replies
+#
+#   replies: Array of reply posts.
+#
+#   reply: Object, with references to each reply by `no` (for lookup)
+#   imageReplies: Array of replies with images.
+# }
+#
+# Post: {
+#   no: unique post number within a board
+#
+#   idx: post number within a thread, 0-based
+#
+#   time: unix seconds (not millis) when the post was made
+#
+#   tim: unix milliseconds when the image was created, off which
+#        the image thumb url is based
+#
+#   sub: post subject (blue text)
+#
+#   name: poster's enetered name, usually 'Anonymous'
+#   trip: tripcode or `undefined`
+#
+#   capcode: 'Admin' or 'Mod' or 'Developer' are the only ones I think exist.
+#
+#   id: the posterID string or `undefined`
+#
+#   com: HTML string of post's text.
+#
+#   filedeleted: boolean, whether post had an image but it was removed.
+#
+#   quotelinks: An array of post numbers this post quotes, as parsed by 4chan
+#               into anchors. Multiple quotelinks to the same post are
+#               deduplicated, i.e. this array is a set.
+#
+#   backlinks: an array of post numbers whose posts *which are in the same
+#              thread is this post*, quote this post. In other words, only
+#              in-thread backlinks are listed, which is usually good enough,
+#              but you should query your own backlinks if you want
+#              cross-thread/board ones.
+#
+#   w,h: Numbers, image dimensions in pixels
+#
+#   fsize: number, size of image in bytes
+#
+#   filename: original filename, minus extension
+#   ext: file extension
+#   md5: hash of original image.
+#
+#   spoiler: boolean, whether image is marked as a spoiler
+#
+#   tn_w, tn_h: Numbers
+# }
+export dom = (document, board) ->
+  raw = parse-dom document, board
+  console.log \raw raw
+  new Thread t, board for t of raw
+
+export api = (api, board) ->
+  new Thread api, board
+
+class Thread then ({posts}, board) ->
+  [op, ...replies] = @posts = posts
+
+  @op = op <<< {
+    quotelinks: quotelinks-of op.com, op.no
+    backlinks: []
+    idx: 0
+  }
+
+  idx = 1 + (op.omitted_posts || 0)
+  @replies = for replies
+    & <<< {
+      quotelinks: quotelinks-of &com, op.no
+      backlinks: []
+      idx: idx++
+    }
+
+  @imageReplies = []
+
+  # build post by number hash and image replies array
+  @post = {(op.no): @op}
+  for reply of @replies
+    @imageReplies.push reply if reply.filename
+    @post[reply.no] = reply
+
+  # build backlinks arrays of posts
+  for post of @posts
+    for quoted of post.quotelinks
+      @post[quoted].backlinks.push post.no
+
+# This picks up all in-thread and in-board links.
+regex = /<a href="(\d+)?#p(\d+)" class="quotelink">/g
+
+# a list of post numbers that are quoted by the comment (HTML)
+function quotelinks-of comment, thread-no
+  # use a hash in order to dedupe quotelinks to the same post
+  set = {}
+  regex.lastIndex = 0
+  while (match = regex.exec comment)?
+    set[match.2] = true if match.1!? or match.1 == thread-no
+
+  Object.keys set
+
+# `document` is a HTMLDocument or HTMLElement that contains the .threads div
+# from 4chan's pages.
+#
+# `board` is a string for the name of the board, e.g. 'a'.
+function parse-dom document, board
+  # pre-query always-existant post elements, which should be faster than
+  # individual querySelector calls
+  times    =  document.querySelectorAll \.dateTime
+  comments =  document.querySelectorAll \.postMessage
+  names    =  document.querySelectorAll \.name
+
+  # some elements exist on both .mobile info and .desktop info, because moot,
+  # so bicrement past .mobile versions
+  e-idx = 0
+  b-idx = 1
+
+  for document.querySelectorAll \.thread
+    t = parse-thread do
+      &
+      times
+      comments
+      names
+      e-idx
+      b-idx
+
+    e-idx += t.posts.length
+    b-idx += t.posts.length * 2
+
+    t
+
+function parse-thread el, times, comments, names, e-idx, b-idx
+  thread-no        = el.id.substring 1 # t12345
+
+  op = new DOMPost do
+    thread-no
+    el.querySelector( \.op )
+    0
+    times[b-idx]
+    comments[e-idx]
+    names[b-idx]
+
+  op
+    &no = thread-no
+    if omitted = el.querySelector \.summary
+      &omitted_posts =
+        parseInt omitted.textContent.match(/\d+(?= replies?)/), 10 or 0
+      &omitted_images =
+        parseInt omitted.textContent.match(/\d+(?= images??)/), 10 or 0
+    &sticky = el.querySelector(\.stickyIcon)?
+    &closed = el.querySelector(\.closedIcon)?
+    &resto = 0
+
+  ++e-idx
+  b-idx += 2
+
+  idx = 1 + (op.omitted_posts || 0)
+  replies = for el.getElementsByClassName( \reply )
+    p = new DOMPost do
+      thread-no
+      &
+      idx++
+      times[b-idx]
+      comments[e-idx]
+      names[b-idx]
+
+    ++e-idx
+    b-idx += 2
+
+    p
+
+  return {posts: [op, ...replies]}
+
+dimension-regex = /(\d+)x(\d+)/
+size-regex      = /([\d\.]+) ([KM]?B)/
+
+class DOMPost then (thread-no, el, @idx, time-el, comment-el, name-el) ->
+  @resto = thread-no
+  @no  = el.id.substring 1
+
+  @time = parseInt(time-el.dataset.utc, 10)
+
+  @name     = name-el.innerHTML
+
+  # 4chan does this weird ellipsis wrapping thing:
+  # <span class=subject>
+  #   <span title="full title">full t(...)</span>
+  # </span>
+  @sub  = if el.querySelector \.subject
+    if title = that.firstElementChild?title
+      title
+    else
+      that.textContent
+
+  @trip = el.querySelector \.postertrip ?.innerHTML
+  @capcode  = el.querySelector \.capcode    ?.innerHTML
+
+  @com  = comment-el.innerHTML
+
+  @id = el.querySelector \.hand ?.textContent # hand?
+
+  thumb-el = el.querySelector \.fileThumb
+  @filedeleted = thumb-el?firstElementChild.alt is "File deleted."
+  if thumb-el and not @filedeleted
+    info       = thumb-el.parentNode.firstElementChild
+
+    # the dimensions appear after the original filename, so we
+    # need to match after any (\d+)x(\d+) patterns in the original filename
+    #
+    # The .fileText element has 'File: ' as a TextNode before the
+    # link to the file, and a TextNode after with the size and dimensions,
+    # so use the last child's content.
+    dimensions = dimension-regex.exec info.lastChild.textContent
+
+    thumb      = thumb-el.firstElementChild
+    @tim  = thumb-el.href.match /\/(\d+)\./ .1
+
+    # FIXME when image is spoiled, these are the spoiler image size.
+    # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+    # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
+    @tn_w  = parseInt el.style.width, 10
+    @tn_h = parseInt el.style.height, 10
+
+    @w = parseInt dimensions.1, 10
+    @h = parseInt dimensions.2, 10
+
+    [, num, unit] = size-regex.exec thumb.alt
+    mult = if unit is \KB
+      1024
+    else if unit is \MB
+      1024 * 1024
+    else
+      1
+    @fsize = parseFloat(num) * mult
+
+    @spoiler  = thumb-el.classList.contains \imgspoiler
+
+    name-ext = if @spoiler
+      info.title
+    else
+      a = info.querySelector 'a'
+      a.title or a.text-content
+
+    last-dot = name-ext.last-index-of \.
+    @filename = name-ext.substring 0 last-dot
+    @ext = name-ext.substring last-dot
+
+    @md5       = thumb.dataset.md5
+
+# XXX the :prelude parsing in nephrite is totally fucked, stuff the functions
+# here for now
+export template-fns:
+  classes: ->
+    c = 'post '
+    c += 'imagepost ' if it.filename
+    c += 'tripcoded ' if it.trip
+    if it.capcode
+      c += if it.capcode is '## Admin'
+        'admin '
+      else 'mod '
+    c += 'id ' if it.iid
+    c
+
+  humanized: (bytes) ->
+    if bytes < 1024
+      "#bytes B"
+    else if (kbytes = Math.round bytes / 1024) < 1024
+      "#kbytes KB"
+    else
+      "#{(kbytes / 1024)toString!substring 0 3} MB"
+
+  thumb-url: (post) ->
+    board.thumbs-base + post.tim + \s.jpg
+
+  image-url: (post) ->
+    board.images-base + post.tim + post.ext
+
+  permalink: (post) ->
+    "//boards.4chan.org/#{board.name}/thread/#{post.resto or post.no}\##{post.no}"
+

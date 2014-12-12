@@ -190,7 +190,7 @@ onready !->
   updater.button = $ \update-now
 
   # autoupdate threads
-  if board.isThread and not board.thread.closed
+  if board.isThread and not board.thread.op.closed
     updater.countdown.start!
     listen $ \update-now .click !->
       updater

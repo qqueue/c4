@@ -1,6 +1,4 @@
 # Modify post comments through their HTML source.
-# Called by the parser, which means enhancing happens during parse-time, which
-# is faster than munging the DOM after it is rendered.
 #
 # `add-replacement` is called by other features to add a replacer.
 #
@@ -81,6 +79,7 @@ module.exports = enhancer =
   # as a string for the list of replacements, but it turns out that the simple
   # for loop is plenty fast. Premature optimization ;_;
   enhance: ->
+    return it unless it # ignore null/empty
     for [pattern, replacement] of enhancer.replacements
       it .= replace pattern, replacement
     it
