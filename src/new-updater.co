@@ -1,0 +1,195 @@
+# the fancy new fountain-inspired updater.
+# Instead of having each thread page poll for updates, have a single shared
+# worker poll `threads.json` for each open board, thus multiplexing updates
+# between many open threads.
+#
+# While we _could_ poll `catalog.json` like fountain does,
+# it's a pretty heavy-weight request (~300KB raw, ~100KB gzipped)
+# compared to `threads.json` (~6KB raw, ~1KB gzipped). While it'd
+# save us requests to each updated `res/<no>.json` to actually
+# pick up the new posts, I think `catalog.json` would use a lot more
+# bandwidth in aggregate.
+#
+# (Once I work on fountain again, this updater could just connect to that
+# and use even less bandwidth. soon™)
+#
+# I use a SharedWorker to cleanly provide cross-tab communication (an
+# alternative would be something messy with LocalStorage/IndexedDB and leader
+# election, but no thanks). To actually share a non-file worker, we have to use
+# a data URI as the url, as a blob url changes between tabs. It's a bit onerous
+# to encode the entire worker into the url on every page load, but it should
+# still be relatively snappy.
+
+worker-code = !->
+  const INTERVAL = 5000ms
+
+  board-lm = {} # board-name -> ISO time string
+  to-poll = {} # board-name -> {(thread-no): {
+               #                  last_modified: timestamp in seconds,
+               #                  ports: [port] registered ports}}
+
+  ports-to-last-seen = new Map
+
+  var last-port
+  log = !->
+    last-port.postMessage do
+      type: \log
+      value: it
+
+  self.onconnect = !->
+    port = it.ports.0
+    last-port := port
+    port.start!
+
+    ports-to-last-seen.set port, Date.now!
+    port.onmessage = !->
+      log "#{it.data.type} in worker" if it.data.type is not \pong
+      ports-to-last-seen.set port, Date.now!
+      switch it.data.type
+      case \register
+        {board-name, thread-no} = it.data
+        board-lm[board-name] = new Date 0
+        state = to-poll@[board-name][thread-no] ?=
+          last_modified: 0
+          ports: new Set
+
+        state.ports.add port
+
+      case \bye
+        cleanup-port port
+      # TODO deregister, when I start doing pushState page reloading
+
+  !function cleanup-port port
+    for board-name, thread-states in to-poll
+      for thread-no, state in thread-states
+        if state.ports.has port
+          state.ports.delete port
+          if state.ports.size is 0
+            delete thread-states[thread-no]
+
+  cleanup = !->
+    ports-to-last-seen.forEach !(last-seen, port) ->
+      if (Date.now! - last-seen) > 30_000ms
+        # assume tab has closed, cleanup
+        log "cleaning up a port"
+        ports-to-last-seen.delete port
+        cleanup-port port
+      else
+        # apparently active, expect a timely pong back
+        port.postMessage type: \ping
+
+  throttled = new Set
+  poll = !->
+    cleanup!
+    for let board-name, thread-states in to-poll
+      return if throttled.has board-name
+      throttled.add board-name
+      xhr = new XMLHttpRequest
+        &open \GET url = "https://a.4cdn.org/#{board-name}/threads.json"
+        #
+        # ;_; this doesn't work, because the XHR request made from
+        # a data: URL'd worker has an `Origin: null` and the request is blocked
+        # for being cross-origin. guess I'll have to make that leader-election
+        # thing after all...
+        #
+        log "getting #url"
+        &setRequestHeader \If-Modified-Since board-lm[board-name].toISOString()
+        &onerror = !->
+          console.log this
+          log "error! #{@status} #{@readyState} #{@getAllResponseHeaders!}"
+        &onreadystatechange = !-> log "statechange!  #{@readyState}"
+        &onloadend = !->
+          log "ended req for board #board-name"
+          log "#{@status}"
+          set-timeout do
+            !-> throttled.delete board-name
+            INTERVAL
+
+        &onload = !->
+          log "got board #board-name"
+          last_modified = new Date @getResponseHeader \Last-Modified
+          if last_modified > board-lm[board-name]
+            board-lm[board-name] = last_modified
+
+            # assume all threads are dead first
+            dead-threads = new Set Object.keys thread-states
+            to-update = new Set
+
+            #[{page:..., threads: [{no:..., last_modified: ...}, ...}, ...]
+            for page of JSON.parse @response
+              for thread of page.threads
+                if thread.no in thread-states
+                  dead-threads.delete thread.no
+                  if (last_modified * 1000) > thread-states[thread.no]last_modified
+                    to-update.add thread.no
+
+            dead-threads.forEach !->
+              for port of thread-states[it]ports
+                port.postMessage do
+                  type: \dead
+                  thread-no: it
+
+              delete thread-states[it]
+
+            to-update.forEach !->
+              get-thread board-name, it
+        &send!
+
+  active = new Set
+  get-thread = !(board-name, thread-no) ->
+    thread-states = to-poll[board-name]
+    key = "#board-name#thread-no"
+    return if active.has key
+    active.add key
+
+    xhr = new XMLHttpRequest
+      &open \GET "https://a.4cdn.org/#{board-name}/res/#{thread-no}.json"
+      &setRequestHeader \If-Modified-Since,
+        thread-states[thread-no]last_modified.toISOString!
+      &onloadend = !->
+        set-timeout do
+          !-> active.delete key
+          INTERVAL
+
+      &onload = !->
+        log "got thread #key"
+        if @status is 404
+          for port of thread-states[thread-no]ports
+            port.postMessage do
+              type: \dead
+              thread-no: thread-no
+          delete thread-states[thread-no]
+        else
+          last_modified =
+            new Date @getResponseHeader \Last-Modified
+          if last_modified > thread-states[thread-no]last_modified
+            thread-states[thread-no]last_modified = last_modified
+
+          thread = JSON.parse response
+
+          for port of thread-states[thread-no]ports
+            port.postMessage do
+              type: \update
+              thread: thread
+      log "getting thread #key"
+      &send!
+
+  #set-interval poll, INTERVAL / 2
+  set-timeout poll, 100
+
+worker = new SharedWorker do
+  "data:application/javascript,#{encodeURIComponent "(#worker-code)()"}"
+
+worker.port.add-event-listener \message ->
+  switch it.data.type
+  case \ping
+    worker.port.postMessage type: \pong
+  default
+    console.log 'from worker', it.data.type, it.data
+
+worker.port.start!
+
+window.add-event-listener \beforeunload !->
+  worker.port.postMessage type: \bye
+
+module.exports = worker.port

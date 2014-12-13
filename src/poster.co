@@ -61,9 +61,6 @@ checkValidity = (e) ->
 
             $ \postform .reset!
             $ \name .value = get \name or '' # persist name
-
-            # update and show new post, giving some time for 4chan to process it
-            updater.countdown.restart 3sec
             # reset last_parse to force an update, since 4chan's timestamp
             # often lies
             parser.last-parse = 0

@@ -15,16 +15,11 @@ listen = require \./utils/listen
 post-template = require \templates/post
 parser = require \./parser
 draw-favicon = require \./utils/favicon
+new-updater = require \./new-updater
 
 export updater = {}
 
-# increase polling time when there are no new posts
-const delays    = [10 15 20 30 60 90 120 180 240 300]
-      max-delay = delays.length - 1
-
 # state
-current-delay = 0 # index into delay
-last-update   = new Date
 unread        = 0
 
 !function append-new-posts thread, new-posts, deleted
@@ -71,8 +66,6 @@ unread        = 0
         @repeat!
 
 !function handle-new-posts thread, new-posts, deleted
-  updater.status.textContent = "update detected, parsing"
-
   # if at the bottom of the page before adding new posts, smooth-scroll later
   if (window.scrollMaxY - window.scrollY) < 5 and not document.hidden
     scroll = true
@@ -87,77 +80,6 @@ unread        = 0
 
   # if on the bottom of the page
   smooth-scroll-to-bottom! if scroll
-
-!function disable-updater
-  updater.countdown.stop!
-
-!function reset-delay
-  current-delay := 0
-
-!function increase-delay
-  current-delay := (current-delay + 1) <? max-delay
-
-!function restart-countdown
-  updater.tminus = delays[current-delay]
-  updater.countdown.restart!
-
-updater.update = !->
-  # TODO factor out status text side effect
-  updater.status.textContent = "Updating thread..."
-  updater.button.disabled = true
-
-  new XMLHttpRequest
-    &open \GET "//api.4chan.org/#{board.name}/thread/#{board.thread-no}.json"
-    &setRequestHeader \If-Modified-Since last-update.toUTCString!
-    &onload = !->
-      if @status is 404
-        document.title += '(dead)'
-        updater.status.textContent = "thread 404'd"
-        disable-updater!
-      else
-        last-modified = new Date @getResponseHeader \Last-Modified
-        if last-modified > last-update
-          last-update := last-modified
-
-          old-thread = board.thread
-
-          thread = parser.api JSON.parse(@response), board.name
-
-          new-posts = thread.replies.filter -> not old-thread.post[it.no]
-          deleted = old-thread.replies.filter -> not thread.post[it.no]
-
-          handle-new-posts thread, new-posts, deleted
-
-          # swap out old thread state with new
-          board.thread = thread
-
-          reset-delay!
-        else # no new posts
-          increase-delay!
-
-        restart-countdown!
-
-    &ontimeout = !->
-      updater.status.textContent = "request timed out..."
-      restart-countdown!
-
-    &onerror = !->
-      updater.status.textContent = "Couldn't fetch thread page!"
-      disable-updater!
-
-    &onloadend = !->
-      updater.button.disabled = false
-
-    &send!
-
-updater <<<
-  tminus: delays[current-delay]
-  countdown: repeat 1000ms {-start} !->
-    updater.status.textContent = "Updating in #{updater.tminus} seconds..."
-
-    if --updater.tminus < 0
-      @stop!
-      updater.update!
 
 fade = !(post) ->
   # running immediately seems to break CSS yellow fade.
@@ -186,17 +108,25 @@ fade-when-visible = !->
         window.removeEventListener \scroll reset
 
 onready !->
-  updater.status = $ \update-status
-  updater.button = $ \update-now
-
-  # autoupdate threads
   if board.isThread and not board.thread.op.closed
-    updater.countdown.start!
-    listen $ \update-now .click !->
-      updater
-        &countdown.stop!
-        &tminus = delays[current-delay]
-        &update!
-  else
-    $ \updater ?.hidden = true
+    new-updater.add-event-listener \message !->
+      switch it.data.type
+      case \dead
+        document.title += '(dead)'
+      case \update 
+        old-thread = board.thread
+
+        thread = parser.api it.data.thread, board.name
+
+        new-posts = thread.replies.filter -> not old-thread.post[it.no]
+        deleted = old-thread.replies.filter -> not thread.post[it.no]
+
+        handle-new-posts thread, new-posts, deleted
+
+        # swap out old thread state with new
+        board.thread = thread
+    new-updater.postMessage do
+      type: \register
+      board-name: board.name
+      thread-no: board.thread-no
 
