@@ -40,7 +40,7 @@ munge = !(ctx) ->
             display: \inline-block
             vertical-align: \middle
 
-          &src = if post.image-spoiler
+          &src = if post.spoiler
             board.spoiler-url
           else
             board.thumbs-base + post.tim + \s.jpg

@@ -33,8 +33,8 @@
         target="_blank") foolz
     a.file(target="_blank", href="#{image-url(locals)}", data-width="#{@w}", data-height="#{@h}")
       img.thumb(src="#{if @spoiler then board.spoiler-url else thumb-url(locals)}",
-        width="#{unless @image-spoiler then @tn_w else ''}",
-        height="#{unless @image-spoiler then @tn_h else ''}")
+        width="#{if @spoiler then 100 else @tn_w}",
+        height="#{if @spoiler then 100 else @tn_h}")
   else if @filedeleted
     img.deleted-image(alt="File deleted.", src="//s.4cdn.org/image/filedeleted.gif")
 

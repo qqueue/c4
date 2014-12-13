@@ -234,8 +234,8 @@ class DOMPost then (thread-no, el, @idx, time-el, comment-el, name-el) ->
     # FIXME when image is spoiled, these are the spoiler image size.
     # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
     # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
-    @tn_w  = parseInt el.style.width, 10
-    @tn_h = parseInt el.style.height, 10
+    @tn_w  = parseInt thumb.style.width, 10
+    @tn_h = parseInt thumb.style.height, 10
 
     @w = parseInt dimensions.1, 10
     @h = parseInt dimensions.2, 10
