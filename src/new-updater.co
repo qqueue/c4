@@ -13,50 +13,84 @@
 # (Once I work on fountain again, this updater could just connect to that
 # and use even less bandwidth. soon™)
 #
-# I use a SharedWorker to cleanly provide cross-tab communication (an
-# alternative would be something messy with LocalStorage/IndexedDB and leader
-# election, but no thanks). To actually share a non-file worker, we have to use
-# a data URI as the url, as a blob url changes between tabs. It's a bit onerous
-# to encode the entire worker into the url on every page load, but it should
-# still be relatively snappy.
+# The implementation of this isn't as straightforward as I'd like due to
+# a cascading sequence of circumstances:
+#
+# - Normally SharedWorkers are loaded from a separate javascript file.
+#   In Greasemonkey, we only get one file, so we must load the script
+#   from either a Blob URL or a data URL.
+# - A SharedWorker is shared by multiple tabs if it uses the same URL.
+#   That means we have to use a Data URL instead of a Blob URL.
+# - XHRs within the worker use the origin of their file, _not_ the orign
+#   of the spawning tab. The XHRs come from an origin of "null", which
+#   means we can't actually make XHR requests to a.4cdn.org.
+# - Thus, the SharedWorker calls into an active tab to make its XHR
+#   requests, which are expected to return the response back into the worker.
+#
 
 worker-code = !->
   const INTERVAL = 5000ms
-
   board-lm = {} # board-name -> ISO time string
   to-poll = {} # board-name -> {(thread-no): {
-               #                  last_modified: timestamp in seconds,
+               #                  last-modified: timestamp in seconds,
                #                  ports: [port] registered ports}}
 
   ports-to-last-seen = new Map
 
-  var last-port
-  log = !->
-    last-port.postMessage do
+  function active-port
+    ports-to-last-seen.entries!next!value?0
+
+  !function log
+    active-port!?postMessage do
       type: \log
-      value: it
+      args: JSON.parse(JSON.stringify(Array.prototype.slice.call(arguments)))
+
+  active-requests = new Map # url -> callback
+  !function make-xhr url, if-modified-since, cb
+    # if there isn't an active port, then the worker will die anyway
+    port = active-port!
+    active-requests.set url, cb
+    port.postMessage do
+      type: \xhr
+      url: url
+      if-modified-since: if-modified-since
+
+    # timeout if tab takes to too long to respond
+    # TODO better error handling
+    set-timeout do
+      ->
+        if active-requests.has url
+          active-requests.delete url
+          cb "xhr timeout", void
+      5000
 
   self.onconnect = !->
     port = it.ports.0
-    last-port := port
     port.start!
 
     ports-to-last-seen.set port, Date.now!
     port.onmessage = !->
-      log "#{it.data.type} in worker" if it.data.type is not \pong
+      log "#{it.data.type} in worker", it.data if it.data.type is not \pong
       ports-to-last-seen.set port, Date.now!
       switch it.data.type
       case \register
-        {board-name, thread-no} = it.data
+        {board-name, thread-no, last-modified} = it.data
         board-lm[board-name] = new Date 0
         state = to-poll@[board-name][thread-no] ?=
-          last_modified: 0
+          last-modified: last-modified
           ports: new Set
 
         state.ports.add port
-
+      case \xhr
+        {url, err, res} = it.data
+        if active-requests.has url
+          cb = active-requests.get url
+          cb err, res
+          active-requests.delete url
       case \bye
+        ports-to-last-seen.delete port
         cleanup-port port
+        log 'port went byebye'
       # TODO deregister, when I start doing pushState page reloading
 
   !function cleanup-port port
@@ -65,11 +99,17 @@ worker-code = !->
         if state.ports.has port
           state.ports.delete port
           if state.ports.size is 0
+            log "nothing watching thread #{thread-no}, deleting"
             delete thread-states[thread-no]
 
-  cleanup = !->
+    for board-name, thread-states in to-poll
+      if Object.keys(thread-states).length is 0
+        log "nothing watching board #{board-name}, deleting"
+        delete to-poll[board-name]
+
+  !function cleanup
     ports-to-last-seen.forEach !(last-seen, port) ->
-      if (Date.now! - last-seen) > 30_000ms
+      if (Date.now! - last-seen) > (INTERVAL * 2)
         # assume tab has closed, cleanup
         log "cleaning up a port"
         ports-to-last-seen.delete port
@@ -84,44 +124,38 @@ worker-code = !->
     for let board-name, thread-states in to-poll
       return if throttled.has board-name
       throttled.add board-name
-      xhr = new XMLHttpRequest
-        &open \GET url = "https://a.4cdn.org/#{board-name}/threads.json"
-        #
-        # ;_; this doesn't work, because the XHR request made from
-        # a data: URL'd worker has an `Origin: null` and the request is blocked
-        # for being cross-origin. guess I'll have to make that leader-election
-        # thing after all...
-        #
-        log "getting #url"
-        &setRequestHeader \If-Modified-Since board-lm[board-name].toISOString()
-        &onerror = !->
-          console.log this
-          log "error! #{@status} #{@readyState} #{@getAllResponseHeaders!}"
-        &onreadystatechange = !-> log "statechange!  #{@readyState}"
-        &onloadend = !->
-          log "ended req for board #board-name"
-          log "#{@status}"
-          set-timeout do
-            !-> throttled.delete board-name
-            INTERVAL
+      url = "//a.4cdn.org/#{board-name}/threads.json"
+      ims = board-lm[board-name].toISOString()
+      make-xhr url, ims, !(err, res) ->
+        log err if err
+        set-timeout do
+          !-> throttled.delete board-name
+          INTERVAL
 
-        &onload = !->
-          log "got board #board-name"
-          last_modified = new Date @getResponseHeader \Last-Modified
-          if last_modified > board-lm[board-name]
-            board-lm[board-name] = last_modified
+        if res?
+          log "actually got board #board-name"
+          last-modified = res.last-modified
+          if last-modified > board-lm[board-name]
+            board-lm[board-name] = last-modified
 
             # assume all threads are dead first
             dead-threads = new Set Object.keys thread-states
+            log 'to-check', dead-threads
             to-update = new Set
 
             #[{page:..., threads: [{no:..., last_modified: ...}, ...}, ...]
-            for page of JSON.parse @response
+            for page of JSON.parse res.body
               for thread of page.threads
                 if thread.no in thread-states
-                  dead-threads.delete thread.no
-                  if (last_modified * 1000) > thread-states[thread.no]last_modified
+                  known = thread-states[thread.no]last-modified
+                  got = new Date thread.last_modified * 1000
+                  log "found #{thread.no}, known: #known, got: #{got}"
+                  dead-threads.delete "#{thread.no}"
+                  if got > known
+                    log "going to update #{thread.no}"
                     to-update.add thread.no
+
+            log 'apparently dead', dead-threads
 
             dead-threads.forEach !->
               for port of thread-states[it]ports
@@ -133,49 +167,51 @@ worker-code = !->
 
             to-update.forEach !->
               get-thread board-name, it
-        &send!
 
   active = new Set
   get-thread = !(board-name, thread-no) ->
     thread-states = to-poll[board-name]
     key = "#board-name#thread-no"
+    log "getting #key ", to-poll
     return if active.has key
     active.add key
 
-    xhr = new XMLHttpRequest
-      &open \GET "https://a.4cdn.org/#{board-name}/res/#{thread-no}.json"
-      &setRequestHeader \If-Modified-Since,
-        thread-states[thread-no]last_modified.toISOString!
-      &onloadend = !->
-        set-timeout do
-          !-> active.delete key
-          INTERVAL
 
-      &onload = !->
+    url = "//a.4cdn.org/#{board-name}/res/#{thread-no}.json"
+    ims = thread-states[thread-no]last-modified.toISOString!
+    make-xhr url, ims, !(err, res) ->
+      log err if err
+      set-timeout do
+        !-> active.delete key
+        INTERVAL
+
+      if res?
         log "got thread #key"
-        if @status is 404
+        if res.status is 404
+          log "it's dead #{res.status}"
           for port of thread-states[thread-no]ports
             port.postMessage do
               type: \dead
               thread-no: thread-no
           delete thread-states[thread-no]
         else
-          last_modified =
-            new Date @getResponseHeader \Last-Modified
-          if last_modified > thread-states[thread-no]last_modified
-            thread-states[thread-no]last_modified = last_modified
+          last-modified = res.last-modified
+          known = thread-states[thread-no]last-modified
+          log "#{thread-no}, known: #known, got: #last-modified"
+          if last-modified > known
+            thread-states[thread-no]last-modified = last-modified
 
-          thread = JSON.parse response
+            thread = JSON.parse res.body
 
-          for port of thread-states[thread-no]ports
-            port.postMessage do
-              type: \update
-              thread: thread
-      log "getting thread #key"
-      &send!
+            log "broadcasting thread to ports"
+            thread-states[thread-no]ports.forEach !->
+              log "broadcasting thread to a port"
+              it.postMessage do
+                type: \update
+                thread: thread
 
-  #set-interval poll, INTERVAL / 2
-  set-timeout poll, 100
+  set-interval poll, INTERVAL / 2
+  #set-timeout poll, 100
 
 worker = new SharedWorker do
   "data:application/javascript,#{encodeURIComponent "(#worker-code)()"}"
@@ -184,6 +220,29 @@ worker.port.add-event-listener \message ->
   switch it.data.type
   case \ping
     worker.port.postMessage type: \pong
+  case \xhr
+    {url, if-modified-since} = it.data
+    # make xhr for the worker
+    new XMLHttpRequest
+      &open \GET url
+      &set-request-header \If-Modified-Since if-modified-since
+      &onload = !->
+        worker.port.postMessage do
+          type: \xhr
+          url: url
+          res:
+            body: @response
+            status: @status
+            last-modified: new Date @getResponseHeader \Last-Modified
+      &onerror = !->
+        console.log it
+        worker.port.postMessage do
+          type: \xhr
+          url: url
+          err: @status
+      &send!
+  case \log
+    console.log.apply console, it.data.args
   default
     console.log 'from worker', it.data.type, it.data
 

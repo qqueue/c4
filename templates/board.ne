@@ -45,7 +45,3 @@ unless board.thread?closed
             button#sage(type="submit", name="email", value="sage", tabindex="10", id="sage") Sage Reply
           span#post-status
           progress#progress(max="100", value=0, hidden="")
-
-#updater
-  button#update-now Update now
-  span#update-status

@@ -112,14 +112,19 @@ onready !->
     new-updater.add-event-listener \message !->
       switch it.data.type
       case \dead
+        # TODO handle the archived/closed state somehow, since threads
+        # don't 404 immediately
         document.title += '(dead)'
-      case \update 
+      case \update
+        console.log 'updater get', it.data
         old-thread = board.thread
 
         thread = parser.api it.data.thread, board.name
 
         new-posts = thread.replies.filter -> not old-thread.post[it.no]
         deleted = old-thread.replies.filter -> not thread.post[it.no]
+
+        console.log 'updates:' new-posts, deleted
 
         handle-new-posts thread, new-posts, deleted
 
@@ -129,4 +134,5 @@ onready !->
       type: \register
       board-name: board.name
       thread-no: board.thread-no
+      last-modified: new Date board.thread.posts[*-1].time * 1000
 
