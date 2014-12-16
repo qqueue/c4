@@ -9,29 +9,25 @@ console.timeStamp "c4-init"
 console.time "init"
 console.time "interactive"
 
+unf = require \./unfortunate
+here = unf.locate window.location
+
 # `board` holds global state about the current page, like `document` for the
 # 4chan domain.
-global.board = {}
-  # boards.4chan.org/<name>/'thread' or <page>/<threadid>, or catalog/<searchterm>
-  [ , &name, page, &thread-no] = window.location.pathname / \/
-
-  &is-catalog = page is \catalog
-  &search-term = &thread-no if &is-catalog
-
-  &is-thread   = not &is-catalog and !!&thread-no
-  &is-board    = not &is-catalog and not &is-thread
-  &page        = parseInt page, 10 or 0
-
-  &url         = "//boards.4chan.org/#{&name}/"
-
-  &ready       = false # flag similar to document.readyState
-
-  &favicons = require \./favicon-data
-
+global.board =
+  # TODO just use `here` as a global instead of legacy names
+  name: here.board
+  thread-no: here.tno
+  is-catalog: here.type is \catalog
+  is-thread: here.type is \thread
+  is-board: here.type is \thread
+  page: here.page
+  url: "//boards.4chan.org/#{here.board}/"
+  favicons: require \./favicon-data
   # TODO moot's crazy spoiler number bullshit
-  &spoiler-url = "//s.4cdn.org/image/spoiler-#{&name}1.png"
-  &thumbs-base = "//t.4cdn.org/#{&name}/"
-  &images-base = "//i.4cdn.org/#{&name}/"
+  spoiler-url: "//s.4cdn.org/image/spoiler-#{here.board}1.png"
+  thumbs-base: "//t.4cdn.org/#{here.board}/"
+  images-base: "//i.4cdn.org/#{here.board}/"
 
 require \./archives
 require \./backlinks

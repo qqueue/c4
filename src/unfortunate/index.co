@@ -1,0 +1,31 @@
+# unfortuate: the un4chan userscript toolkit
+# i.e., the non-ui parts of c4, so others can userscript
+# without being tied to either 4chan's UI choices or
+# c4's UI choices (as much as possible, anyway)
+
+# data FLocation = Catalog {board :: string,
+#                           searchTerm :: Maybe string}
+#                | Index {board :: string,
+#                         page :: int}
+#                | Thread {board :: string,
+#                          tno :: int}
+#
+# type is encoded as @type, since instanceof is annoying
+#
+# locate :: Location -> FLocation
+export locate = (location) ->
+  # boards.4chan.org/<name>/'thread' or <page>/<threadid>, or 'catalog'/<searchterm>
+  [ , board, type, qualifier] = location.pathname / \/
+  if type is \catalog
+    type: \catalog
+    board: board
+    searchTerm: qualifier
+  else if type is \thread
+    type: \thread
+    board: board
+    tno: qualifier
+  else # board
+    type: \board
+    board: board
+    page: parseInt type, 10 or 1
+
