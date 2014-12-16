@@ -20,7 +20,7 @@ global.board =
   thread-no: here.tno
   is-catalog: here.type is \catalog
   is-thread: here.type is \thread
-  is-board: here.type is \thread
+  is-board: here.type is \board
   page: here.page
   url: "//boards.4chan.org/#{here.board}/"
   favicons: require \./favicon-data

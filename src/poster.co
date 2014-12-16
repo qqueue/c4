@@ -122,10 +122,14 @@ $ \name ?.value = get \name or ''
 # load captcha on demand
 # https://developers.google.com/recaptcha/docs/display#explicit_render
 listen $ \comment .once \input !->
-  document.head.appendChild with L \script
-    &textContent = """
-    grecaptcha.render(
-      'captcha',
-      {'sitekey': '6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', theme: 'light'}
-    )
-    """
+  document.headappendChild with L \script
+    &src = \//www.google.com/recaptcha/api.js?render=explicit
+    &onload = !->
+      document.head.appendChild with L \script
+        &textContent = """
+        grecaptcha.render(
+          'captcha',
+          {'sitekey': '6Ldp2bsSAAAAAAJ5uyx_lx34lJeEpTLVkP5k04qc', theme: 'light'}
+        )
+        """
+

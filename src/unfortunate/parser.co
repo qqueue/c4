@@ -1,0 +1,177 @@
+# parses 4chan dom back into an api response
+# `document` is a HTMLDocument or HTMLElement that contains the .threads div
+# from 4chan's pages.
+module.exports = function parse-dom document
+  # pre-query always-existant post elements, which should be faster than
+  # individual querySelector calls
+  times    =  document.querySelectorAll \.dateTime
+  comments =  document.querySelectorAll \.postMessage
+  names    =  document.querySelectorAll \.name
+
+  # some elements exist on both .mobile info and .desktop info, because moot,
+  # so bicrement past .mobile versions
+  e-idx = 0
+  b-idx = 1
+
+  for document.querySelectorAll \.thread
+    t = parse-thread do
+      &
+      times
+      comments
+      names
+      e-idx
+      b-idx
+
+    e-idx += t.posts.length
+    b-idx += t.posts.length * 2
+
+    t
+
+function parse-thread el, times, comments, names, e-idx, b-idx
+  thread-no        = el.id.substring 1 # t12345
+
+  op = new DOMPost do
+    thread-no
+    el.querySelector( \.op )
+    0
+    times[b-idx]
+    comments[e-idx]
+    names[b-idx]
+
+  op
+    &no = thread-no
+    if omitted = el.querySelector \.summary
+      &omitted_posts =
+        parseInt omitted.textContent.match(/\d+(?= replies?)/), 10 or 0
+      &omitted_images =
+        parseInt omitted.textContent.match(/\d+(?= images??)/), 10 or 0
+    &sticky = el.querySelector(\.stickyIcon)?
+    &closed = el.querySelector(\.closedIcon)?
+    &resto = 0
+
+  ++e-idx
+  b-idx += 2
+
+  idx = 1 + (op.omitted_posts || 0)
+  replies = for el.getElementsByClassName( \reply )
+    p = new DOMPost do
+      thread-no
+      &
+      idx++
+      times[b-idx]
+      comments[e-idx]
+      names[b-idx]
+
+    ++e-idx
+    b-idx += 2
+
+    p
+
+  return {posts: [op, ...replies]}
+
+dimension-regex = /(\d+)x(\d+)/
+size-regex      = /([\d\.]+) ([KM]?B)/
+
+class DOMPost then (thread-no, el, @idx, time-el, comment-el, name-el) ->
+  @resto = thread-no
+  @no  = el.id.substring 1
+
+  @time = parseInt(time-el.dataset.utc, 10)
+
+  @name     = name-el.innerHTML
+
+  # 4chan does this weird ellipsis wrapping thing:
+  # <span class=subject>
+  #   <span title="full title">full t(...)</span>
+  # </span>
+  @sub  = if el.querySelector \.subject
+    if title = that.firstElementChild?title
+      title
+    else
+      that.textContent
+
+  @trip = el.querySelector \.postertrip ?.innerHTML
+  @capcode  = el.querySelector \.capcode    ?.innerHTML
+
+  @com  = comment-el.innerHTML
+
+  @id = el.querySelector \.hand ?.textContent # hand?
+
+  thumb-el = el.querySelector \.fileThumb
+  @filedeleted = thumb-el?firstElementChild.alt is "File deleted."
+  if thumb-el and not @filedeleted
+    info       = thumb-el.parentNode.firstElementChild
+
+    # the dimensions appear after the original filename, so we
+    # need to match after any (\d+)x(\d+) patterns in the original filename
+    #
+    # The .fileText element has 'File: ' as a TextNode before the
+    # link to the file, and a TextNode after with the size and dimensions,
+    # so use the last child's content.
+    dimensions = dimension-regex.exec info.lastChild.textContent
+
+    thumb      = thumb-el.firstElementChild
+    @tim  = thumb-el.href.match /\/(\d+)\./ .1
+
+    # FIXME when image is spoiled, these are the spoiler image size.
+    # Since 4chan doesn't expose tn_{w|h} in the HTML, will probably need
+    # to clamp to 152wx151h (and 252x251 for OPs) manually if spoiled
+    @tn_w  = parseInt thumb.style.width, 10
+    @tn_h = parseInt thumb.style.height, 10
+
+    @w = parseInt dimensions.1, 10
+    @h = parseInt dimensions.2, 10
+
+    [, num, unit] = size-regex.exec thumb.alt
+    mult = if unit is \KB
+      1024
+    else if unit is \MB
+      1024 * 1024
+    else
+      1
+    @fsize = parseFloat(num) * mult
+
+    @spoiler  = thumb-el.classList.contains \imgspoiler
+
+    name-ext = if @spoiler
+      info.title
+    else
+      a = info.querySelector 'a'
+      a.title or a.text-content
+
+    last-dot = name-ext.last-index-of \.
+    @filename = name-ext.substring 0 last-dot
+    @ext = name-ext.substring last-dot
+
+    @md5       = thumb.dataset.md5
+
+# XXX the :prelude parsing in nephrite is totally fucked, stuff the functions
+# here for now
+export template-fns:
+  classes: ->
+    c = 'post '
+    c += 'imagepost ' if it.filename
+    c += 'tripcoded ' if it.trip
+    if it.capcode
+      c += if it.capcode is '## Admin'
+        'admin '
+      else 'mod '
+    c += 'id ' if it.iid
+    c
+
+  humanized: (bytes) ->
+    if bytes < 1024
+      "#bytes B"
+    else if (kbytes = Math.round bytes / 1024) < 1024
+      "#kbytes KB"
+    else
+      "#{(kbytes / 1024)toString!substring 0 3} MB"
+
+  thumb-url: (post) ->
+    board.thumbs-base + post.tim + \s.jpg
+
+  image-url: (post) ->
+    board.images-base + post.tim + post.ext
+
+  permalink: (post) ->
+    "//boards.4chan.org/#{board.name}/thread/#{post.resto or post.no}\##{post.no}"

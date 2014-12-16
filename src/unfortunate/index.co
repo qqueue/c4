@@ -13,7 +13,7 @@
 # type is encoded as @type, since instanceof is annoying
 #
 # locate :: Location -> FLocation
-export locate = (location) ->
+export function locate location
   # boards.4chan.org/<name>/'thread' or <page>/<threadid>, or 'catalog'/<searchterm>
   [ , board, type, qualifier] = location.pathname / \/
   if type is \catalog
@@ -29,3 +29,88 @@ export locate = (location) ->
     board: board
     page: parseInt type, 10 or 1
 
+# {
+#   title :: string # optional, new page title
+#   style :: string # css to apply to new html
+# } -> HTMLElement, suitable for replacing the current element
+export function create-page {title, style}
+  document.createElement \html
+    &appendChild with document.createElement \head
+      &appendChild document.createElement \title
+        &textContent = title if title?
+      &appendChild with document.createElement \style
+        &textContent = style
+      &appendChild with document.createElement \script
+        &src = \//www.google.com/recaptcha/api.js?render=explicit
+    &appendChild document.createElement \body
+
+export parse = require \./parser
+
+# HTMLElement -> FPage {
+#   title :: string # moot's current board title, e.g., "/a/ - Anime & Manga"
+#   subtitle :: HtmlString # board subtitle. I think only /b/ has this now...
+#   banner :: string # source of the random banner, if you want it
+#   message :: HtmlString # moot's broadcast, if present
+#   sfw :: boolean # true for blue boards, false otherwise,
+#
+#   oldDoc :: HTMLElement # input document, for any extra info you want
+#
+#   data:
+#     # if the page is a catalog, then
+#     # the light JSON structure that powers
+#     # the desuwa catalog.
+#     #_not_ equivalent to catalog.json
+#     # else if the page is a board, then [threads],
+#     # equivalent to <board>/<pagenumber>.json's `threads`
+#     # else if the page is a thread, then equivalent to <board>/res/<tno>.json
+# }
+export function parse-page document
+  if document.querySelector \#threads # it's a catalog
+    # find script tag that defines `catalog`
+    [catalog-text] = Array::filter.call document.querySelectorAll(\script), ->
+      /var catalog/.test it.textContent
+    throw new Error "what is happening" unless catalog-text
+
+    # eval the script tag, which needs `new FC().applyCSS()` in scope...
+    # we _could_ try to parse out the JSON part of the tag itself, but
+    # it's easier just to eval it
+    class FC then applyCSS: ->
+
+    data = eval catalog-text.text-content + "; catalog"
+  else if document.querySelector \.pagelist # board
+    data = parse document
+  else # assume thread
+    data = parse document .0
+
+  oldDoc  : document
+  title   : document.querySelector \.boardTitle      ?.textContent or ''
+  subtitle: document.querySelector \.boardSubtitle   ?.innerHTML or ''
+  banner  : document.querySelector \#bannerCnt        .dataset.src
+  message : document.querySelector \.globalMessage   ?.innerHTML
+  # detect based on favicon href
+  sfw     :
+    document.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
+  data: data
+
+# replace the original html with the new, with a reference to query and
+# parse. This speeds up re-rendering consideraby, since the browser doesn't
+# even have to attempt displaying the old content and style.
+#
+# in fact, it's so effective, even the original sript tags don't run, EVEN ON
+# CHROME, negating the need to handle 'beforescriptexeute' or whatever. crazy.
+#
+# returns the old html element, which can be parsed by `parse-page` when
+# DOMContentLoaded fires.
+export function replace-page newHtml
+  document.replaceChild newHtml, document.documentElement
+
+# a convenient combination of the above functions.
+# when called, replaces the current dom with the passed-in arguments,
+# and returns a promise for the page once parseable.
+# If you don't need finer-grained control over the process, use this
+# TODO think of a better verb than `lift`
+export function lift opts
+  old = replace-page create-page opts
+  new Promise (resolve, reject) ->
+    document.addEventListener \DOMContentLoaded !->
+      resolve parse-page old

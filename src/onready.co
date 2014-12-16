@@ -1,50 +1,23 @@
 {L, $$, $} = require \./utils/dom
-parser = require \./parser
+{Thread} = require \./parser
 {onready} = require \./utils/features
 {truncate} = require \./utils/string
 {get, set, sset, sget} = require \./utils/storage
 board-template = require \templates/board
-
-# pre-create new DOM
-html = L \html
-  &appendChild with head = L \head
-    &appendChild L \title
-    &appendChild with L \style
-      &id = \c4-style
-      &textContent = require \style/c4
-    &appendChild with L \script
-      &src = \//www.google.com/recaptcha/api.js?render=explicit
-
-body = L \body
-
-# replace the original html with the new, but keep a reference to query and
-# parse. This speeds up re-rendering consideraby, since the browser doesn't
-# even have to attempt displaying the old content and style.
-#
-# in fact, it's so effective, even the original sript tags don't run, EVEN ON
-# CHROME, negating the need to handle 'beforescriptexeute' or whatever. crazy.
-d = document.replaceChild html, document.documentElement
-
 catalog-template = require \templates/catalog
+unf = require \./unfortunate
 
-# init
-<-! document.addEventListener \DOMContentLoaded
+page <-! unf.lift {style: require \style/c4} .then
 
 console.time "initial render"
 
-console.time "parse page"
-
-# get other useful information
 board
-  &title    = d.querySelector \.boardTitle      ?.textContent or ''
-  &subtitle = d.querySelector \.boardSubtitle   ?.innerHTML or ''
-  &nav      = d.querySelector \#boardNavDesktop  .innerHTML
-  &banner   = d.querySelector \#bannerCnt        .dataset.src
-  &message  = d.querySelector \.globalMessage   ?.innerHTML
-
-  # detect based on favicon href
-  &sfw =
-    d.querySelector 'link[rel="shortcut icon"]' .href.slice(-6) is \ws.ico
+  &title    = page.title
+  &subtitle = page.subtitle
+  &nav      = page.oldDoc.querySelector \#boardNavDesktop  .innerHTML
+  &banner   = page.banner
+  &message  = page.message
+  &sfw = page.sfw
 
   &type = if &sfw then \sfw else \nsfw
   &favicon = board.favicons[&type]
@@ -52,30 +25,13 @@ board
   # for post deletion
   &password = get \password or Math.random!toString!substr -8
 
-console.timeEnd "parse page"
-
-console.log board
-
-# XXX needs to go somewhere else
-body
+document.body
   &id = board.name
   &className = "#{board.type} \
                #{if board.isThread then \threadpage else \boardpage}"
 
 if board.is-catalog
-  # find script tag that defines `catalog`
-  [catalog-text] = Array::filter.call d.querySelectorAll(\script), ->
-    /var catalog/.test it.textContent
-  throw new Error "what is happening" unless catalog-text
-
-  # eval the script tag, which needs `new FC().applyCSS()` in scope...
-  class FC then applyCSS: ->
-
-  catalog = eval catalog-text.text-content + "; catalog"
-
-  board.catalog = catalog
-
-  console.log catalog
+  catalog = board.catalog = page.data
 
   order = get \catalog-order or \date
   console.time "generate new HTML body"
@@ -83,19 +39,18 @@ if board.is-catalog
   console.timeEnd "generate new HTML body"
 
   console.time "parse new body HTML"
-  body.innerHTML = body-html
+  document.body.innerHTML = body-html
   console.timeEnd "parse new body HTML"
 
-  # XXX need to think a lot harder about how to structure this code. hiding the
-  # two types of pages behind if-statements isn't that great of an architecture
   require \./catalog
 else
-  #console.profile!
-
-  console.time "parse board"
-  board.threads = parser.dom d, board.name
-  console.timeEnd "parse board"
-  board.thread = board.threads.0 if board.isThread
+  # XXX this is awkward, change unf's api pls
+  if board.isThread
+    board.thread = new Thread page.data
+    board.threads = [board.thread]
+  else
+    board.threads = for t of page.data
+      new Thread t
 
   # global lookup post by hash
   # XXX cross-board still conflicts
@@ -104,34 +59,32 @@ else
     for &posts
       board.posts[&no] = &
 
-  # XXX used in hide.co, really want IDB/minimongo/'real man's db'
+  # XXX used in features, really want IDB/minimongo/'real man's db'
   board.threads-by-id = {}
   for board.threads
     board.threads-by-id[&op.no] = &
 
-  console.log board
 
   console.time "generate new HTML body"
   body-html = board-template board
   console.timeEnd "generate new HTML body"
 
   console.time "parse new body HTML"
-  body.innerHTML = body-html
+  document.body.innerHTML = body-html
   console.timeEnd "parse new body HTML"
+
+console.log board
 
 console.time "prerender handlers"
 document.dispatchEvent new CustomEvent do
   \c4-prerender
-  detail: {body}
+  detail: {body: document.body}
 console.timeEnd "prerender handlers"
-
-console.time "render new body"
-html.appendChild body
-console.timeEnd "render new body"
 
 if board.isBoard
   console.time "highlight current page"
-  body.querySelector "\#pages a[href=\"#{board.page or board.url}\"]"
+  href = if board.page is 1 then board.url else board.page
+  document.body.querySelector "\#pages a[href=\"#href\"]"
     .id = \current
   console.timeEnd "highlight current page"
 
@@ -171,8 +124,6 @@ if window.location.hash and not sget document.URL
     sset {+(document.URL)}
     window.removeEventListener \scroll registerPage
 
-board.ready = true
-
 # cache current thread hash (which is updated by updater)
 version = c4_COMPILATION_VERSION
 if board.is-thread
@@ -184,5 +135,3 @@ document.dispatchEvent new CustomEvent do
   \c4-ready
   detail: {board.threads, el: $ \threads}
 console.timeEnd "onready handlers"
-
-#console.profileEnd!
