@@ -114,3 +114,5 @@ export function lift opts
   new Promise (resolve, reject) ->
     document.addEventListener \DOMContentLoaded !->
       resolve parse-page old
+
+export subscribe = require \./updater .subscribe

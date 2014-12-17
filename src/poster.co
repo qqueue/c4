@@ -122,7 +122,7 @@ $ \name ?.value = get \name or ''
 # load captcha on demand
 # https://developers.google.com/recaptcha/docs/display#explicit_render
 listen $ \comment .once \input !->
-  document.headappendChild with L \script
+  document.head.appendChild with L \script
     &src = \//www.google.com/recaptcha/api.js?render=explicit
     &onload = !->
       document.head.appendChild with L \script
