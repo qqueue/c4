@@ -80,15 +80,8 @@ class DOMPost then (thread-no, el, @idx, time-el, comment-el, name-el) ->
 
   @name     = name-el.innerHTML
 
-  # 4chan does this weird ellipsis wrapping thing:
-  # <span class=subject>
-  #   <span title="full title">full t(...)</span>
-  # </span>
-  @sub  = if el.querySelector \.subject
-    if title = that.firstElementChild?title
-      title
-    else
-      that.textContent
+  @sub = if el.querySelector '.postInfo.desktop > .subject'
+    that.textContent
 
   @trip = el.querySelector \.postertrip ?.innerHTML
   @capcode  = el.querySelector \.capcode    ?.innerHTML
