@@ -16,5 +16,5 @@
     input#date.order(type="radio", name="order", value="date")
     | Creation Date
 #catalog
-  for @order[@@order]
-    = catalog-thread @threads[&], no: &
+  for no, t in @threads
+    = catalog-thread t, {no}
