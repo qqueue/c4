@@ -44,9 +44,7 @@ cat-width = 150px
   overflow hidden
 
 .catalog-thumb
-  // TODO would prefer to specify width and height in html to prevent
-  // reflowing, but that would require object-fit CSS to make simple max-width
-  // scaling 'just werk'.
+  object-fit contain
   max-width cat-width
   max-height cat-width // prevent skinny images from being so big
 
