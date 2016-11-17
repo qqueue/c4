@@ -95,6 +95,7 @@ class DOMPost then (thread-no, el, @idx, time-el, comment-el, name-el) ->
   if thumb-el and not @filedeleted
     info       = thumb-el.parentNode.firstElementChild
 
+    # (for images only)
     # the dimensions appear after the original filename, so we
     # need to match after any (\d+)x(\d+) patterns in the original filename
     #
@@ -112,8 +113,10 @@ class DOMPost then (thread-no, el, @idx, time-el, comment-el, name-el) ->
     @tn_w  = parseInt thumb.style.width, 10
     @tn_h = parseInt thumb.style.height, 10
 
-    @w = parseInt dimensions.1, 10
-    @h = parseInt dimensions.2, 10
+    # dimensions is null if we're looking at a pdf or something
+    if dimensions
+      @w = parseInt dimensions.1, 10
+      @h = parseInt dimensions.2, 10
 
     [, num, unit] = size-regex.exec thumb.alt
     mult = if unit is \KB

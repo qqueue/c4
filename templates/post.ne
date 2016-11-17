@@ -21,7 +21,8 @@
   if @filename
     .fileinfo
       span.filename= "#{@filename}#{@ext}"
-      span.dimensions= "#{@w}x#{@h}"
+      if @w and @h
+        span.dimensions= "#{@w}x#{@h}"
       span.size= humanized @fsize
       a.saucelink(href="http://iqdb.org/?url=http:#{image-url(locals)}",
         target="_blank") iqdb

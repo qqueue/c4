@@ -6,8 +6,13 @@
 {on-posts} = require \../utils/features
 lightbox = require \../utils/lightbox
 
-on-posts \.thumb : mouseover: lightbox ({{dataset, href}: parentElement}) ->
+boxy = lightbox ({{dataset, href}: parentElement}) ->
   {dataset.width, dataset.height, src: href}
+
+on-posts \.thumb : mouseover: (e) ->
+  # XXX avoid trying to render pdfs (on /tg/)
+  if not /\.pdf$/.test e.target.parentElement.href
+    boxy.call(this, e)
 
 # TODO alternative destructuring, I think there's an even shorter version
 # though
