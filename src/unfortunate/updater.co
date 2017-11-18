@@ -61,7 +61,7 @@ worker-code = !->
       ->
         if active-requests.has url
           active-requests.delete url
-          cb "xhr timeout", void
+          cb "xhr timeout for url #url", void
       5000
 
   self.onconnect = !->
@@ -130,7 +130,7 @@ worker-code = !->
     for let board-name, thread-states in to-poll
       return if throttled.has board-name
       throttled.add board-name
-      url = "//a.4cdn.org/#{board-name}/threads.json"
+      url = "https://a.4cdn.org/#{board-name}/threads.json"
       ims = board-lm[board-name].toISOString()
       make-xhr url, ims, !(err, res) ->
         log err if err
@@ -183,7 +183,7 @@ worker-code = !->
     return if active.has key
     active.add key
 
-    url = "//a.4cdn.org/#{board-name}/res/#{thread-no}.json"
+    url = "https://a.4cdn.org/#{board-name}/res/#{thread-no}.json"
     ims = thread-states[thread-no]last-modified.toISOString!
     make-xhr url, ims, !(err, res) ->
       log err if err
@@ -227,8 +227,12 @@ subscriptions = new Map # callback -> "#board#tno"
 var worker
 
 !function initialize-worker
-  worker := new SharedWorker do
-    "data:application/javascript,#{encodeURIComponent "(#worker-code)()"}"
+  try
+    worker := new SharedWorker do
+      "data:application/javascript,#{encodeURIComponent "(#worker-code)()"}"
+  catch
+    console.error "couldn't make sharedworker"
+    console.error e
 
   worker.port.add-event-listener \message ->
     switch it.data.type
@@ -264,7 +268,12 @@ var worker
         if k is key
           try
             console.log "found sub for #{it.data.type} #key"
-            sub it.data
+            console.log "sending data: ", it.data
+            # XXX need to cloneInto for some wack Xraywrapper reason
+            # or rather, need to somehow cleanse it.data of whatever
+            # cross-origin attachment it has. this works, apparently
+            cleaned-data = JSON.parse(JSON.stringify(it.data))
+            sub cleaned-data
           catch
             console.error e
     case \log

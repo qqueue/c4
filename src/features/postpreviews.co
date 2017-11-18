@@ -20,7 +20,7 @@ fetch-new-post = !(no) ->
 
   # TODO guard against multiple requests in short time period
   xhr = new XMLHttpRequest
-    &open \GET "//api.4chan.org/#board-name/thread/#thread.json"
+    &open \GET "https://api.4chan.org/#board-name/thread/#thread.json"
     &onload = !->
       # TODO handle 404 -> archive
       if @status is 200
