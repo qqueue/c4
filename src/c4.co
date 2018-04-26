@@ -26,7 +26,7 @@ global.board =
   favicons: require \./favicon-data
   # TODO moot's crazy spoiler number bullshit
   spoiler-url: "//s.4cdn.org/image/spoiler-#{here.board}1.png"
-  thumbs-base: "//t.4cdn.org/#{here.board}/"
+  thumbs-base: "//i.4cdn.org/#{here.board}/"
   images-base: "//i.4cdn.org/#{here.board}/"
 
 require \./archives
