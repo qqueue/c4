@@ -61,7 +61,7 @@ worker-code = !->
       ->
         if active-requests.has url
           active-requests.delete url
-          cb "xhr timeout", void
+          cb "xhr timeout for url #url", void
       5000
 
   self.onconnect = !->
@@ -74,7 +74,7 @@ worker-code = !->
       ports-to-last-seen.set port, Date.now!
       switch it.data.type
       case \register
-        {board-name, thread-no, last-modified} = it.data
+        {board-name, thread-no, last-modified ? new Date(0)} = it.data
         board-lm[board-name] = new Date 0
         state = to-poll@[board-name][thread-no] ?=
           last-modified: last-modified
@@ -91,7 +91,13 @@ worker-code = !->
         ports-to-last-seen.delete port
         cleanup-port port
         log 'port went byebye'
-      # TODO deregister, when I start doing pushState page reloading
+      case \deregister
+        {board-name, thread-no} = it.data
+        state = to-poll@[board-name][thread-no]
+        if state?
+          state.ports.remove port
+          if state.ports.size is 0
+            delete to-poll[board-name][thread-no]
 
   !function cleanup-port port
     for board-name, thread-states in to-poll
@@ -124,7 +130,7 @@ worker-code = !->
     for let board-name, thread-states in to-poll
       return if throttled.has board-name
       throttled.add board-name
-      url = "//a.4cdn.org/#{board-name}/threads.json"
+      url = "https://a.4cdn.org/#{board-name}/threads.json"
       ims = board-lm[board-name].toISOString()
       make-xhr url, ims, !(err, res) ->
         log err if err
@@ -161,7 +167,8 @@ worker-code = !->
               for port of thread-states[it]ports
                 port.postMessage do
                   type: \dead
-                  thread-no: it
+                  board: board-name
+                  tno: it
 
               delete thread-states[it]
 
@@ -176,8 +183,7 @@ worker-code = !->
     return if active.has key
     active.add key
 
-
-    url = "//a.4cdn.org/#{board-name}/res/#{thread-no}.json"
+    url = "https://a.4cdn.org/#{board-name}/res/#{thread-no}.json"
     ims = thread-states[thread-no]last-modified.toISOString!
     make-xhr url, ims, !(err, res) ->
       log err if err
@@ -192,7 +198,8 @@ worker-code = !->
           for port of thread-states[thread-no]ports
             port.postMessage do
               type: \dead
-              thread-no: thread-no
+              board: board-name
+              tno: thread-no
           delete thread-states[thread-no]
         else
           last-modified = res.last-modified
@@ -208,47 +215,101 @@ worker-code = !->
               log "broadcasting thread to a port"
               it.postMessage do
                 type: \update
+                board: board-name
+                tno: thread-no
                 thread: thread
 
   set-interval poll, INTERVAL / 2
-  #set-timeout poll, 100
 
-worker = new SharedWorker do
-  "data:application/javascript,#{encodeURIComponent "(#worker-code)()"}"
+subscriptions = new Map # callback -> "#board#tno"
+                        # reversed because there's never going to be
+                        # enough keys to make linear traversal expensive
+var worker
 
-worker.port.add-event-listener \message ->
-  switch it.data.type
-  case \ping
-    worker.port.postMessage type: \pong
-  case \xhr
-    {url, if-modified-since} = it.data
-    # make xhr for the worker
-    new XMLHttpRequest
-      &open \GET url
-      &set-request-header \If-Modified-Since if-modified-since
-      &onload = !->
-        worker.port.postMessage do
-          type: \xhr
-          url: url
-          res:
-            body: @response
-            status: @status
-            last-modified: new Date @getResponseHeader \Last-Modified
-      &onerror = !->
-        console.log it
-        worker.port.postMessage do
-          type: \xhr
-          url: url
-          err: @status
-      &send!
-  case \log
-    console.log.apply console, it.data.args
-  default
-    console.log 'from worker', it.data.type, it.data
+!function initialize-worker
+  try
+    worker := new SharedWorker do
+      "data:application/javascript,#{encodeURIComponent "(#worker-code)()"}"
+  catch
+    console.error "couldn't make sharedworker"
+    console.error e
 
-worker.port.start!
+  worker.port.add-event-listener \message ->
+    switch it.data.type
+    case \ping
+      worker.port.postMessage type: \pong
+    case \xhr
+      {url, if-modified-since} = it.data
+      # make xhr for the worker
+      new XMLHttpRequest
+        &open \GET url
+        &set-request-header \If-Modified-Since if-modified-since
+        &onload = !->
+          worker.port.postMessage do
+            type: \xhr
+            url: url
+            res:
+              body: @response
+              status: @status
+              last-modified: new Date @getResponseHeader \Last-Modified
+        &onerror = !->
+          console.log it
+          worker.port.postMessage do
+            type: \xhr
+            url: url
+            err: @status
+        &send!
+    case \update \dead
+      key = it.data.board + it.data.tno
+      console.log "got #{it.data.type} #key"
+      console.log 'subscriptions', subscriptions
+      subscriptions.for-each !(k, sub) ->
+        console.log "sub #key"
+        if k is key
+          try
+            console.log "found sub for #{it.data.type} #key"
+            console.log "sending data: ", it.data
+            # XXX need to cloneInto for some wack Xraywrapper reason
+            # or rather, need to somehow cleanse it.data of whatever
+            # cross-origin attachment it has. this works, apparently
+            cleaned-data = JSON.parse(JSON.stringify(it.data))
+            sub cleaned-data
+          catch
+            console.error e
+    case \log
+      console.log.apply console, it.data.args
+    default
+      console.log 'from worker', it.data.type, it.data
 
-window.add-event-listener \beforeunload !->
+  worker.port.start!
+
+  window.add-event-listener \beforeunload !->
+    worker.port.postMessage type: \bye
+
+!function cleanup-worker
   worker.port.postMessage type: \bye
+  worker.port.close!
 
-module.exports = worker.port
+# {board: string, tno: number, last-modified: maybe date}
+# callback: ({type: \dead, tno: string, board: string}
+#           |{type: \update, tno: string, thread: Thead, board: string})
+export function subscribe {board, tno, last-modified}, callback
+  initialize-worker!
+
+  worker.port.postMessage do
+    type: \register
+    board-name: board
+    thread-no: tno
+    last-modified: last-modified
+
+  filter = board + tno
+  subscriptions.set callback, filter
+
+  return function unsubscribe
+    worker.port.postMessage do
+      type: \deregister
+      board-name: board
+      thread-no: tno
+    subscriptions.remove callback
+    if subscriptions.length is 0
+      cleanup-worker!

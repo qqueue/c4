@@ -21,11 +21,12 @@
   if @filename
     .fileinfo
       span.filename= "#{@filename}#{@ext}"
-      span.dimensions= "#{@w}x#{@h}"
+      if @w and @h
+        span.dimensions= "#{@w}x#{@h}"
       span.size= humanized @fsize
       a.saucelink(href="http://iqdb.org/?url=http:#{image-url(locals)}",
         target="_blank") iqdb
-      a.saucelink(href="http://google.com/searchbyimage?image_url=http:#{image-url(locals)}",
+      a.saucelink(href="https://www.google.com/searchbyimage?image_url=http:#{image-url(locals)}",
         target="_blank") google
       a.saucelink(href="http://regex.info/exif.cgi/exif.cgi?imgurl=http:#{image-url(locals)}",
         target="_blank") exif

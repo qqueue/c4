@@ -15,9 +15,7 @@ listen = require \./utils/listen
 post-template = require \templates/post
 parser = require \./parser
 draw-favicon = require \./utils/favicon
-new-updater = require \./new-updater
-
-export updater = {}
+{subscribe} = require \./unfortunate
 
 # state
 unread        = 0
@@ -109,30 +107,29 @@ fade-when-visible = !->
 
 onready !->
   if board.isThread and not board.thread.op.closed
-    new-updater.add-event-listener \message !->
-      switch it.data.type
-      case \dead
-        # TODO handle the archived/closed state somehow, since threads
-        # don't 404 immediately
-        document.title += '(dead)'
-      case \update
-        console.log 'updater get', it.data
-        old-thread = board.thread
-
-        thread = parser.api it.data.thread, board.name
-
-        new-posts = thread.replies.filter -> not old-thread.post[it.no]
-        deleted = old-thread.replies.filter -> not thread.post[it.no]
-
-        console.log 'updates:' new-posts, deleted
-
-        handle-new-posts thread, new-posts, deleted
-
-        # swap out old thread state with new
-        board.thread = thread
-    new-updater.postMessage do
-      type: \register
-      board-name: board.name
-      thread-no: board.thread-no
+    subscribe do
+      board: board.name
+      tno: board.thread-no
       last-modified: new Date board.thread.posts[*-1].time * 1000
+      !->
+        console.log "got update"
+        switch it.type
+        case \dead
+          # TODO handle the archived/closed state somehow, since threads
+          # don't 404 immediately
+          document.title += '(dead)'
+        case \update
+          console.log 'updater get', it
+          old-thread = board.thread
 
+          thread = parser.api it.thread, board.name
+
+          new-posts = thread.replies.filter -> not old-thread.post[it.no]
+          deleted = old-thread.replies.filter -> not thread.post[it.no]
+
+          console.log 'updates:' new-posts, deleted
+
+          handle-new-posts thread, new-posts, deleted
+
+          # swap out old thread state with new
+          board.thread = thread
